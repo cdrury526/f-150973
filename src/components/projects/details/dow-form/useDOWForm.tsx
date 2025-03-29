@@ -1,8 +1,7 @@
 
-import { useState, useCallback } from 'react';
+import React, { useState, useCallback } from 'react';
 import { DOWVariable } from '../types';
 import { v4 as uuidv4 } from 'uuid';
-import { useToast } from '@/hooks/use-toast';
 
 interface BuilderProfile {
   company_name: string | null;
@@ -19,145 +18,129 @@ interface UseDOWFormProps {
   onSave: (variables: DOWVariable[]) => void;
 }
 
-export function useDOWForm({ initialVariables, onSave }: UseDOWFormProps) {
+export const useDOWForm = ({ initialVariables, onSave }: UseDOWFormProps) => {
   const [variables, setVariables] = useState<DOWVariable[]>(initialVariables);
-  const [autoSave, setAutoSave] = useState(false);
+  const [autoSave, setAutoSave] = useState(true);
   const [errors, setErrors] = useState<string[]>([]);
-  const { toast } = useToast();
 
-  const validateVariables = useCallback(() => {
-    const newErrors: string[] = [];
-    const variableNames = new Set<string>();
+  // Add a new variable
+  const addVariable = useCallback(() => {
+    const newVariable: DOWVariable = {
+      id: uuidv4(),
+      name: `NEW_VARIABLE_${Math.floor(Math.random() * 1000)}`,
+      value: '',
+      type: 'string' // Default type for new variables
+    };
     
-    variables.forEach(variable => {
-      if (!variable.name.trim()) {
-        newErrors.push(`Variable ${variable.id} has an empty name`);
-      } else if (variableNames.has(variable.name)) {
-        newErrors.push(`Duplicate variable name: ${variable.name}`);
-      } else {
-        variableNames.add(variable.name);
+    setVariables(prev => [...prev, newVariable]);
+    
+    if (autoSave) {
+      onSave([...variables, newVariable]);
+    }
+  }, [variables, autoSave, onSave]);
+
+  // Remove a variable
+  const removeVariable = useCallback((id: string) => {
+    setVariables(prev => prev.filter(v => v.id !== id));
+    
+    if (autoSave) {
+      onSave(variables.filter(v => v.id !== id));
+    }
+  }, [variables, autoSave, onSave]);
+
+  // Update a variable
+  const updateVariable = useCallback((id: string, field: keyof DOWVariable, value: string) => {
+    setVariables(prev => 
+      prev.map(v => v.id === id ? { ...v, [field]: value } : v)
+    );
+    
+    if (autoSave) {
+      saveVariables();
+    }
+  }, [variables, autoSave]);
+
+  // Validate variables
+  const validateVariables = useCallback((): boolean => {
+    const newErrors: string[] = [];
+    
+    // Check for empty names
+    variables.forEach(v => {
+      if (!v.name.trim()) {
+        newErrors.push(`Variable ID ${v.id} has an empty name`);
       }
     });
+    
+    // Check for duplicate names
+    const names = variables.map(v => v.name);
+    const uniqueNames = new Set(names);
+    if (names.length !== uniqueNames.size) {
+      const duplicates = names.filter((name, index) => names.indexOf(name) !== index);
+      duplicates.forEach(name => {
+        newErrors.push(`Duplicate variable name: ${name}`);
+      });
+    }
     
     setErrors(newErrors);
     return newErrors.length === 0;
   }, [variables]);
 
-  const saveVariables = useCallback((showToast: boolean = false) => {
+  // Prepopulate company info
+  const prepopulateCompanyInfo = useCallback((profile: BuilderProfile) => {
+    if (!profile) return;
+    
+    const updatedVariables = [...variables];
+    let changed = false;
+    
+    // Map company profile fields to likely variable names
+    const mappings: { [key: string]: (string | null)[] } = {
+      'COMPANY_NAME': [profile.company_name],
+      'COMPANY_ADDRESS': [profile.address],
+      'COMPANY_CITY': [profile.city],
+      'COMPANY_STATE': [profile.state],
+      'COMPANY_ZIP': [profile.zip_code],
+      'COMPANY_WEBSITE': [profile.website],
+      'COMPANY_PHONE': [profile.phone],
+      'PHONE': [profile.phone],
+      'ADDRESS': [profile.address],
+      'CITY': [profile.city],
+      'STATE': [profile.state],
+      'ZIP': [profile.zip_code],
+      'WEBSITE': [profile.website]
+    };
+    
+    // Try to find matching variables and update their values
+    updatedVariables.forEach(variable => {
+      // Look for variable names that match our mapping keys
+      for (const [pattern, values] of Object.entries(mappings)) {
+        if (variable.name.includes(pattern) && values[0]) {
+          variable.value = values[0] || '';
+          changed = true;
+          break;
+        }
+      }
+    });
+    
+    if (changed) {
+      setVariables(updatedVariables);
+      if (autoSave) {
+        onSave(updatedVariables);
+      }
+    }
+  }, [variables, autoSave, onSave]);
+
+  // Save all variables
+  const saveVariables = useCallback((force: boolean = false) => {
     if (validateVariables()) {
       onSave(variables);
-      if (showToast) {
-        toast({
-          title: "Variables saved",
-          description: "Your variables have been saved successfully",
-        });
-      }
       return true;
     }
     return false;
-  }, [variables, validateVariables, onSave, toast]);
+  }, [variables, validateVariables, onSave]);
 
+  // Handle save button click
   const handleSave = useCallback(() => {
-    const success = saveVariables(true);
-    if (!success) {
-      toast({
-        title: "Validation failed",
-        description: "Please fix the validation errors and try again",
-        variant: "destructive",
-      });
-    }
-  }, [saveVariables, toast]);
-
-  const addVariable = useCallback(() => {
-    const newVariable: DOWVariable = {
-      id: uuidv4(),
-      name: '',
-      value: '',
-      type: 'string'  // Changed from 'text' to 'string' to match the expected type
-    };
-    
-    setVariables(prev => [...prev, newVariable]);
-  }, []);
-
-  const updateVariable = useCallback((id: string, field: 'name' | 'value' | 'type', newValue: string) => {
-    setVariables(prev => {
-      const newVariables = prev.map(variable => {
-        if (variable.id === id) {
-          return { ...variable, [field]: newValue };
-        }
-        return variable;
-      });
-      
-      return newVariables;
-    });
-    
-    if (autoSave) {
-      // Use a timeout to avoid too many saves while typing
-      setTimeout(() => saveVariables(false), 500);
-    }
-  }, [autoSave, saveVariables]);
-
-  const removeVariable = useCallback((id: string) => {
-    setVariables(prev => prev.filter(variable => variable.id !== id));
-    
-    if (autoSave) {
-      setTimeout(() => saveVariables(false), 100);
-    }
-  }, [autoSave, saveVariables]);
-
-  // Helper function to prepopulate variables from company info
-  const prepopulateCompanyInfo = useCallback((profile: BuilderProfile) => {
-    setVariables(prev => {
-      const newVariables = [...prev];
-      
-      // Map of variable name patterns to company profile fields
-      const mappings: Record<string, string | null> = {
-        // Full address with components
-        'company': profile.company_name,
-        'companyname': profile.company_name,
-        'address': profile.address,
-        'city': profile.city,
-        'state': profile.state,
-        'zip': profile.zip_code,
-        'zipcode': profile.zip_code,
-        'phone': profile.phone,
-        'website': profile.website,
-        
-        // Common combined patterns
-        'fulladdress': profile.address && profile.city && profile.state && profile.zip_code 
-          ? `${profile.address}, ${profile.city}, ${profile.state} ${profile.zip_code}`
-          : null,
-        'citystate': profile.city && profile.state 
-          ? `${profile.city}, ${profile.state}`
-          : null,
-        'citystatezip': profile.city && profile.state && profile.zip_code
-          ? `${profile.city}, ${profile.state} ${profile.zip_code}`
-          : null
-      };
-      
-      // Update matching variables
-      return newVariables.map(variable => {
-        const lowerName = variable.name.toLowerCase();
-        
-        // Find a match in our mappings
-        for (const [pattern, value] of Object.entries(mappings)) {
-          if (lowerName.includes(pattern) && value) {
-            return { ...variable, value };
-          }
-        }
-        
-        return variable;
-      });
-    });
-    
-    toast({
-      title: "Information applied",
-      description: "Company information has been applied to relevant variables",
-    });
-    
-    // Save the updated variables
-    setTimeout(() => saveVariables(false), 100);
-  }, [saveVariables, toast]);
+    saveVariables(true);
+  }, [saveVariables]);
 
   return {
     variables,
@@ -169,6 +152,6 @@ export function useDOWForm({ initialVariables, onSave }: UseDOWFormProps) {
     updateVariable,
     handleSave,
     saveVariables,
-    prepopulateCompanyInfo
+    prepopulateCompanyInfo,
   };
-}
+};

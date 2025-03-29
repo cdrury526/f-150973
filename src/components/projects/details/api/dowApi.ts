@@ -54,10 +54,12 @@ export const fetchProjectVariables = async (projectId: string): Promise<DOWVaria
     throw new Error(error.message);
   }
 
+  // Add the type property to each variable, defaulting to 'string'
   return data.map(item => ({
     id: item.id,
     name: item.name,
-    value: item.value
+    value: item.value,
+    type: 'string' // Default type since it's not stored in the database
   }));
 };
 
@@ -89,6 +91,7 @@ export const saveProjectVariables = async (
         project_id: projectId,
         name: v.name,
         value: v.value
+        // Note: We don't store type in the database currently
       }))
     );
 
