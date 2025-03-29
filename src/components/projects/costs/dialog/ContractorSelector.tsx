@@ -25,6 +25,7 @@ const ContractorSelector: React.FC<ContractorSelectorProps> = ({
   isLoading 
 }) => {
   const [open, setOpen] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
 
   // Process contractor options with safety checks
   const contractorOptions = useMemo(() => {
@@ -48,6 +49,15 @@ const ContractorSelector: React.FC<ContractorSelectorProps> = ({
     return options;
   }, [contractors]);
 
+  // Filter options based on search
+  const filteredOptions = useMemo(() => {
+    if (!searchQuery) return contractorOptions;
+    
+    return contractorOptions.filter((option) => 
+      option.label.toLowerCase().includes(searchQuery.toLowerCase())
+    );
+  }, [contractorOptions, searchQuery]);
+
   return (
     <FormField
       control={control}
@@ -67,6 +77,7 @@ const ContractorSelector: React.FC<ContractorSelectorProps> = ({
                     !field.value && "text-muted-foreground"
                   )}
                   disabled={isLoading}
+                  type="button"
                 >
                   {field.value
                     ? contractorOptions.find(
@@ -77,39 +88,56 @@ const ContractorSelector: React.FC<ContractorSelectorProps> = ({
                 </Button>
               </FormControl>
             </PopoverTrigger>
-            <PopoverContent className="w-[300px] p-0" align="start" sideOffset={4} style={{ zIndex: 9999 }}>
-              <Command>
-                <CommandInput 
-                  placeholder="Search contractor..." 
-                  className="h-9"
-                  startIcon={<Search className="h-3 w-3" />}
-                />
-                <CommandList>
-                  <CommandEmpty>No contractor found.</CommandEmpty>
-                  <CommandGroup>
-                    {contractorOptions.map((option) => (
-                      <CommandItem
+            <PopoverContent 
+              className="w-[300px] p-0" 
+              align="start" 
+              sideOffset={4} 
+              style={{ zIndex: 9999 }}
+              onOpenAutoFocus={(e) => e.preventDefault()}
+            >
+              <div className="overflow-hidden rounded-md border border-input bg-popover text-popover-foreground">
+                <div className="flex items-center border-b px-3">
+                  <Search className="mr-2 h-4 w-4 shrink-0 opacity-50" />
+                  <input 
+                    className="flex h-10 w-full rounded-md bg-transparent py-3 text-sm outline-none placeholder:text-muted-foreground disabled:cursor-not-allowed disabled:opacity-50"
+                    placeholder="Search contractor..."
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    onClick={(e) => e.stopPropagation()}
+                  />
+                </div>
+                <div 
+                  className="max-h-[300px] overflow-y-auto p-1"
+                  onClick={(e) => e.stopPropagation()}
+                >
+                  {filteredOptions.length === 0 ? (
+                    <div className="py-6 text-center text-sm">No contractor found.</div>
+                  ) : (
+                    filteredOptions.map((option) => (
+                      <div
                         key={option.value}
-                        value={option.value}
-                        onSelect={() => {
+                        onClick={() => {
                           field.onChange(option.value);
                           setOpen(false);
+                          setSearchQuery("");
                         }}
+                        className={cn(
+                          "relative flex cursor-pointer select-none items-center rounded-sm px-2 py-1.5 text-sm outline-none hover:bg-accent hover:text-accent-foreground data-[disabled]:pointer-events-none data-[disabled]:opacity-50",
+                          option.value === field.value ? "bg-accent text-accent-foreground" : ""
+                        )}
                       >
                         <Check
                           className={cn(
                             "mr-2 h-4 w-4",
-                            option.value === field.value
-                              ? "opacity-100"
-                              : "opacity-0"
+                            option.value === field.value ? "opacity-100" : "opacity-0"
                           )}
                         />
                         {option.label}
-                      </CommandItem>
-                    ))}
-                  </CommandGroup>
-                </CommandList>
-              </Command>
+                      </div>
+                    ))
+                  )}
+                </div>
+              </div>
             </PopoverContent>
           </Popover>
           <FormDescription>
