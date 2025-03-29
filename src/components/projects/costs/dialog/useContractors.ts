@@ -12,7 +12,11 @@ export const useContractors = (isDialogOpen: boolean) => {
       setIsLoading(true);
       try {
         const contractorsData = await fetchContractors();
-        setContractors(contractorsData);
+        // Filter out archived contractors
+        const activeContractors = contractorsData.filter(
+          contractor => !contractor.archived
+        );
+        setContractors(activeContractors);
       } catch (error) {
         console.error('Error fetching contractors:', error);
       } finally {
