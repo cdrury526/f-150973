@@ -12,13 +12,18 @@ import {
 import { Input } from '@/components/ui/input';
 import { ContractorTypeSelector } from '../ContractorTypeSelector';
 import { ContractorType } from '../types';
-import { ContractorFormValues } from './contractor-form-schema';
+import { ContractorFormValues, formatPhoneNumber } from './contractor-form-schema';
 
 interface ContractorFormFieldsProps {
   form: UseFormReturn<ContractorFormValues>;
 }
 
 export function ContractorFormFields({ form }: ContractorFormFieldsProps) {
+  const handlePhoneChange = (e: React.ChangeEvent<HTMLInputElement>, onChange: (value: string) => void) => {
+    const formattedValue = formatPhoneNumber(e.target.value);
+    onChange(formattedValue);
+  };
+
   return (
     <>
       <FormField
@@ -57,7 +62,11 @@ export function ContractorFormFields({ form }: ContractorFormFieldsProps) {
             <FormItem>
               <FormLabel>Company Phone</FormLabel>
               <FormControl>
-                <Input {...field} />
+                <Input 
+                  {...field} 
+                  onChange={(e) => handlePhoneChange(e, field.onChange)}
+                  placeholder="(555) 123-4567"
+                />
               </FormControl>
               <FormMessage />
             </FormItem>
