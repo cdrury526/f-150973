@@ -11,10 +11,6 @@ import {
   SelectTrigger, 
   SelectValue 
 } from "@/components/ui/select";
-import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { CheckIcon, ChevronsUpDown } from "lucide-react";
-import { cn } from "@/lib/utils";
 
 interface ContractorTypeSelectorProps {
   value: ContractorType;
@@ -31,49 +27,27 @@ export const ContractorTypeSelector: React.FC<ContractorTypeSelectorProps> = ({
   
   return (
     <div className="flex items-center gap-2">
-      <Popover>
-        <PopoverTrigger asChild>
-          <Button
-            variant="outline"
-            role="combobox"
-            className="w-[300px] justify-between"
-            disabled={disabled}
-          >
-            {value || "Select contractor type"}
-            <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
-          </Button>
-        </PopoverTrigger>
-        <PopoverContent className="w-[300px] p-0">
-          <Command>
-            <CommandInput placeholder="Search contractor type..." />
-            <CommandList>
-              <CommandEmpty>No contractor type found.</CommandEmpty>
-              <CommandGroup className="max-h-[300px] overflow-y-auto">
-                {contractorTypes.map((type) => (
-                  <CommandItem
-                    key={type}
-                    value={type}
-                    onSelect={() => onChange(type)}
-                  >
-                    <CheckIcon
-                      className={cn(
-                        "mr-2 h-4 w-4",
-                        value === type ? "opacity-100" : "opacity-0"
-                      )}
-                    />
-                    <div className="flex flex-col">
-                      <span>{type}</span>
-                      <span className="text-xs text-muted-foreground">
-                        {contractorTypeDescriptions[type]}
-                      </span>
-                    </div>
-                  </CommandItem>
-                ))}
-              </CommandGroup>
-            </CommandList>
-          </Command>
-        </PopoverContent>
-      </Popover>
+      <Select 
+        value={value} 
+        onValueChange={onChange} 
+        disabled={disabled}
+      >
+        <SelectTrigger className="w-[300px]">
+          <SelectValue placeholder="Select contractor type" />
+        </SelectTrigger>
+        <SelectContent>
+          {contractorTypes.map((type) => (
+            <SelectItem key={type} value={type}>
+              <div className="flex flex-col">
+                <span>{type}</span>
+                <span className="text-xs text-muted-foreground">
+                  {contractorTypeDescriptions[type]}
+                </span>
+              </div>
+            </SelectItem>
+          ))}
+        </SelectContent>
+      </Select>
 
       <TooltipProvider>
         <Tooltip>
@@ -108,43 +82,21 @@ export const ContractorTypeCell: React.FC<ContractorTypeSelectorProps> = ({
   const contractorTypes = Object.keys(contractorTypeDescriptions) as ContractorType[];
   
   return (
-    <Popover>
-      <PopoverTrigger asChild>
-        <Button
-          variant="outline"
-          role="combobox"
-          className="w-[250px] h-8 p-2 justify-between"
-          disabled={disabled}
-        >
-          {value || "Select type"}
-          <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
-        </Button>
-      </PopoverTrigger>
-      <PopoverContent className="w-[250px] p-0">
-        <Command>
-          <CommandInput placeholder="Search..." />
-          <CommandList>
-            <CommandEmpty>No contractor type found.</CommandEmpty>
-            <CommandGroup className="max-h-[200px] overflow-y-auto">
-              {contractorTypes.map((type) => (
-                <CommandItem
-                  key={type}
-                  value={type}
-                  onSelect={() => onChange(type)}
-                >
-                  <CheckIcon
-                    className={cn(
-                      "mr-2 h-4 w-4",
-                      value === type ? "opacity-100" : "opacity-0"
-                    )}
-                  />
-                  {type}
-                </CommandItem>
-              ))}
-            </CommandGroup>
-          </CommandList>
-        </Command>
-      </PopoverContent>
-    </Popover>
+    <Select 
+      value={value} 
+      onValueChange={onChange} 
+      disabled={disabled}
+    >
+      <SelectTrigger className="w-[250px] h-8 p-2">
+        <SelectValue placeholder="Select type" />
+      </SelectTrigger>
+      <SelectContent>
+        {contractorTypes.map((type) => (
+          <SelectItem key={type} value={type}>
+            {type}
+          </SelectItem>
+        ))}
+      </SelectContent>
+    </Select>
   );
 };

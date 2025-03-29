@@ -10,11 +10,6 @@ import {
   SelectTrigger, 
   SelectValue 
 } from "@/components/ui/select";
-import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { Button } from "@/components/ui/button";
-import { CheckIcon, ChevronsUpDown } from "lucide-react";
-import { cn } from "@/lib/utils";
 
 interface ContractorSelectorProps {
   control: Control<any>;
@@ -57,48 +52,22 @@ const ContractorSelector: React.FC<ContractorSelectorProps> = ({
         <FormItem>
           <FormLabel>Contractor</FormLabel>
           <FormControl>
-            <Popover>
-              <PopoverTrigger asChild>
-                <Button
-                  variant="outline"
-                  role="combobox"
-                  className="w-full justify-between"
-                  disabled={isLoading}
-                >
-                  {field.value
-                    ? contractorOptions.find((option) => option.value === field.value)?.label
-                    : "Select a contractor"}
-                  <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
-                </Button>
-              </PopoverTrigger>
-              <PopoverContent className="w-full p-0" align="start">
-                <Command>
-                  <CommandInput placeholder="Search contractors..." />
-                  <CommandList>
-                    <CommandEmpty>No contractors found.</CommandEmpty>
-                    <CommandGroup className="max-h-[300px] overflow-y-auto">
-                      {contractorOptions.map((option) => (
-                        <CommandItem
-                          key={option.value}
-                          value={option.label}
-                          onSelect={() => {
-                            field.onChange(option.value);
-                          }}
-                        >
-                          <CheckIcon
-                            className={cn(
-                              "mr-2 h-4 w-4",
-                              field.value === option.value ? "opacity-100" : "opacity-0"
-                            )}
-                          />
-                          {option.label}
-                        </CommandItem>
-                      ))}
-                    </CommandGroup>
-                  </CommandList>
-                </Command>
-              </PopoverContent>
-            </Popover>
+            <Select 
+              value={field.value}
+              onValueChange={field.onChange}
+              disabled={isLoading}
+            >
+              <SelectTrigger className="w-full">
+                <SelectValue placeholder="Select a contractor" />
+              </SelectTrigger>
+              <SelectContent>
+                {contractorOptions.map((option) => (
+                  <SelectItem key={option.value} value={option.value}>
+                    {option.label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </FormControl>
           <FormDescription>
             The contractor assigned to this work
