@@ -6,19 +6,9 @@ import { ContractorTypeCell } from './ContractorTypeSelector';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { fetchContractors, updateContractor } from './api/contractorsApi';
 import { Button } from '@/components/ui/button';
-import { Archive, ArchiveRestore } from 'lucide-react';
+import { Pencil, ArchiveRestore } from 'lucide-react';
 import { toast } from 'sonner';
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-  AlertDialogTrigger,
-} from "@/components/ui/alert-dialog";
+import { ContractorEditDialog } from './ContractorEditDialog';
 
 interface ContractorsTableProps {
   projectId?: string;
@@ -27,6 +17,8 @@ interface ContractorsTableProps {
 
 const ContractorsTable: React.FC<ContractorsTableProps> = ({ projectId, showArchived = false }) => {
   const queryClient = useQueryClient();
+  const [selectedContractor, setSelectedContractor] = useState<Contractor | null>(null);
+  const [editDialogOpen, setEditDialogOpen] = useState(false);
   
   const { data: contractors = [], isLoading, error } = useQuery({
     queryKey: ['contractors'],
@@ -41,13 +33,13 @@ const ContractorsTable: React.FC<ContractorsTableProps> = ({ projectId, showArch
     }
   }, [contractors]);
   
-  const archiveMutation = useMutation({
-    mutationFn: ({ id, archived }: { id: string, archived: boolean }) => {
-      return updateContractor(id, { archived });
+  const restoreMutation = useMutation({
+    mutationFn: (id: string) => {
+      return updateContractor(id, { archived: false });
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['contractors'] });
-      toast.success(showArchived ? 'Contractor restored' : 'Contractor archived');
+      toast.success('Contractor restored');
     },
     onError: (error) => {
       toast.error(`Error: ${error instanceof Error ? error.message : 'Unknown error'}`);
@@ -64,8 +56,13 @@ const ContractorsTable: React.FC<ContractorsTableProps> = ({ projectId, showArch
     );
   };
 
-  const handleArchive = (id: string, archived: boolean) => {
-    archiveMutation.mutate({ id, archived });
+  const handleRestore = (id: string) => {
+    restoreMutation.mutate(id);
+  };
+  
+  const handleEditClick = (contractor: Contractor) => {
+    setSelectedContractor(contractor);
+    setEditDialogOpen(true);
   };
 
   if (isLoading) {
@@ -113,40 +110,21 @@ const ContractorsTable: React.FC<ContractorsTableProps> = ({ projectId, showArch
                     <Button 
                       variant="outline" 
                       size="sm" 
-                      onClick={() => handleArchive(contractor.id, false)}
-                      disabled={archiveMutation.isPending}
+                      onClick={() => handleRestore(contractor.id)}
+                      disabled={restoreMutation.isPending}
                     >
                       <ArchiveRestore className="h-4 w-4 mr-1" />
                       Restore
                     </Button>
                   ) : (
-                    <AlertDialog>
-                      <AlertDialogTrigger asChild>
-                        <Button 
-                          variant="outline" 
-                          size="sm"
-                          disabled={archiveMutation.isPending}
-                        >
-                          <Archive className="h-4 w-4 mr-1" />
-                          Archive
-                        </Button>
-                      </AlertDialogTrigger>
-                      <AlertDialogContent>
-                        <AlertDialogHeader>
-                          <AlertDialogTitle>Archive Contractor</AlertDialogTitle>
-                          <AlertDialogDescription>
-                            Are you sure you want to archive {contractor.companyName}? 
-                            Archived contractors can be viewed and restored from the archived contractors view.
-                          </AlertDialogDescription>
-                        </AlertDialogHeader>
-                        <AlertDialogFooter>
-                          <AlertDialogCancel>Cancel</AlertDialogCancel>
-                          <AlertDialogAction onClick={() => handleArchive(contractor.id, true)}>
-                            Archive
-                          </AlertDialogAction>
-                        </AlertDialogFooter>
-                      </AlertDialogContent>
-                    </AlertDialog>
+                    <Button 
+                      variant="ghost" 
+                      size="icon"
+                      onClick={() => handleEditClick(contractor)}
+                    >
+                      <Pencil className="h-4 w-4" />
+                      <span className="sr-only">Edit</span>
+                    </Button>
                   )}
                 </TableCell>
               </TableRow>
@@ -162,6 +140,12 @@ const ContractorsTable: React.FC<ContractorsTableProps> = ({ projectId, showArch
           )}
         </TableBody>
       </Table>
+      
+      <ContractorEditDialog 
+        open={editDialogOpen} 
+        onOpenChange={setEditDialogOpen} 
+        contractor={selectedContractor} 
+      />
     </div>
   );
 };
