@@ -1,7 +1,7 @@
+
 import React, { useState, useEffect } from 'react';
 import { Table, TableHeader, TableBody, TableHead, TableRow, TableCell } from "@/components/ui/table";
 import { Contractor, ContractorType } from './types';
-import { ContractorTypeCell } from './ContractorTypeSelector';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { fetchContractors, updateContractor } from './api/contractorsApi';
 import { Button } from '@/components/ui/button';
@@ -45,16 +45,6 @@ const ContractorsTable: React.FC<ContractorsTableProps> = ({ projectId, showArch
     }
   });
   
-  const handleContractorTypeChange = (contractorId: string, newType: ContractorType) => {
-    setLocalContractors(prevContractors => 
-      prevContractors.map(contractor => 
-        contractor.id === contractorId 
-          ? { ...contractor, contractorType: newType } 
-          : contractor
-      )
-    );
-  };
-
   const handleRestore = (id: string) => {
     restoreMutation.mutate(id);
   };
@@ -97,12 +87,7 @@ const ContractorsTable: React.FC<ContractorsTableProps> = ({ projectId, showArch
                 <TableCell>{contractor.contactName}</TableCell>
                 <TableCell>{contractor.companyPhone}</TableCell>
                 <TableCell>{contractor.companyEmail}</TableCell>
-                <TableCell>
-                  <ContractorTypeCell 
-                    value={contractor.contractorType as ContractorType}
-                    onChange={(value) => handleContractorTypeChange(contractor.id, value)}
-                  />
-                </TableCell>
+                <TableCell>{contractor.contractorType}</TableCell>
                 <TableCell>
                   {showArchived ? (
                     <Button 
