@@ -160,7 +160,7 @@ const DOWContent: React.FC<DOWContentProps> = ({ projectId }) => {
         {/* Left panel for the variables form */}
         <ResizablePanel defaultSize={40} minSize={30}>
           <div className="p-6 h-full overflow-auto">
-            <h3 className="text-lg font-medium mb-4">Document Variables</h3>
+            <h3 className="text-base font-medium mb-3">Document Variables</h3>
             <DOWForm 
               projectId={projectId} 
               variables={variablesQuery.data || []}
@@ -175,7 +175,7 @@ const DOWContent: React.FC<DOWContentProps> = ({ projectId }) => {
         {/* Right panel for the document preview */}
         <ResizablePanel defaultSize={60} minSize={30}>
           <div className="p-6 h-full overflow-auto">
-            <h3 className="text-lg font-medium mb-4">Document Preview</h3>
+            <h3 className="text-base font-medium mb-3">Document Preview</h3>
             <DOWPreview 
               variables={getSortedVariables()}
               templateContent={templateQuery.data || ''}
