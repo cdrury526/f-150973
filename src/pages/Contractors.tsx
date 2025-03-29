@@ -2,17 +2,21 @@
 import React from 'react';
 import DashboardLayout from '@/components/layout/DashboardLayout';
 import ContractorsTable from '@/components/projects/contractors/ContractorsTable';
+import { ContractorFormDialog } from '@/components/projects/contractors/ContractorFormDialog';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card";
 
 const Contractors = () => {
   return (
     <DashboardLayout>
       <div className="py-6">
-        <div className="mb-6">
-          <h1 className="text-3xl font-bold tracking-tight">Contractors</h1>
-          <p className="text-muted-foreground">
-            Manage all your contractors across projects in one place.
-          </p>
+        <div className="mb-6 flex justify-between items-center">
+          <div>
+            <h1 className="text-3xl font-bold tracking-tight">Contractors</h1>
+            <p className="text-muted-foreground">
+              Manage all your contractors across projects in one place.
+            </p>
+          </div>
+          <ContractorFormDialog />
         </div>
 
         <Card>
