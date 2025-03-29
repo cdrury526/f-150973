@@ -1,7 +1,7 @@
 
 import React from 'react';
 import DOWForm from '../DOWForm';
-import { DOWVariable } from '../DOWForm';
+import { DOWVariable } from '../types';
 
 interface DOWEditPanelProps {
   projectId: string;
