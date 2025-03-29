@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Plus, FileSpreadsheet } from 'lucide-react';
 import { ProjectCost } from './types';
 import { useToast } from "@/hooks/use-toast";
+import { fetchContractors } from '../contractors/api/contractorsApi';
 
 interface ProjectCostsHeaderProps {
   onAddCategoryClick: () => void;
@@ -14,7 +15,14 @@ interface ProjectCostsHeaderProps {
 const ProjectCostsHeader: React.FC<ProjectCostsHeaderProps> = ({ onAddCategoryClick, costs }) => {
   const { toast } = useToast();
 
-  const exportToCSV = () => {
+  const exportToCSV = async () => {
+    // Fetch contractors to get their company names
+    const contractors = await fetchContractors();
+    const contractorsMap = contractors.reduce((acc, contractor) => {
+      acc[contractor.id] = contractor.companyName;
+      return acc;
+    }, {} as Record<string, string>);
+
     // Calculate total for summary row
     const quoteTotal = costs.reduce((sum, cost) => sum + (cost.quote_price || 0), 0) || 0;
     const actualTotal = costs.reduce((sum, cost) => sum + (cost.actual_price || 0), 0) || 0;
@@ -25,12 +33,14 @@ const ProjectCostsHeader: React.FC<ProjectCostsHeaderProps> = ({ onAddCategoryCl
     
     const rows = costs.map(cost => {
       const difference = (cost.actual_price ?? 0) - cost.quote_price;
+      const contractorName = cost.contractor_id ? contractorsMap[cost.contractor_id] || 'Unknown' : 'Not assigned';
+      
       return [
         cost.category_name,
         cost.quote_price.toFixed(2),
         cost.actual_price !== null ? cost.actual_price.toFixed(2) : '-',
         cost.actual_price !== null ? difference.toFixed(2) : '-',
-        cost.contractor_id ? 'Assigned' : 'Not assigned'
+        contractorName
       ];
     });
     
