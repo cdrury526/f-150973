@@ -25,6 +25,20 @@ import {
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+
+// Define project type as an enum to match database expectations
+const ProjectType = {
+  NewBuild: "New Build",
+  Remodel: "Remodel",
+  Other: "Other"
+} as const;
 
 // Create a schema for form validation
 const formSchema = z.object({
@@ -32,7 +46,7 @@ const formSchema = z.object({
   client: z.string().optional(),
   location: z.string().optional(),
   due_date: z.string().optional(),
-  project_type: z.string(),
+  project_type: z.enum(["New Build", "Remodel", "Other"]),
   status: z.string(),
   progress: z.preprocess(
     (val) => parseInt(val as string, 10),
@@ -77,6 +91,15 @@ const ProjectEditDialog: React.FC<ProjectEditDialogProps> = ({
     }
   }
 
+  // Ensure project type matches one of the allowed values
+  const validateProjectType = (type: string): "New Build" | "Remodel" | "Other" => {
+    if (type === "New Build" || type === "Remodel" || type === "Other") {
+      return type;
+    }
+    // Default to "Other" if not a valid type
+    return "Other";
+  };
+
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -84,7 +107,7 @@ const ProjectEditDialog: React.FC<ProjectEditDialogProps> = ({
       client: project.client,
       location: project.location,
       due_date: formattedDate,
-      project_type: project.projectType,
+      project_type: validateProjectType(project.projectType),
       status: project.status,
       progress: project.progress,
     },
@@ -194,9 +217,21 @@ const ProjectEditDialog: React.FC<ProjectEditDialogProps> = ({
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Project Type</FormLabel>
-                  <FormControl>
-                    <Input placeholder="Project type" {...field} />
-                  </FormControl>
+                  <Select
+                    onValueChange={field.onChange}
+                    defaultValue={field.value}
+                  >
+                    <FormControl>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select project type" />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                      <SelectItem value="New Build">New Build</SelectItem>
+                      <SelectItem value="Remodel">Remodel</SelectItem>
+                      <SelectItem value="Other">Other</SelectItem>
+                    </SelectContent>
+                  </Select>
                   <FormMessage />
                 </FormItem>
               )}
