@@ -8,7 +8,7 @@ interface VariableLabelProps {
 
 const VariableLabel: React.FC<VariableLabelProps> = ({ name }) => {
   return (
-    <Label className="variable-name font-mono text-xs text-muted-foreground">
+    <Label className="variable-name font-mono text-sm font-medium text-muted-foreground">
       {name || "UNNAMED_VARIABLE"}
     </Label>
   );
