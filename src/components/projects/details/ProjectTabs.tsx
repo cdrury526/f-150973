@@ -32,7 +32,7 @@ const ProjectTabs: React.FC<ProjectTabsProps> = ({ projectId }) => {
         </TabsContent>
       </Tabs>
       
-      <RecentUpdatesCard />
+      <RecentUpdatesCard projectId={projectId} />
     </div>
   );
 };
