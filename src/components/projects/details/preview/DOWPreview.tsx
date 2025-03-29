@@ -32,7 +32,14 @@ const DOWPreview: React.FC<DOWPreviewProps> = ({
 
   // Handle variable selection and pass it to parent if needed
   const handleVariableSelection = (variableName: string) => {
-    handleVariableClick(variableName, onVariableClick);
+    // First highlight the variable in the preview
+    handleVariableClick(variableName);
+    
+    // Then notify the parent component to scroll to the input
+    if (onVariableClick) {
+      console.log(`DOWPreview: Calling parent onVariableClick with ${variableName}`);
+      onVariableClick(variableName);
+    }
   };
 
   return (
