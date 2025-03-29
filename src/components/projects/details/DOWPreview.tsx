@@ -34,10 +34,17 @@ const DOWPreview: React.FC<DOWPreviewProps> = ({ variables, templateContent }) =
 
       let result = templateContent;
       
-      // Find all variable placeholders in the template
+      // Find all variable placeholders in the template in order of appearance
       const allPlaceholders = result.match(/{{([A-Z0-9_]+)}}/g) || [];
       const allVarNames = allPlaceholders.map(p => p.replace(/{{|}}/g, ''));
-      const uniqueVarNames = [...new Set(allVarNames)];
+      
+      // Maintain the order of first appearance while removing duplicates
+      const uniqueVarNames: string[] = [];
+      allVarNames.forEach(varName => {
+        if (!uniqueVarNames.includes(varName)) {
+          uniqueVarNames.push(varName);
+        }
+      });
       
       // Create a map of variable names to values for quick lookup
       const varMap = new Map(variables.map(v => [v.name, v.value || `[${v.name}]`]));
@@ -59,7 +66,7 @@ const DOWPreview: React.FC<DOWPreviewProps> = ({ variables, templateContent }) =
         }
       });
       
-      // Update missing variables state
+      // Update missing variables state (in order of appearance in the document)
       setMissingVariables(missing);
       
       // Remove markdown formatting symbols (# and **)
