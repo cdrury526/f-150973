@@ -83,8 +83,10 @@ export const SearchableSelect: React.FC<SearchableSelectProps> = ({
         className="p-0" 
         style={{ width: typeof width === 'number' ? `${width}px` : width }}
         align="start"
+        sideOffset={4}
+        avoidCollisions={true}
       >
-        <div className="overflow-hidden rounded-md border border-input bg-popover text-popover-foreground">
+        <div className="overflow-hidden rounded-md border border-input bg-popover text-popover-foreground shadow-md">
           <div className="flex items-center border-b px-3">
             <input 
               className="flex h-11 w-full rounded-md bg-transparent py-3 text-sm outline-none placeholder:text-muted-foreground disabled:cursor-not-allowed disabled:opacity-50"
@@ -92,6 +94,7 @@ export const SearchableSelect: React.FC<SearchableSelectProps> = ({
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               autoComplete="off"
+              aria-autocomplete="list"
             />
           </div>
           <div className="overflow-y-auto" style={{ maxHeight: `${maxHeight}px` }}>
@@ -106,6 +109,13 @@ export const SearchableSelect: React.FC<SearchableSelectProps> = ({
                     onClick={() => handleSelect(option.value)}
                     role="option"
                     aria-selected={value === option.value}
+                    tabIndex={0}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter' || e.key === ' ') {
+                        e.preventDefault();
+                        handleSelect(option.value);
+                      }
+                    }}
                   >
                     <div className={option.description ? 'flex flex-col items-start' : ''}>
                       <span className={option.description ? 'font-medium' : ''}>{option.label}</span>
