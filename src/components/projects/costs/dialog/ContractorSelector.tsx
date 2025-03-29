@@ -3,7 +3,18 @@ import React, { useMemo } from 'react';
 import { FormField, FormItem, FormLabel, FormControl, FormDescription } from "@/components/ui/form";
 import { Contractor } from '@/components/projects/contractors/types';
 import { Control } from 'react-hook-form';
-import { SearchableSelectOption, SearchableSelect } from "@/components/ui/searchable-select";
+import { 
+  Select, 
+  SelectContent, 
+  SelectItem, 
+  SelectTrigger, 
+  SelectValue 
+} from "@/components/ui/select";
+import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem } from "@/components/ui/command";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Button } from "@/components/ui/button";
+import { CheckIcon, ChevronsUpDown } from "lucide-react";
+import { cn } from "@/lib/utils";
 
 interface ContractorSelectorProps {
   control: Control<any>;
@@ -19,7 +30,7 @@ const ContractorSelector: React.FC<ContractorSelectorProps> = ({
   // Process contractor options with safety checks
   const contractorOptions = useMemo(() => {
     // Initialize with the "None" option
-    const options: SearchableSelectOption[] = [
+    const options = [
       { value: "", label: "None" }
     ];
     
@@ -38,38 +49,60 @@ const ContractorSelector: React.FC<ContractorSelectorProps> = ({
     return options;
   }, [contractors]);
 
-  console.log("Contractor options:", contractorOptions);
-
   return (
     <FormField
       control={control}
       name="contractor_id"
-      render={({ field }) => {
-        console.log("Field value:", field.value);
-        return (
-          <FormItem>
-            <FormLabel>Contractor</FormLabel>
-            <FormControl>
-              <SearchableSelect
-                options={contractorOptions}
-                value={field.value || ''}
-                onChange={(value) => {
-                  console.log("Selected contractor:", value);
-                  field.onChange(value);
-                }}
-                placeholder="Select a contractor"
-                searchPlaceholder="Search contractors..."
-                emptyMessage="No contractors found."
-                disabled={isLoading}
-                width="100%"
-              />
-            </FormControl>
-            <FormDescription>
-              The contractor assigned to this work
-            </FormDescription>
-          </FormItem>
-        );
-      }}
+      render={({ field }) => (
+        <FormItem>
+          <FormLabel>Contractor</FormLabel>
+          <FormControl>
+            <Popover>
+              <PopoverTrigger asChild>
+                <Button
+                  variant="outline"
+                  role="combobox"
+                  className="w-full justify-between"
+                  disabled={isLoading}
+                >
+                  {field.value
+                    ? contractorOptions.find((option) => option.value === field.value)?.label
+                    : "Select a contractor"}
+                  <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-full p-0" align="start">
+                <Command>
+                  <CommandInput placeholder="Search contractors..." />
+                  <CommandEmpty>No contractors found.</CommandEmpty>
+                  <CommandGroup className="max-h-[300px] overflow-y-auto">
+                    {contractorOptions.map((option) => (
+                      <CommandItem
+                        key={option.value}
+                        value={option.label}
+                        onSelect={() => {
+                          field.onChange(option.value);
+                        }}
+                      >
+                        <CheckIcon
+                          className={cn(
+                            "mr-2 h-4 w-4",
+                            field.value === option.value ? "opacity-100" : "opacity-0"
+                          )}
+                        />
+                        {option.label}
+                      </CommandItem>
+                    ))}
+                  </CommandGroup>
+                </Command>
+              </PopoverContent>
+            </Popover>
+          </FormControl>
+          <FormDescription>
+            The contractor assigned to this work
+          </FormDescription>
+        </FormItem>
+      )}
     />
   );
 };
