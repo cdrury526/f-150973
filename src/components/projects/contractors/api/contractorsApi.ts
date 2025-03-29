@@ -6,7 +6,7 @@ export const fetchContractors = async () => {
   const { data, error } = await supabase
     .from('contractors')
     .select('*')
-    .order('companyName', { ascending: true });
+    .order('companyname', { ascending: true });
 
   if (error) {
     throw new Error(error.message);
@@ -15,12 +15,12 @@ export const fetchContractors = async () => {
   // Transform to match our Contractor interface
   const contractors = data.map(contractor => ({
     id: contractor.id,
-    companyName: contractor.companyName,
-    companyPhone: contractor.companyPhone,
-    companyEmail: contractor.companyEmail,
-    contactName: contractor.contactName,
+    companyName: contractor.companyname,
+    companyPhone: contractor.companyphone,
+    companyEmail: contractor.companyemail,
+    contactName: contractor.contactname,
     status: contractor.status,
-    contractorType: contractor.contractorType
+    contractorType: contractor.contractortype
   } as Contractor));
 
   return contractors;
@@ -30,12 +30,12 @@ export const createContractor = async (contractor: Omit<Contractor, 'id'>) => {
   const { data, error } = await supabase
     .from('contractors')
     .insert({
-      companyName: contractor.companyName,
-      companyPhone: contractor.companyPhone,
-      companyEmail: contractor.companyEmail,
-      contactName: contractor.contactName, 
+      companyname: contractor.companyName,
+      companyphone: contractor.companyPhone,
+      companyemail: contractor.companyEmail,
+      contactname: contractor.contactName, 
       status: contractor.status,
-      contractorType: contractor.contractorType
+      contractortype: contractor.contractorType
     })
     .select()
     .single();
@@ -46,12 +46,12 @@ export const createContractor = async (contractor: Omit<Contractor, 'id'>) => {
 
   return {
     id: data.id,
-    companyName: data.companyName,
-    companyPhone: data.companyPhone,
-    companyEmail: data.companyEmail,
-    contactName: data.contactName,
+    companyName: data.companyname,
+    companyPhone: data.companyphone,
+    companyEmail: data.companyemail,
+    contactName: data.contactname,
     status: data.status,
-    contractorType: data.contractorType
+    contractorType: data.contractortype
   } as Contractor;
 };
 
@@ -59,12 +59,12 @@ export const updateContractor = async (id: string, updates: Partial<Contractor>)
   const { data, error } = await supabase
     .from('contractors')
     .update({
-      companyName: updates.companyName,
-      companyPhone: updates.companyPhone,
-      companyEmail: updates.companyEmail,
-      contactName: updates.contactName,
+      companyname: updates.companyName,
+      companyphone: updates.companyPhone,
+      companyemail: updates.companyEmail,
+      contactname: updates.contactName,
       status: updates.status,
-      contractorType: updates.contractorType,
+      contractortype: updates.contractorType,
       updated_at: new Date().toISOString()
     })
     .eq('id', id)
@@ -77,12 +77,12 @@ export const updateContractor = async (id: string, updates: Partial<Contractor>)
 
   return {
     id: data.id,
-    companyName: data.companyName,
-    companyPhone: data.companyPhone,
-    companyEmail: data.companyEmail,
-    contactName: data.contactName,
+    companyName: data.companyname,
+    companyPhone: data.companyphone,
+    companyEmail: data.companyemail,
+    contactName: data.contactname,
     status: data.status,
-    contractorType: data.contractorType
+    contractorType: data.contractortype
   } as Contractor;
 };
 
