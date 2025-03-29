@@ -3,7 +3,7 @@ import React from 'react';
 import { Card, CardHeader, CardContent, CardTitle } from "@/components/ui/card";
 import { useProjectUpdates, ProjectUpdate } from '@/hooks/useProjectUpdates';
 import { formatDistanceToNow } from 'date-fns';
-import { Loader2, RefreshCw } from 'lucide-react';
+import { Loader2, RefreshCw, AlertTriangle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
 interface RecentUpdatesCardProps {
@@ -24,7 +24,7 @@ const getUpdateIcon = (updateType: string) => {
 };
 
 const RecentUpdatesCard: React.FC<RecentUpdatesCardProps> = ({ projectId }) => {
-  const { data: updates, isLoading, error, refetch } = useProjectUpdates(projectId);
+  const { data: updates, isLoading, error, refetch, isError } = useProjectUpdates(projectId);
 
   const formatUpdateTime = (dateString: string) => {
     try {
@@ -52,9 +52,15 @@ const RecentUpdatesCard: React.FC<RecentUpdatesCardProps> = ({ projectId }) => {
           <div className="flex justify-center py-6">
             <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
           </div>
-        ) : error ? (
-          <div className="text-sm text-muted-foreground py-4">
-            Unable to load recent updates.
+        ) : isError ? (
+          <div className="flex flex-col items-center py-4 text-destructive gap-2">
+            <AlertTriangle className="h-6 w-6" />
+            <div className="text-sm text-center">
+              Unable to load recent updates.
+              <div className="text-xs mt-1 text-muted-foreground">
+                {error instanceof Error ? error.message : 'Unknown error'}
+              </div>
+            </div>
           </div>
         ) : updates && updates.length > 0 ? (
           <div className="space-y-4">
@@ -71,7 +77,7 @@ const RecentUpdatesCard: React.FC<RecentUpdatesCardProps> = ({ projectId }) => {
             ))}
           </div>
         ) : (
-          <div className="text-sm text-muted-foreground py-4">
+          <div className="text-sm text-muted-foreground py-4 text-center">
             No recent updates found.
           </div>
         )}

@@ -11,18 +11,21 @@ export interface ProjectUpdate {
 }
 
 export const fetchProjectUpdates = async (projectId: string): Promise<ProjectUpdate[]> => {
+  console.log('Fetching project updates for project:', projectId);
+  
   const { data, error } = await supabase
     .from('project_updates')
     .select('*')
     .eq('project_id', projectId)
     .order('created_at', { ascending: false })
-    .limit(5);
+    .limit(10);
   
   if (error) {
     console.error("Error fetching project updates:", error);
     throw new Error(error.message);
   }
   
+  console.log('Project updates fetched:', data);
   return data || [];
 };
 
@@ -58,12 +61,20 @@ export const useProjectUpdates = (projectId: string) => {
     queryKey: ['projectUpdates', projectId],
     queryFn: () => fetchProjectUpdates(projectId),
     enabled: !!projectId,
+    staleTime: 1000 * 60, // 1 minute
+    refetchOnWindowFocus: true,
+    refetchInterval: 30000, // Refetch every 30 seconds
   });
   
   const addUpdate = async (updateText: string, updateType: string) => {
-    await logProjectUpdate(projectId, updateText, updateType);
-    // Invalidate the query to refresh the data
-    queryClient.invalidateQueries({ queryKey: ['projectUpdates', projectId] });
+    try {
+      await logProjectUpdate(projectId, updateText, updateType);
+      // Invalidate the query to refresh the data
+      queryClient.invalidateQueries({ queryKey: ['projectUpdates', projectId] });
+    } catch (error) {
+      console.error("Error adding update:", error);
+      throw error;
+    }
   };
   
   return {

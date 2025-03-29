@@ -1,17 +1,34 @@
 
-import React from 'react';
+import React, { useEffect } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import ProjectCostsTable from '@/components/projects/ProjectCostsTable';
 import RecentUpdatesCard from './RecentUpdatesCard';
+import { useQueryClient } from '@tanstack/react-query';
 
 interface ProjectTabsProps {
   projectId: string;
 }
 
 const ProjectTabs: React.FC<ProjectTabsProps> = ({ projectId }) => {
+  const queryClient = useQueryClient();
+
+  // Invalidate updates query when the component mounts
+  useEffect(() => {
+    queryClient.invalidateQueries({ queryKey: ['projectUpdates', projectId] });
+  }, [projectId, queryClient]);
+
+  const handleTabChange = (value: string) => {
+    // Refresh data when switching tabs
+    if (value === 'build') {
+      queryClient.invalidateQueries({ queryKey: ['projectCosts', projectId] });
+    }
+    // Always invalidate updates when switching tabs
+    queryClient.invalidateQueries({ queryKey: ['projectUpdates', projectId] });
+  };
+
   return (
     <div className="space-y-6">
-      <Tabs defaultValue="build">
+      <Tabs defaultValue="build" onValueChange={handleTabChange}>
         <TabsList className="grid w-full grid-cols-4">
           <TabsTrigger value="build">Build</TabsTrigger>
           <TabsTrigger value="tasks">Tasks</TabsTrigger>
