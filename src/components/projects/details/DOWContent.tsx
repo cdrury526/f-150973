@@ -8,8 +8,8 @@ import { Separator } from '@/components/ui/separator';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useToast } from '@/hooks/use-toast';
 import { Button } from "@/components/ui/button";
-import { Upload, AlertCircle } from 'lucide-react';
-import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Upload, AlertCircle, User } from 'lucide-react';
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 
 interface DOWContentProps {
   projectId: string;
@@ -36,6 +36,14 @@ const fetchTemplateContent = async (): Promise<string> => {
     return await data.text();
   } catch (error) {
     console.error('Template fetch error:', error);
+    
+    // Check for RLS or auth-related errors
+    if (error instanceof Error && 
+       (error.message.includes('Permission denied') || 
+        error.message.includes('not authorized'))) {
+      throw new Error('You do not have permission to access this template. Please check your authentication status.');
+    }
+    
     throw new Error('Failed to load template from storage. The template may not be uploaded yet.');
   }
 };
@@ -94,6 +102,12 @@ const saveProjectVariables = async (
 
 // Function to upload a template file to Supabase storage
 const uploadTemplate = async (file: File): Promise<void> => {
+  const { data: sessionData } = await supabase.auth.getSession();
+  
+  if (!sessionData.session) {
+    throw new Error('You must be logged in to upload templates');
+  }
+  
   const { error } = await supabase
     .storage
     .from('document_templates')
@@ -103,6 +117,10 @@ const uploadTemplate = async (file: File): Promise<void> => {
     });
 
   if (error) {
+    console.error('Upload error details:', error);
+    if (error.message.includes('Permission denied')) {
+      throw new Error('You do not have permission to upload templates. Please check your authentication status.');
+    }
     throw new Error(`Failed to upload template: ${error.message}`);
   }
 };
@@ -112,6 +130,33 @@ const DOWContent: React.FC<DOWContentProps> = ({ projectId }) => {
   const queryClient = useQueryClient();
   const [uploadError, setUploadError] = useState<string | null>(null);
   const [isUploading, setIsUploading] = useState(false);
+  const [authError, setAuthError] = useState<string | null>(null);
+
+  // Check authentication status
+  useEffect(() => {
+    const checkAuth = async () => {
+      const { data } = await supabase.auth.getSession();
+      if (!data.session) {
+        setAuthError('You are not logged in. Some features may be limited.');
+      } else {
+        setAuthError(null);
+      }
+    };
+    
+    checkAuth();
+    
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+      (_event, session) => {
+        if (!session) {
+          setAuthError('You are not logged in. Some features may be limited.');
+        } else {
+          setAuthError(null);
+        }
+      }
+    );
+    
+    return () => subscription.unsubscribe();
+  }, []);
 
   // Query to fetch the template content
   const templateQuery = useQuery({
@@ -166,6 +211,13 @@ const DOWContent: React.FC<DOWContentProps> = ({ projectId }) => {
     setIsUploading(true);
     
     try {
+      // Check authentication first
+      const { data: sessionData } = await supabase.auth.getSession();
+      if (!sessionData.session) {
+        setUploadError('You must be logged in to upload templates');
+        return;
+      }
+      
       await uploadTemplate(file);
       toast({
         title: "Template uploaded",
@@ -200,11 +252,21 @@ const DOWContent: React.FC<DOWContentProps> = ({ projectId }) => {
     );
   }
 
+  // Authentication warning banner
+  const AuthWarning = () => authError ? (
+    <Alert variant="warning" className="mb-4">
+      <User className="h-4 w-4" />
+      <AlertTitle>Authentication Notice</AlertTitle>
+      <AlertDescription>{authError}</AlertDescription>
+    </Alert>
+  ) : null;
+
   // Template not found error state (specific case for first-time setup)
   if (templateQuery.error && templateQuery.error instanceof Error && 
       templateQuery.error.message.includes('Template not found')) {
     return (
       <div className="p-6 bg-amber-50 border border-amber-200 rounded-md text-amber-800 space-y-4">
+        <AuthWarning />
         <div className="flex items-start gap-3">
           <AlertCircle className="h-5 w-5 mt-0.5 text-amber-600" />
           <div>
@@ -222,7 +284,7 @@ const DOWContent: React.FC<DOWContentProps> = ({ projectId }) => {
         
         <div className="flex items-center gap-4">
           <Button 
-            disabled={isUploading}
+            disabled={isUploading || !!authError}
             className="relative overflow-hidden" 
             onClick={() => document.getElementById('template-upload')?.click()}
           >
@@ -234,8 +296,31 @@ const DOWContent: React.FC<DOWContentProps> = ({ projectId }) => {
               accept=".md"
               className="absolute inset-0 opacity-0 cursor-pointer"
               onChange={handleTemplateUpload}
-              disabled={isUploading}
+              disabled={isUploading || !!authError}
             />
+          </Button>
+        </div>
+      </div>
+    );
+  }
+
+  // Authentication specific error state
+  if (templateQuery.error && templateQuery.error instanceof Error && 
+      (templateQuery.error.message.includes('Permission denied') || 
+       templateQuery.error.message.includes('not authorized') ||
+       templateQuery.error.message.includes('authentication'))) {
+    return (
+      <div className="p-6 bg-destructive/10 border border-destructive rounded-md text-destructive">
+        <h3 className="text-lg font-medium mb-2">Authentication Error</h3>
+        <p className="mb-4">You don't have permission to access this template.</p>
+        <p>{templateQuery.error.message}</p>
+        <div className="mt-4">
+          <Button 
+            variant="default" 
+            onClick={() => window.location.href = '/auth/login'}
+          >
+            <User className="h-4 w-4 mr-2" />
+            Log In
           </Button>
         </div>
       </div>
@@ -246,6 +331,7 @@ const DOWContent: React.FC<DOWContentProps> = ({ projectId }) => {
   if (templateQuery.error || variablesQuery.error) {
     return (
       <div className="p-6 bg-destructive/10 border border-destructive rounded-md text-destructive">
+        <AuthWarning />
         <h3 className="text-lg font-medium mb-2">Error Loading DOW Content</h3>
         <p>{templateQuery.error instanceof Error ? templateQuery.error.message : 
             variablesQuery.error instanceof Error ? variablesQuery.error.message : 
@@ -264,6 +350,7 @@ const DOWContent: React.FC<DOWContentProps> = ({ projectId }) => {
           <Button 
             variant="secondary"
             onClick={() => document.getElementById('template-upload')?.click()}
+            disabled={!!authError}
           >
             <Upload className="h-4 w-4 mr-2" />
             Upload New Template
@@ -273,7 +360,7 @@ const DOWContent: React.FC<DOWContentProps> = ({ projectId }) => {
               accept=".md"
               className="absolute inset-0 opacity-0 cursor-pointer"
               onChange={handleTemplateUpload}
-              disabled={isUploading}
+              disabled={isUploading || !!authError}
             />
           </Button>
         </div>
@@ -283,12 +370,15 @@ const DOWContent: React.FC<DOWContentProps> = ({ projectId }) => {
 
   return (
     <div className="space-y-8">
+      <AuthWarning />
+      
       <div className="flex justify-between items-center">
         <h2 className="text-2xl font-bold">Scope of Work Document</h2>
         <Button 
           variant="outline" 
           className="flex items-center gap-2"
           onClick={() => document.getElementById('template-upload')?.click()}
+          disabled={!!authError}
         >
           <Upload className="h-4 w-4" />
           Update Template
@@ -298,7 +388,7 @@ const DOWContent: React.FC<DOWContentProps> = ({ projectId }) => {
             accept=".md"
             className="absolute inset-0 opacity-0 cursor-pointer"
             onChange={handleTemplateUpload}
-            disabled={isUploading}
+            disabled={isUploading || !!authError}
           />
         </Button>
       </div>
