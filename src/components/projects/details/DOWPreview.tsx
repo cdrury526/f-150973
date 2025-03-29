@@ -50,6 +50,10 @@ const DOWPreview: React.FC<DOWPreviewProps> = ({ variables, templateContent }) =
         });
       }
       
+      // Remove markdown formatting symbols (# and **)
+      result = result.replace(/#+\s*/g, ''); // Remove headings (# followed by space)
+      result = result.replace(/\*\*/g, '');  // Remove bold formatting (**)
+      
       setGeneratedDocument(result);
     } catch (err) {
       console.error('Document generation error:', err);
