@@ -1,7 +1,6 @@
 
 import React, { useState, useEffect } from 'react';
 import { Table, TableHeader, TableBody, TableHead, TableRow, TableCell } from "@/components/ui/table";
-import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Contractor, ContractorType } from './types';
 import { ContractorTypeCell } from './ContractorTypeSelector';
 import { useQuery } from '@tanstack/react-query';
@@ -35,21 +34,6 @@ const ContractorsTable: React.FC<ContractorsTableProps> = ({ projectId }) => {
     );
   };
 
-  const renderStatusBadge = (status: Contractor['status']) => {
-    const baseClasses = "px-2 py-1 text-xs font-medium rounded-full";
-    
-    switch (status) {
-      case 'Active':
-        return <span className={`${baseClasses} bg-green-100 text-green-800`}>{status}</span>;
-      case 'Inactive':
-        return <span className={`${baseClasses} bg-gray-100 text-gray-800`}>{status}</span>;
-      case 'On Hold':
-        return <span className={`${baseClasses} bg-yellow-100 text-yellow-800`}>{status}</span>;
-      default:
-        return <span className={baseClasses}>{status}</span>;
-    }
-  };
-
   if (isLoading) {
     return <p className="text-muted-foreground">Loading contractors...</p>;
   }
@@ -67,7 +51,6 @@ const ContractorsTable: React.FC<ContractorsTableProps> = ({ projectId }) => {
             <TableHead>Contact Name</TableHead>
             <TableHead>Company Phone</TableHead>
             <TableHead>Company Email</TableHead>
-            <TableHead>Status</TableHead>
             <TableHead className="w-[220px]">Contractor Type</TableHead>
           </TableRow>
         </TableHeader>
@@ -79,7 +62,6 @@ const ContractorsTable: React.FC<ContractorsTableProps> = ({ projectId }) => {
                 <TableCell>{contractor.contactName}</TableCell>
                 <TableCell>{contractor.companyPhone}</TableCell>
                 <TableCell>{contractor.companyEmail}</TableCell>
-                <TableCell>{renderStatusBadge(contractor.status)}</TableCell>
                 <TableCell>
                   <ContractorTypeCell 
                     value={contractor.contractorType as ContractorType}
@@ -90,7 +72,7 @@ const ContractorsTable: React.FC<ContractorsTableProps> = ({ projectId }) => {
             ))
           ) : (
             <TableRow>
-              <TableCell colSpan={6} className="h-24 text-center">
+              <TableCell colSpan={5} className="h-24 text-center">
                 No contractors found.
               </TableCell>
             </TableRow>
