@@ -11,7 +11,7 @@ import {
   SelectTrigger, 
   SelectValue 
 } from "@/components/ui/select";
-import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem } from "@/components/ui/command";
+import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { CheckIcon, ChevronsUpDown } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -46,29 +46,31 @@ export const ContractorTypeSelector: React.FC<ContractorTypeSelectorProps> = ({
         <PopoverContent className="w-[300px] p-0">
           <Command>
             <CommandInput placeholder="Search contractor type..." />
-            <CommandEmpty>No contractor type found.</CommandEmpty>
-            <CommandGroup className="max-h-[300px] overflow-y-auto">
-              {contractorTypes.map((type) => (
-                <CommandItem
-                  key={type}
-                  value={type}
-                  onSelect={() => onChange(type)}
-                >
-                  <CheckIcon
-                    className={cn(
-                      "mr-2 h-4 w-4",
-                      value === type ? "opacity-100" : "opacity-0"
-                    )}
-                  />
-                  <div className="flex flex-col">
-                    <span>{type}</span>
-                    <span className="text-xs text-muted-foreground">
-                      {contractorTypeDescriptions[type]}
-                    </span>
-                  </div>
-                </CommandItem>
-              ))}
-            </CommandGroup>
+            <CommandList>
+              <CommandEmpty>No contractor type found.</CommandEmpty>
+              <CommandGroup className="max-h-[300px] overflow-y-auto">
+                {contractorTypes.map((type) => (
+                  <CommandItem
+                    key={type}
+                    value={type}
+                    onSelect={() => onChange(type)}
+                  >
+                    <CheckIcon
+                      className={cn(
+                        "mr-2 h-4 w-4",
+                        value === type ? "opacity-100" : "opacity-0"
+                      )}
+                    />
+                    <div className="flex flex-col">
+                      <span>{type}</span>
+                      <span className="text-xs text-muted-foreground">
+                        {contractorTypeDescriptions[type]}
+                      </span>
+                    </div>
+                  </CommandItem>
+                ))}
+              </CommandGroup>
+            </CommandList>
           </Command>
         </PopoverContent>
       </Popover>
@@ -121,24 +123,26 @@ export const ContractorTypeCell: React.FC<ContractorTypeSelectorProps> = ({
       <PopoverContent className="w-[250px] p-0">
         <Command>
           <CommandInput placeholder="Search..." />
-          <CommandEmpty>No contractor type found.</CommandEmpty>
-          <CommandGroup className="max-h-[200px] overflow-y-auto">
-            {contractorTypes.map((type) => (
-              <CommandItem
-                key={type}
-                value={type}
-                onSelect={() => onChange(type)}
-              >
-                <CheckIcon
-                  className={cn(
-                    "mr-2 h-4 w-4",
-                    value === type ? "opacity-100" : "opacity-0"
-                  )}
-                />
-                {type}
-              </CommandItem>
-            ))}
-          </CommandGroup>
+          <CommandList>
+            <CommandEmpty>No contractor type found.</CommandEmpty>
+            <CommandGroup className="max-h-[200px] overflow-y-auto">
+              {contractorTypes.map((type) => (
+                <CommandItem
+                  key={type}
+                  value={type}
+                  onSelect={() => onChange(type)}
+                >
+                  <CheckIcon
+                    className={cn(
+                      "mr-2 h-4 w-4",
+                      value === type ? "opacity-100" : "opacity-0"
+                    )}
+                  />
+                  {type}
+                </CommandItem>
+              ))}
+            </CommandGroup>
+          </CommandList>
         </Command>
       </PopoverContent>
     </Popover>
