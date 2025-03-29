@@ -82,7 +82,7 @@ const ProjectCostsTable: React.FC<ProjectCostsTableProps> = ({ projectId }) => {
   const [dialogOpen, setDialogOpen] = useState(false);
   const [addCategoryDialogOpen, setAddCategoryDialogOpen] = useState(false);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
-  const [categoryToDelete, setCategoryToDelete] = useState<ProjectCost | null>(null);
+  const [categoryToDelete, setCategoryToDelete] = useState<CostCategory | null>(null);
   
   const { data, isLoading, error, refetch } = useQuery({
     queryKey: ['projectCosts', projectId],
@@ -96,7 +96,9 @@ const ProjectCostsTable: React.FC<ProjectCostsTableProps> = ({ projectId }) => {
   };
 
   const handleDeleteClick = (cost: ProjectCost) => {
-    setCategoryToDelete(cost);
+    // Find the category that corresponds to this cost
+    const category = data?.categories.find(cat => cat.id === cost.category_id) || null;
+    setCategoryToDelete(category);
     setDeleteDialogOpen(true);
   };
 
@@ -188,14 +190,19 @@ const ProjectCostsTable: React.FC<ProjectCostsTableProps> = ({ projectId }) => {
     if (!categoryToDelete) return;
 
     try {
-      // If there's an existing cost record, delete it first
-      if (categoryToDelete.id) {
-        const { error: costError } = await supabase
-          .from('project_costs')
-          .delete()
-          .eq('id', categoryToDelete.id);
+      // Find any costs associated with this category
+      const costsForCategory = data?.costs.filter(cost => cost.category_id === categoryToDelete.id) || [];
+      
+      // If there are existing cost records, delete them
+      for (const cost of costsForCategory) {
+        if (cost.id) {
+          const { error: costError } = await supabase
+            .from('project_costs')
+            .delete()
+            .eq('id', cost.id);
 
-        if (costError) throw costError;
+          if (costError) throw costError;
+        }
       }
 
       toast({

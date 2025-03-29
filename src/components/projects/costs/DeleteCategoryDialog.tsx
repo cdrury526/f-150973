@@ -10,12 +10,12 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { ProjectCost } from './types';
+import { CostCategory } from './types';
 
 interface DeleteCategoryDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  categoryToDelete: ProjectCost | null;
+  categoryToDelete: CostCategory | null;
   onDelete: () => Promise<void>;
 }
 
@@ -31,7 +31,7 @@ const DeleteCategoryDialog: React.FC<DeleteCategoryDialogProps> = ({
         <AlertDialogHeader>
           <AlertDialogTitle>Remove Cost Category</AlertDialogTitle>
           <AlertDialogDescription>
-            Are you sure you want to remove the "{categoryToDelete?.category_name}" category from this project? 
+            Are you sure you want to remove the "{categoryToDelete?.name}" category from this project? 
             This will remove any cost data associated with this category.
           </AlertDialogDescription>
         </AlertDialogHeader>
