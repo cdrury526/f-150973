@@ -7,13 +7,34 @@ import { DOWVariable } from '../DOWForm';
 
 /**
  * Extracts variable names from a template content
+ * @param content The template content to extract variables from
+ * @param preserveOrder If true, returns variables in the order they appear in the template
  */
-export const extractVariablesFromTemplate = (content: string): string[] => {
+export const extractVariablesFromTemplate = (content: string, preserveOrder: boolean = false): string[] => {
   const regex = /{{([A-Z0-9_]+)}}/g;
-  const matches = content.match(regex) || [];
+  let match;
+  const matches: string[] = [];
+  const uniqueMatches = new Set<string>();
   
-  // Extract variable names and remove duplicates
-  return [...new Set(matches.map(match => match.replace(/{{|}}/g, '')))];
+  // Extract all variable matches in order of appearance
+  while ((match = regex.exec(content)) !== null) {
+    const varName = match[1];
+    if (preserveOrder) {
+      // For preserving order, add all occurrences
+      matches.push(varName);
+    } else if (!uniqueMatches.has(varName)) {
+      // For unique list, only add first occurrence
+      matches.push(varName);
+      uniqueMatches.add(varName);
+    }
+  }
+  
+  // If preserveOrder is false, remove duplicates while maintaining order
+  if (!preserveOrder) {
+    return [...new Set(matches)];
+  }
+  
+  return matches;
 };
 
 /**

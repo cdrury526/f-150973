@@ -18,9 +18,15 @@ interface DOWFormProps {
   projectId: string;
   variables: DOWVariable[];
   onSave: (variables: DOWVariable[]) => void;
+  getSortedVariables?: () => DOWVariable[]; // New prop for getting variables in order
 }
 
-const DOWForm: React.FC<DOWFormProps> = ({ projectId, variables: initialVariables, onSave }) => {
+const DOWForm: React.FC<DOWFormProps> = ({ 
+  projectId, 
+  variables: initialVariables, 
+  onSave,
+  getSortedVariables 
+}) => {
   const [variables, setVariables] = useState<DOWVariable[]>(initialVariables || []);
   const [autoSave, setAutoSave] = useState(false);
   const [errors, setErrors] = useState<string[]>([]);
@@ -98,10 +104,9 @@ const DOWForm: React.FC<DOWFormProps> = ({ projectId, variables: initialVariable
     }
   };
 
-  // Sort variables alphabetically by name for better organization
-  const sortedVariables = [...variables].sort((a, b) => 
-    a.name.localeCompare(b.name)
-  );
+  // Get variables in the proper order for display
+  const displayVariables = getSortedVariables ? getSortedVariables() : 
+    [...variables].sort((a, b) => a.name.localeCompare(b.name));
 
   return (
     <div className="space-y-6">
@@ -145,7 +150,7 @@ const DOWForm: React.FC<DOWFormProps> = ({ projectId, variables: initialVariable
             </div>
           ) : (
             <div className="space-y-4">
-              {sortedVariables.map((variable) => (
+              {displayVariables.map((variable) => (
                 <div key={variable.id} className="flex items-center gap-4">
                   <div className="w-1/3">
                     <Input

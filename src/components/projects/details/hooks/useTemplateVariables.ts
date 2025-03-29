@@ -17,6 +17,7 @@ export function useTemplateVariables(projectId: string) {
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const [autoPopulated, setAutoPopulated] = useState(false);
+  const [originalOrder, setOriginalOrder] = useState<string[]>([]);
 
   // Query to fetch the template content
   const templateQuery = useQuery({
@@ -32,6 +33,14 @@ export function useTemplateVariables(projectId: string) {
     queryFn: () => fetchProjectVariables(projectId),
     enabled: !!projectId
   });
+
+  // Save the original order of variables from the template when it loads
+  useEffect(() => {
+    if (templateQuery.data && !templateQuery.isLoading) {
+      const extractedVarOrder = extractVariablesFromTemplate(templateQuery.data, true);
+      setOriginalOrder(extractedVarOrder);
+    }
+  }, [templateQuery.data, templateQuery.isLoading]);
 
   // Mutation to save project variables
   const saveVariablesMutation = useMutation({
@@ -99,12 +108,42 @@ export function useTemplateVariables(projectId: string) {
     saveVariablesMutation.mutate(variables);
   };
 
+  // Sort variables according to their appearance in the template
+  const getSortedVariables = (): DOWVariable[] => {
+    if (!variablesQuery.data || originalOrder.length === 0) {
+      return variablesQuery.data || [];
+    }
+
+    // Create a map for quick lookup
+    const variableMap = new Map(variablesQuery.data.map(v => [v.name, v]));
+    
+    // First add variables in the order they appear in the template
+    const result: DOWVariable[] = [];
+    
+    // Add variables in the order they appear in the template
+    originalOrder.forEach(name => {
+      if (variableMap.has(name)) {
+        result.push(variableMap.get(name)!);
+        variableMap.delete(name);
+      }
+    });
+    
+    // Add any remaining variables that might not be in the template
+    if (variableMap.size > 0) {
+      const remainingVars = Array.from(variableMap.values()).sort((a, b) => a.name.localeCompare(b.name));
+      result.push(...remainingVars);
+    }
+    
+    return result;
+  };
+
   return {
     templateQuery,
     variablesQuery,
     saveVariablesMutation,
     autoPopulated,
     setAutoPopulated,
-    handleSave
+    handleSave,
+    getSortedVariables
   };
 }
