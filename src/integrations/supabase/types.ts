@@ -11,31 +11,49 @@ export type Database = {
     Tables: {
       builder_profiles: {
         Row: {
+          address: string | null
+          city: string | null
           company_name: string | null
           created_at: string
           description: string | null
           id: string
           logo_url: string | null
+          phone: string | null
+          state: string | null
           updated_at: string
           user_id: string
+          website: string | null
+          zip_code: string | null
         }
         Insert: {
+          address?: string | null
+          city?: string | null
           company_name?: string | null
           created_at?: string
           description?: string | null
           id?: string
           logo_url?: string | null
+          phone?: string | null
+          state?: string | null
           updated_at?: string
           user_id: string
+          website?: string | null
+          zip_code?: string | null
         }
         Update: {
+          address?: string | null
+          city?: string | null
           company_name?: string | null
           created_at?: string
           description?: string | null
           id?: string
           logo_url?: string | null
+          phone?: string | null
+          state?: string | null
           updated_at?: string
           user_id?: string
+          website?: string | null
+          zip_code?: string | null
         }
         Relationships: []
       }

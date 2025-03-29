@@ -18,7 +18,7 @@ const FormHeader: React.FC<FormHeaderProps> = ({
   onSave
 }) => {
   return (
-    <div className="flex justify-between items-center">
+    <div className="flex justify-between items-center py-2">
       <div className="flex items-center space-x-2">
         <span className="text-sm text-muted-foreground">Autosave</span>
         <Switch
@@ -26,7 +26,7 @@ const FormHeader: React.FC<FormHeaderProps> = ({
           onCheckedChange={onAutoSaveChange}
         />
       </div>
-      <div className="flex space-x-2">
+      <div className="flex space-x-3">
         <Button variant="outline" onClick={onAddVariable}>
           <PlusCircle className="h-4 w-4 mr-2" />
           Add Variable

@@ -30,7 +30,7 @@ const VariableList: React.FC<VariableListProps> = ({
 
   return (
     <ScrollArea className="h-[calc(100vh-320px)]">
-      <div className="space-y-2 pr-4">
+      <div className="space-y-3 pr-4">
         {variables.map((variable) => (
           <VariableItem
             key={variable.id}

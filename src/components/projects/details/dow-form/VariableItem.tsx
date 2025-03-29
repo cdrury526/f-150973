@@ -1,10 +1,9 @@
-
 import React, { useState, useRef } from 'react';
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
-import { Calendar } from "lucide-react";
+import { Calendar, X } from "lucide-react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { DOWVariable } from '../types';
 import { format, isValid, parse } from 'date-fns';
@@ -84,28 +83,23 @@ const VariableItem: React.FC<VariableItemProps> = ({
   };
 
   const handleTypeChange = (newType: string) => {
-    // Clear validation errors when changing type
     setValidationError(null);
     
-    // Format the current value appropriately for the new type
     let formattedValue = variable.value;
     
-    // When changing to date type, try to convert from string if possible
     if (newType === 'date' && variable.type !== 'date') {
       try {
-        // Try to parse as a date if it looks like one
         const dateObj = new Date(variable.value);
         if (isValid(dateObj)) {
           formattedValue = format(dateObj, 'yyyy-MM-dd');
         } else {
-          formattedValue = ''; // Reset if not valid
+          formattedValue = '';
         }
       } catch {
-        formattedValue = ''; // Reset if parsing fails
+        formattedValue = '';
       }
     }
     
-    // When changing to number, try to extract numbers
     if (newType === 'number' && variable.type !== 'number') {
       const numericValue = variable.value.replace(/[^0-9.]/g, '');
       formattedValue = numericValue || '';
@@ -116,11 +110,9 @@ const VariableItem: React.FC<VariableItemProps> = ({
   };
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
-    // Save on Enter for input fields (not for textarea)
     if (e.key === 'Enter' && !e.shiftKey && variable.type !== 'string') {
       e.preventDefault();
       
-      // Validate before saving
       if (validateValue(variable.value, variable.type)) {
         if (onSaveRequested) {
           onSaveRequested();
@@ -128,11 +120,9 @@ const VariableItem: React.FC<VariableItemProps> = ({
       }
     }
 
-    // Save on Ctrl+Enter for textarea
     if (e.key === 'Enter' && (e.ctrlKey || e.metaKey) && variable.type === 'string') {
       e.preventDefault();
       
-      // Validate before saving
       if (validateValue(variable.value, variable.type)) {
         if (onSaveRequested) {
           onSaveRequested();
@@ -141,7 +131,6 @@ const VariableItem: React.FC<VariableItemProps> = ({
     }
   };
 
-  // Determine which input control to show based on the variable type
   const renderInputControl = () => {
     switch (variable.type) {
       case 'number':
@@ -200,10 +189,9 @@ const VariableItem: React.FC<VariableItemProps> = ({
 
   return (
     <Card className={`overflow-hidden ${isActive ? 'ring-2 ring-primary' : ''}`}>
-      <CardContent className="p-4 space-y-3">
-        <div className="grid grid-cols-6 gap-3">
-          {/* Name input */}
-          <div className="col-span-2">
+      <CardContent className="p-4">
+        <div className="grid grid-cols-12 gap-3 items-start">
+          <div className="col-span-3">
             <Input
               value={variable.name}
               onChange={(e) => onUpdate(variable.id, 'name', e.target.value.toUpperCase())}
@@ -212,8 +200,7 @@ const VariableItem: React.FC<VariableItemProps> = ({
             />
           </div>
           
-          {/* Type selector */}
-          <div className="col-span-1">
+          <div className="col-span-2">
             <Select
               value={variable.type}
               onValueChange={handleTypeChange}
@@ -229,23 +216,22 @@ const VariableItem: React.FC<VariableItemProps> = ({
             </Select>
           </div>
           
-          {/* Value input */}
-          <div className="col-span-2">
+          <div className="col-span-6">
             {renderInputControl()}
             {validationError && (
               <p className="text-red-500 text-xs mt-1">{validationError}</p>
             )}
           </div>
           
-          {/* Remove button */}
           <div className="col-span-1 flex justify-end">
             <Button 
-              variant="outline" 
-              size="sm" 
+              variant="ghost" 
+              size="icon" 
               onClick={() => onRemove(variable.id)}
-              className="h-9"
+              className="h-9 w-9"
             >
-              Remove
+              <X className="h-4 w-4" />
+              <span className="sr-only">Remove</span>
             </Button>
           </div>
         </div>
