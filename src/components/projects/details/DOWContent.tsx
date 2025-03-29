@@ -8,41 +8,36 @@ import { Separator } from '@/components/ui/separator';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useToast } from '@/hooks/use-toast';
 import { Button } from "@/components/ui/button";
+import { Upload, AlertCircle } from 'lucide-react';
+import { Alert, AlertDescription } from "@/components/ui/alert";
 
 interface DOWContentProps {
   projectId: string;
 }
 
-// Function to fetch the template content
+// Function to fetch the template content from Supabase storage
 const fetchTemplateContent = async (): Promise<string> => {
-  const possiblePaths = [
-    '/REFERENCE DOCS/construction-scope-of-work.md',
-    './REFERENCE DOCS/construction-scope-of-work.md',
-    '../REFERENCE DOCS/construction-scope-of-work.md',
-    '../../REFERENCE DOCS/construction-scope-of-work.md',
-    'REFERENCE DOCS/construction-scope-of-work.md'
-  ];
-  
-  let lastError: Error | null = null;
-  
-  // Try each path until one works
-  for (const path of possiblePaths) {
-    try {
-      console.log(`Attempting to fetch template from: ${path}`);
-      const response = await fetch(path);
-      
-      if (response.ok) {
-        console.log(`Successfully loaded template from: ${path}`);
-        return response.text();
-      }
-    } catch (error) {
-      console.warn(`Failed to fetch from ${path}:`, error);
-      lastError = error instanceof Error ? error : new Error(String(error));
+  try {
+    console.log('Fetching template from Supabase storage');
+    const { data, error } = await supabase
+      .storage
+      .from('document_templates')
+      .download('construction-scope-of-work.md');
+    
+    if (error) {
+      console.error('Supabase storage fetch error:', error);
+      throw error;
     }
+    
+    if (!data) {
+      throw new Error('Template not found in storage bucket');
+    }
+    
+    return await data.text();
+  } catch (error) {
+    console.error('Template fetch error:', error);
+    throw new Error('Failed to load template from storage. The template may not be uploaded yet.');
   }
-  
-  // If we've tried all paths and none worked, throw the last error
-  throw lastError || new Error('Failed to load template document from any location');
 };
 
 // Function to fetch project variables
@@ -97,9 +92,26 @@ const saveProjectVariables = async (
   }
 };
 
+// Function to upload a template file to Supabase storage
+const uploadTemplate = async (file: File): Promise<void> => {
+  const { error } = await supabase
+    .storage
+    .from('document_templates')
+    .upload('construction-scope-of-work.md', file, {
+      cacheControl: '3600',
+      upsert: true
+    });
+
+  if (error) {
+    throw new Error(`Failed to upload template: ${error.message}`);
+  }
+};
+
 const DOWContent: React.FC<DOWContentProps> = ({ projectId }) => {
   const { toast } = useToast();
   const queryClient = useQueryClient();
+  const [uploadError, setUploadError] = useState<string | null>(null);
+  const [isUploading, setIsUploading] = useState(false);
 
   // Query to fetch the template content
   const templateQuery = useQuery({
@@ -139,6 +151,45 @@ const DOWContent: React.FC<DOWContentProps> = ({ projectId }) => {
     saveVariablesMutation.mutate(variables);
   };
 
+  const handleTemplateUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    setUploadError(null);
+    
+    if (!file) return;
+    
+    // Check if it's a markdown file
+    if (!file.name.endsWith('.md')) {
+      setUploadError('Please upload a Markdown (.md) file');
+      return;
+    }
+    
+    setIsUploading(true);
+    
+    try {
+      await uploadTemplate(file);
+      toast({
+        title: "Template uploaded",
+        description: "Document template has been uploaded successfully",
+      });
+      queryClient.invalidateQueries({ queryKey: ['dowTemplate'] });
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : "Unknown error during upload";
+      setUploadError(errorMessage);
+      toast({
+        title: "Upload failed",
+        description: errorMessage,
+        variant: "destructive",
+      });
+    } finally {
+      setIsUploading(false);
+      
+      // Reset file input
+      if (event.target) {
+        event.target.value = '';
+      }
+    }
+  };
+
   // Loading state
   if (templateQuery.isLoading || variablesQuery.isLoading) {
     return (
@@ -149,7 +200,49 @@ const DOWContent: React.FC<DOWContentProps> = ({ projectId }) => {
     );
   }
 
-  // Error state
+  // Template not found error state (specific case for first-time setup)
+  if (templateQuery.error && templateQuery.error instanceof Error && 
+      templateQuery.error.message.includes('Template not found')) {
+    return (
+      <div className="p-6 bg-amber-50 border border-amber-200 rounded-md text-amber-800 space-y-4">
+        <div className="flex items-start gap-3">
+          <AlertCircle className="h-5 w-5 mt-0.5 text-amber-600" />
+          <div>
+            <h3 className="text-lg font-medium mb-2">Template Not Found</h3>
+            <p className="mb-4">No document template has been uploaded yet. Please upload a markdown template to continue.</p>
+          </div>
+        </div>
+        
+        {uploadError && (
+          <Alert variant="destructive" className="mb-4">
+            <AlertCircle className="h-4 w-4" />
+            <AlertDescription>{uploadError}</AlertDescription>
+          </Alert>
+        )}
+        
+        <div className="flex items-center gap-4">
+          <Button 
+            disabled={isUploading}
+            className="relative overflow-hidden" 
+            onClick={() => document.getElementById('template-upload')?.click()}
+          >
+            <Upload className="h-4 w-4 mr-2" />
+            {isUploading ? 'Uploading...' : 'Upload Template'}
+            <input
+              id="template-upload"
+              type="file"
+              accept=".md"
+              className="absolute inset-0 opacity-0 cursor-pointer"
+              onChange={handleTemplateUpload}
+              disabled={isUploading}
+            />
+          </Button>
+        </div>
+      </div>
+    );
+  }
+
+  // General error state
   if (templateQuery.error || variablesQuery.error) {
     return (
       <div className="p-6 bg-destructive/10 border border-destructive rounded-md text-destructive">
@@ -157,22 +250,59 @@ const DOWContent: React.FC<DOWContentProps> = ({ projectId }) => {
         <p>{templateQuery.error instanceof Error ? templateQuery.error.message : 
             variablesQuery.error instanceof Error ? variablesQuery.error.message : 
             "An unknown error occurred"}</p>
-        <Button 
-          variant="outline" 
-          className="mt-4" 
-          onClick={() => {
-            templateQuery.refetch();
-            variablesQuery.refetch();
-          }}
-        >
-          Retry
-        </Button>
+        <div className="mt-4 flex gap-4">
+          <Button 
+            variant="outline" 
+            onClick={() => {
+              templateQuery.refetch();
+              variablesQuery.refetch();
+            }}
+          >
+            Retry
+          </Button>
+          
+          <Button 
+            variant="secondary"
+            onClick={() => document.getElementById('template-upload')?.click()}
+          >
+            <Upload className="h-4 w-4 mr-2" />
+            Upload New Template
+            <input
+              id="template-upload"
+              type="file"
+              accept=".md"
+              className="absolute inset-0 opacity-0 cursor-pointer"
+              onChange={handleTemplateUpload}
+              disabled={isUploading}
+            />
+          </Button>
+        </div>
       </div>
     );
   }
 
   return (
     <div className="space-y-8">
+      <div className="flex justify-between items-center">
+        <h2 className="text-2xl font-bold">Scope of Work Document</h2>
+        <Button 
+          variant="outline" 
+          className="flex items-center gap-2"
+          onClick={() => document.getElementById('template-upload')?.click()}
+        >
+          <Upload className="h-4 w-4" />
+          Update Template
+          <input
+            id="template-upload"
+            type="file"
+            accept=".md"
+            className="absolute inset-0 opacity-0 cursor-pointer"
+            onChange={handleTemplateUpload}
+            disabled={isUploading}
+          />
+        </Button>
+      </div>
+      
       <DOWForm 
         projectId={projectId} 
         variables={variablesQuery.data || []}
