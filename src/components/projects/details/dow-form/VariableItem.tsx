@@ -5,11 +5,8 @@ import { DOWVariable } from '../types';
 import { validateValue, formatValueForType } from './utils/validationUtils';
 import VariableNameInput from './variable-inputs/VariableNameInput';
 import TypeSelector from './variable-inputs/TypeSelector';
-import StringInput from './variable-inputs/StringInput';
-import NumberInput from './variable-inputs/NumberInput';
-import DateInput from './variable-inputs/DateInput';
+import VariableInputControl from './variable-inputs/VariableInputControl';
 import RemoveButton from './variable-inputs/RemoveButton';
-import ValidationError from './variable-inputs/ValidationError';
 
 interface VariableItemProps {
   variable: DOWVariable;
@@ -92,41 +89,6 @@ const VariableItem: React.FC<VariableItemProps> = ({
     validateAndSave();
   };
 
-  const renderInputControl = () => {
-    switch (variable.type) {
-      case 'number':
-        return (
-          <NumberInput
-            value={variable.value}
-            onChange={handleValueChange}
-            onBlur={handleBlur}
-            onKeyDown={handleKeyDown}
-            hasError={!!validationError}
-          />
-        );
-      
-      case 'date':
-        return (
-          <DateInput
-            value={variable.value}
-            onChange={handleValueChange}
-            onBlur={handleBlur}
-            onKeyDown={handleKeyDown}
-            hasError={!!validationError}
-          />
-        );
-      
-      default: // 'string' or any other type
-        return (
-          <StringInput
-            value={variable.value}
-            onChange={handleValueChange}
-            onKeyDown={handleKeyDown}
-          />
-        );
-    }
-  };
-
   return (
     <Card className={`overflow-hidden ${isActive ? 'ring-2 ring-primary' : ''}`}>
       <CardContent className="p-4">
@@ -146,8 +108,14 @@ const VariableItem: React.FC<VariableItemProps> = ({
           </div>
           
           <div className="col-span-6">
-            {renderInputControl()}
-            <ValidationError errorMessage={validationError} />
+            <VariableInputControl 
+              variable={variable}
+              validationError={validationError}
+              onValueChange={handleValueChange}
+              onBlur={handleBlur}
+              onKeyDown={handleKeyDown}
+              validateAndSave={validateAndSave}
+            />
           </div>
           
           <div className="col-span-1 flex justify-end">
