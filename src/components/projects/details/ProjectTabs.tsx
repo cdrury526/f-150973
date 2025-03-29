@@ -5,6 +5,7 @@ import ProjectCostsTable from '@/components/projects/ProjectCostsTable';
 import RecentUpdatesCard from './RecentUpdatesCard';
 import DOWContent from './DOWContent';
 import { useQueryClient } from '@tanstack/react-query';
+import { useSidebar } from '@/components/ui/sidebar';
 
 interface ProjectTabsProps {
   projectId: string;
@@ -12,6 +13,7 @@ interface ProjectTabsProps {
 
 const ProjectTabs: React.FC<ProjectTabsProps> = ({ projectId }) => {
   const queryClient = useQueryClient();
+  const { setOpen } = useSidebar();
 
   // Invalidate updates query when the component mounts
   useEffect(() => {
@@ -23,6 +25,8 @@ const ProjectTabs: React.FC<ProjectTabsProps> = ({ projectId }) => {
     if (value === 'build') {
       queryClient.invalidateQueries({ queryKey: ['projectCosts', projectId] });
     } else if (value === 'dow') {
+      // Collapse sidebar when DOW tab is selected
+      setOpen(false);
       queryClient.invalidateQueries({ queryKey: ['projectVariables', projectId] });
     }
     // Always invalidate updates when switching tabs
