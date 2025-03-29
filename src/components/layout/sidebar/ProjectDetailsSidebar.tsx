@@ -1,7 +1,7 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { User, MapPin, Calendar, CheckSquare, Clock, FileText, Briefcase } from 'lucide-react';
+import { User, MapPin, Calendar, CheckSquare, Clock, FileText, Briefcase, Pencil } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import {
   SidebarGroup,
@@ -11,6 +11,8 @@ import {
 } from "@/components/ui/sidebar";
 import { Progress } from "@/components/ui/progress";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Button } from "@/components/ui/button";
+import ProjectEditDialog from '@/components/projects/details/ProjectEditDialog';
 
 interface ProjectDetailsSidebarProps {
   projectId: string;
@@ -45,7 +47,9 @@ const fetchProject = async (id: string) => {
 
 const ProjectDetailsSidebar: React.FC<ProjectDetailsSidebarProps> = ({ projectId }) => {
   const { open } = useSidebar();
-  const { data: project, isLoading } = useQuery({
+  const [editDialogOpen, setEditDialogOpen] = useState(false);
+  
+  const { data: project, isLoading, refetch } = useQuery({
     queryKey: ['project', projectId],
     queryFn: () => fetchProject(projectId as string),
     enabled: !!projectId,
@@ -81,7 +85,17 @@ const ProjectDetailsSidebar: React.FC<ProjectDetailsSidebarProps> = ({ projectId
         Current Project
       </SidebarGroupLabel>
       <SidebarGroupContent className="space-y-3 px-1">
-        <div className="bg-sidebar-accent/50 rounded-md p-2 border border-white/30 shadow-sm">
+        <div className="bg-sidebar-accent/50 rounded-md p-2 border border-white/30 shadow-sm relative">
+          <Button 
+            variant="ghost" 
+            size="icon" 
+            className="absolute right-1 top-1 h-6 w-6 text-sidebar-foreground/70 hover:text-sidebar-foreground hover:bg-sidebar-accent"
+            onClick={() => setEditDialogOpen(true)}
+          >
+            <Pencil className="h-3.5 w-3.5" />
+            <span className="sr-only">Edit project</span>
+          </Button>
+          
           <h3 className="font-medium text-sm text-white truncate">{project.title}</h3>
           
           <div className="space-y-2 mt-2">
@@ -119,6 +133,13 @@ const ProjectDetailsSidebar: React.FC<ProjectDetailsSidebarProps> = ({ projectId
             <Progress value={project.progress} className="h-1.5 bg-sidebar-border/40" />
           </div>
         </div>
+        
+        <ProjectEditDialog 
+          open={editDialogOpen}
+          onOpenChange={setEditDialogOpen}
+          project={project}
+          onProjectUpdated={() => refetch()}
+        />
       </SidebarGroupContent>
     </SidebarGroup>
   );

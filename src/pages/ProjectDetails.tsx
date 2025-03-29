@@ -1,7 +1,7 @@
 
 import React, { useEffect } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { ArrowLeft } from 'lucide-react';
 import { Button } from "@/components/ui/button";
 import DashboardLayout from '@/components/layout/DashboardLayout';
@@ -43,6 +43,7 @@ const ProjectDetails = () => {
   const { id } = useParams<{ id: string }>();
   const { toast } = useToast();
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
 
   const { 
     data: project, 
@@ -53,6 +54,18 @@ const ProjectDetails = () => {
     queryFn: () => fetchProject(id as string),
     enabled: !!id,
   });
+  
+  // Listen for updates to the project details in the sidebar
+  useEffect(() => {
+    const refreshData = () => {
+      queryClient.invalidateQueries({ queryKey: ['project', id] });
+    };
+
+    // Set up an interval to check for updates (a more elegant solution would be using Supabase realtime)
+    const intervalId = setInterval(refreshData, 5000);
+    
+    return () => clearInterval(intervalId);
+  }, [id, queryClient]);
   
   useEffect(() => {
     if (error) {
