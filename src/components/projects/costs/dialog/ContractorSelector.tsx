@@ -24,17 +24,22 @@ const ContractorSelector: React.FC<ContractorSelectorProps> = ({
         // Ensure contractors is always an array
         const safeContractors = Array.isArray(contractors) ? contractors : [];
         
-        // Convert contractors to option format with safeguards
-        const contractorOptions: SearchableSelectOption[] = safeContractors.map((contractor) => ({
-          value: contractor.id,
-          label: `${contractor.companyName} - ${contractor.contractorType}`
-        }));
+        // Add safeguards for each contractor object
+        const contractorOptions: SearchableSelectOption[] = safeContractors
+          .filter(contractor => contractor && typeof contractor === 'object')
+          .map((contractor) => ({
+            value: contractor.id || '',
+            label: `${contractor.companyName || 'Unknown'} - ${contractor.contractorType || 'Unknown'}`
+          }));
 
         // Add a "None" option
         const options = [
           { value: "", label: "None" },
           ...contractorOptions
         ];
+        
+        // Ensure field.value is always a string
+        const safeValue = field.value || '';
           
         return (
           <FormItem>
@@ -42,7 +47,7 @@ const ContractorSelector: React.FC<ContractorSelectorProps> = ({
             <FormControl>
               <SearchableSelect
                 options={options}
-                value={field.value || ""}
+                value={safeValue}
                 onChange={field.onChange}
                 placeholder="Select a contractor"
                 searchPlaceholder="Search contractors..."

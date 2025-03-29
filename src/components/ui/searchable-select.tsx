@@ -50,14 +50,14 @@ export const SearchableSelect: React.FC<SearchableSelectProps> = ({
 }) => {
   const [open, setOpen] = useState(false);
   
-  // Ensure options is always an array
+  // Ensure options is always a valid array
   const safeOptions = Array.isArray(options) ? options : [];
   
   // Find the selected option to display
   const selectedOption = value && safeOptions.length > 0
-    ? safeOptions.find(option => option.value === value)
+    ? safeOptions.find(option => option?.value === value)
     : null;
-  
+
   return (
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild>
@@ -84,9 +84,9 @@ export const SearchableSelect: React.FC<SearchableSelectProps> = ({
           <CommandInput placeholder={searchPlaceholder} className="h-9" />
           <CommandEmpty>{emptyMessage}</CommandEmpty>
           <CommandGroup className="overflow-y-auto" style={{ maxHeight: `${maxHeight}px` }}>
-            {safeOptions.map(option => (
+            {safeOptions.map((option, index) => (
               <CommandItem
-                key={option.value}
+                key={option.value || `option-${index}`}
                 value={option.value}
                 onSelect={(currentValue) => {
                   onChange(currentValue);

@@ -20,7 +20,7 @@ export const ContractorTypeSelector: React.FC<ContractorTypeSelectorProps> = ({
   // Ensure we have a valid contractorTypeDescriptions object
   const typeDescriptions = contractorTypeDescriptions || {};
   
-  // Convert contractor types to options format - safeguard against undefined
+  // Convert contractor types to options format with safeguards
   const contractorTypeOptions: SearchableSelectOption[] = 
     Object.keys(typeDescriptions).map((type) => ({
       value: type,
@@ -28,11 +28,14 @@ export const ContractorTypeSelector: React.FC<ContractorTypeSelectorProps> = ({
       description: typeDescriptions[type as ContractorType] || ''
     }));
   
+  // Ensure value is always valid
+  const safeValue = (value && typeof value === 'string') ? value : '';
+  
   return (
     <div className="flex items-center gap-2">
       <SearchableSelect
         options={contractorTypeOptions}
-        value={value || ""}
+        value={safeValue}
         onChange={(newValue) => onChange(newValue as ContractorType)}
         placeholder="Select contractor type"
         searchPlaceholder="Search contractor type..."
@@ -72,7 +75,7 @@ export const ContractorTypeCell: React.FC<ContractorTypeSelectorProps> = ({
   // Ensure we have a valid contractorTypeDescriptions object
   const typeDescriptions = contractorTypeDescriptions || {};
   
-  // Convert contractor types to options format
+  // Convert contractor types to options format with safeguards
   const contractorTypeOptions: SearchableSelectOption[] = 
     Object.keys(typeDescriptions).map((type) => ({
       value: type,
@@ -80,10 +83,13 @@ export const ContractorTypeCell: React.FC<ContractorTypeSelectorProps> = ({
       description: typeDescriptions[type as ContractorType] || ''
     }));
   
+  // Ensure value is always valid
+  const safeValue = (value && typeof value === 'string') ? value : '';
+  
   return (
     <SearchableSelect
       options={contractorTypeOptions}
-      value={value || ""}
+      value={safeValue}
       onChange={(newValue) => onChange(newValue as ContractorType)}
       placeholder="Select type"
       searchPlaceholder="Search..."
