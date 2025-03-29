@@ -2,7 +2,7 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import { Card, CardContent } from "@/components/ui/card";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
-import { DOWVariable } from '../DOWForm';
+import { DOWVariable } from '../types';
 import { useToast } from "@/hooks/use-toast";
 import PreviewActions from './PreviewActions';
 import ErrorDisplay from './ErrorDisplay';

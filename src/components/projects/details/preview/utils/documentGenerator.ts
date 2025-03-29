@@ -1,5 +1,5 @@
-
-import { DOWVariable } from '../../DOWForm';
+import { marked } from 'marked';
+import { DOWVariable } from '../../types';
 
 interface GenerateDocumentResult {
   document: string;

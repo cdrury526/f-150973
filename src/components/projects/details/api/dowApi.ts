@@ -3,7 +3,7 @@
  * API functions for DOW template management
  */
 
-import { DOWVariable } from '../DOWForm';
+import { DOWVariable } from '../types';
 import { supabase } from '@/integrations/supabase/client';
 
 /**

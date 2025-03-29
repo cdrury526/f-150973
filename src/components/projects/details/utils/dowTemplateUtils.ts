@@ -1,9 +1,9 @@
-
 /**
- * Utility functions for the DOW template management
+ * Utility functions for DOW template handling
  */
 
-import { DOWVariable } from '../DOWForm';
+import { v4 as uuidv4 } from 'uuid';
+import { DOWVariable } from '../types';
 
 /**
  * Extracts variable names from a template content
@@ -99,4 +99,3 @@ export const getVariablesInTemplateOrder = (
   
   return result;
 };
-

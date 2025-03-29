@@ -1,7 +1,5 @@
-
-import React, { useCallback } from 'react';
-import { DOWVariable } from '../DOWForm';
-import { findVariablesInDocument } from './utils/variableUtils';
+import React from 'react';
+import { DOWVariable } from '../types';
 
 // Add the CSS for variable highlighting
 const pulseAnimationStyle = `

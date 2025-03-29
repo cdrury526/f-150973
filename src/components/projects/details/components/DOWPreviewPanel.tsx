@@ -1,7 +1,6 @@
-
 import React from 'react';
 import DOWPreview from '../preview/DOWPreview';
-import { DOWVariable } from '../DOWForm';
+import { DOWVariable } from '../types';
 
 interface DOWPreviewPanelProps {
   variables: DOWVariable[];
