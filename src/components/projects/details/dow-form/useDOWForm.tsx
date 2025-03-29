@@ -32,17 +32,47 @@ export const useDOWForm = ({ initialVariables, onSave }: UseDOWFormProps) => {
 
   const addVariable = () => {
     const newId = `var-${Date.now()}`;
-    setVariables([...variables, { id: newId, name: '', value: '' }]);
+    setVariables([...variables, { id: newId, name: '', value: '', type: 'string' }]);
   };
 
   const removeVariable = (id: string) => {
     setVariables(variables.filter(v => v.id !== id));
   };
 
-  const updateVariable = (id: string, field: 'name' | 'value', newValue: string) => {
+  const updateVariable = (id: string, field: 'name' | 'value' | 'type', newValue: string) => {
     setVariables(prevVariables => 
-      prevVariables.map(v => (v.id === id ? { ...v, [field]: newValue } : v))
+      prevVariables.map(v => {
+        if (v.id === id) {
+          // When updating value, validate it based on the type
+          if (field === 'value') {
+            const isValid = validateValue(newValue, v.type || 'string');
+            return { 
+              ...v, 
+              [field]: newValue,
+              isValid: isValid 
+            };
+          }
+          return { ...v, [field]: newValue };
+        }
+        return v;
+      })
     );
+  };
+
+  const validateValue = (value: string, type: string): boolean => {
+    if (!value.trim()) return false;
+    
+    if (type === 'number') {
+      const num = Number(value);
+      return !isNaN(num) && num >= 0;
+    }
+    
+    if (type === 'date') {
+      const date = new Date(value);
+      return date.toString() !== 'Invalid Date';
+    }
+    
+    return true;
   };
 
   const validateVariables = (): boolean => {
@@ -65,6 +95,12 @@ export const useDOWForm = ({ initialVariables, onSave }: UseDOWFormProps) => {
     const invalidNames = variables.filter(v => v.name.trim() && !/^[A-Z0-9_]+$/.test(v.name.trim()));
     if (invalidNames.length > 0) {
       newErrors.push("Variable names must contain only uppercase letters, numbers, and underscores");
+    }
+
+    // Validate variable values based on their types
+    const invalidValues = variables.filter(v => !validateValue(v.value || '', v.type || 'string'));
+    if (invalidValues.length > 0) {
+      newErrors.push("Some variables have invalid values");
     }
 
     setErrors(newErrors);
