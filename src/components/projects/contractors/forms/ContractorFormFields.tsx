@@ -16,9 +16,10 @@ import { ContractorFormValues, formatPhoneNumber } from './contractor-form-schem
 
 interface ContractorFormFieldsProps {
   form: UseFormReturn<ContractorFormValues>;
+  showStatus?: boolean;
 }
 
-export function ContractorFormFields({ form }: ContractorFormFieldsProps) {
+export function ContractorFormFields({ form, showStatus = true }: ContractorFormFieldsProps) {
   const handlePhoneChange = (e: React.ChangeEvent<HTMLInputElement>, onChange: (value: string) => void) => {
     const formattedValue = formatPhoneNumber(e.target.value);
     onChange(formattedValue);
@@ -88,26 +89,28 @@ export function ContractorFormFields({ form }: ContractorFormFieldsProps) {
         />
       </div>
       
-      <FormField
-        control={form.control}
-        name="status"
-        render={({ field }) => (
-          <FormItem>
-            <FormLabel>Status</FormLabel>
-            <FormControl>
-              <select 
-                className="w-full p-2 border rounded-md bg-background"
-                {...field}
-              >
-                <option value="Active">Active</option>
-                <option value="Inactive">Inactive</option>
-                <option value="On Hold">On Hold</option>
-              </select>
-            </FormControl>
-            <FormMessage />
-          </FormItem>
-        )}
-      />
+      {showStatus && (
+        <FormField
+          control={form.control}
+          name="status"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Status</FormLabel>
+              <FormControl>
+                <select 
+                  className="w-full p-2 border rounded-md bg-background"
+                  {...field}
+                >
+                  <option value="Active">Active</option>
+                  <option value="Inactive">Inactive</option>
+                  <option value="On Hold">On Hold</option>
+                </select>
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+      )}
       
       <FormField
         control={form.control}

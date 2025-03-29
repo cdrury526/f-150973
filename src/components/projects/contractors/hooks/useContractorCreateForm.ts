@@ -18,7 +18,7 @@ export function useContractorCreateForm(onOpenChange: (open: boolean) => void) {
       companyPhone: '',
       companyEmail: '',
       contactName: '',
-      status: 'Active',
+      status: 'Active', // Default to Active
       contractorType: 'General Contractor'
     }
   });
@@ -30,7 +30,7 @@ export function useContractorCreateForm(onOpenChange: (open: boolean) => void) {
         companyPhone: data.companyPhone,
         companyEmail: data.companyEmail,
         contactName: data.contactName,
-        status: data.status as 'Active' | 'Inactive' | 'On Hold',
+        status: 'Active', // Ensure we always set new contractors to Active
         contractorType: data.contractorType as ContractorType
       });
       

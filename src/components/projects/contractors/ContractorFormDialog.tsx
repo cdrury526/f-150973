@@ -38,7 +38,7 @@ export function ContractorFormDialog() {
         
         <Form {...form}>
           <form onSubmit={handleSubmit} className="space-y-4">
-            <ContractorFormFields form={form} />
+            <ContractorFormFields form={form} showStatus={false} />
             
             <ContractorCreateFooter
               onCancel={() => setOpen(false)}
