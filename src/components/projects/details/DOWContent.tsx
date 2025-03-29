@@ -14,11 +14,16 @@ interface DOWContentProps {
 
 // Function to fetch the template content
 const fetchTemplateContent = async (): Promise<string> => {
-  const response = await fetch('/REFERENCE DOCS/construction-scope-of-work.md');
-  if (!response.ok) {
+  try {
+    const response = await fetch('/REFERENCE DOCS/construction-scope-of-work.md');
+    if (!response.ok) {
+      throw new Error(`Failed to load template document: ${response.status} ${response.statusText}`);
+    }
+    return response.text();
+  } catch (error) {
+    console.error('Template fetch error:', error);
     throw new Error('Failed to load template document');
   }
-  return response.text();
 };
 
 // Function to fetch project variables
