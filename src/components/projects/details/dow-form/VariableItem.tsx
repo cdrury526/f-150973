@@ -91,13 +91,19 @@ const VariableItem: React.FC<VariableItemProps> = ({
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const newValue = e.target.value;
     setLocalValue(newValue);
-    validateInput(newValue);
+    
+    // Immediately update the parent component with the new value
+    // This ensures the preview updates in real-time
+    onUpdate(variable.id, 'value', newValue);
+    
+    // Validate after a short delay for better UX
+    setTimeout(() => {
+      validateInput(newValue);
+    }, 300);
   };
 
   const handleInputBlur = () => {
-    if (validateInput(localValue)) {
-      onUpdate(variable.id, 'value', localValue);
-    }
+    validateInput(localValue);
   };
 
   const getInputType = () => {

@@ -24,7 +24,7 @@ export const useDOWForm = ({ initialVariables, onSave }: UseDOWFormProps) => {
     if (autoSave && variables.length > 0) {
       const timer = setTimeout(() => {
         handleSave();
-      }, 3000); // Autosave after 3 seconds of inactivity
+      }, 1000); // Autosave after 1 second of inactivity (reduced from 3s for better UX)
       
       return () => clearTimeout(timer);
     }
@@ -43,36 +43,13 @@ export const useDOWForm = ({ initialVariables, onSave }: UseDOWFormProps) => {
     setVariables(prevVariables => 
       prevVariables.map(v => {
         if (v.id === id) {
-          // When updating value, validate it based on the type
-          if (field === 'value') {
-            const isValid = validateValue(newValue, v.type || 'string');
-            return { 
-              ...v, 
-              [field]: newValue,
-              isValid: isValid 
-            };
-          }
+          // When updating value, return the new value without validation
+          // We'll let the VariableItem component handle the validation
           return { ...v, [field]: newValue };
         }
         return v;
       })
     );
-  };
-
-  const validateValue = (value: string, type: string): boolean => {
-    if (!value.trim()) return false;
-    
-    if (type === 'number') {
-      const num = Number(value);
-      return !isNaN(num) && num >= 0;
-    }
-    
-    if (type === 'date') {
-      const date = new Date(value);
-      return date.toString() !== 'Invalid Date';
-    }
-    
-    return true;
   };
 
   const validateVariables = (): boolean => {
@@ -95,12 +72,6 @@ export const useDOWForm = ({ initialVariables, onSave }: UseDOWFormProps) => {
     const invalidNames = variables.filter(v => v.name.trim() && !/^[A-Z0-9_]+$/.test(v.name.trim()));
     if (invalidNames.length > 0) {
       newErrors.push("Variable names must contain only uppercase letters, numbers, and underscores");
-    }
-
-    // Validate variable values based on their types
-    const invalidValues = variables.filter(v => !validateValue(v.value || '', v.type || 'string'));
-    if (invalidValues.length > 0) {
-      newErrors.push("Some variables have invalid values");
     }
 
     setErrors(newErrors);

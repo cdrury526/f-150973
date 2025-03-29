@@ -33,10 +33,20 @@ export const useDocumentGenerator = ({
 
   const generateDocumentContent = () => {
     try {
+      // Skip generation if there's no template content
+      if (!templateContent) {
+        setGeneratedDocument('');
+        setMissingVariables([]);
+        return;
+      }
+      
       const result = generateDocument(templateContent, variables);
       setGeneratedDocument(result.document);
       setMissingVariables(result.missingVariables);
       setError(null);
+      
+      // Log for debugging
+      console.log("Document generated with variables:", variables);
     } catch (err) {
       console.error('Document generation error:', err);
       setError('Failed to generate document. Please check your variables and try again.');
