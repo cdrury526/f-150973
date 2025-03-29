@@ -1,4 +1,3 @@
-
 import React, { useState, useRef, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useTemplateVariables } from './useTemplateVariables';
@@ -20,7 +19,6 @@ export function useDOWState(projectId: string) {
     getSortedVariables
   } = useTemplateVariables(projectId);
 
-  // Check authentication status
   useEffect(() => {
     const checkAuth = async () => {
       const { data } = await supabase.auth.getSession();
@@ -59,12 +57,8 @@ export function useDOWState(projectId: string) {
       if (formRef.current) {
         console.log("formRef is available, looking for variable item");
         
-        // Look for the card with the variable name
-        const variableCard = Array.from(formRef.current.querySelectorAll('.variable-item'))
-          .find(card => {
-            const nameElement = card.querySelector('.variable-name');
-            return nameElement && nameElement.textContent?.includes(variableName);
-          });
+        // Look for the card with the variable name data attribute
+        const variableCard = formRef.current.querySelector(`.variable-item[data-variable-name="${variableName}"]`);
         
         if (variableCard) {
           console.log(`Found variable card for ${variableName}, scrolling into view`);
@@ -82,7 +76,9 @@ export function useDOWState(projectId: string) {
           const input = variableCard.querySelector('textarea');
           if (input) {
             console.log("Found textarea, focusing");
-            input.focus();
+            setTimeout(() => {
+              input.focus();
+            }, 100); // Small delay to ensure scrolling completes first
           } else {
             console.log("Could not find textarea to focus");
           }
@@ -100,7 +96,6 @@ export function useDOWState(projectId: string) {
   };
 
   return {
-    // State
     uploadError,
     setUploadError,
     isUploading,

@@ -14,6 +14,12 @@ const VariableSpan: React.FC<VariableSpanProps> = ({
   isHighlighted,
   onClick
 }) => {
+  const handleClick = (e: React.MouseEvent) => {
+    // Stop propagation within preview but don't prevent default
+    e.stopPropagation();
+    onClick(e, varName);
+  };
+
   return (
     <span 
       className={`
@@ -24,7 +30,7 @@ const VariableSpan: React.FC<VariableSpanProps> = ({
         }
         transition-all duration-150
       `}
-      onClick={(e) => onClick(e, varName)}
+      onClick={handleClick}
       title={`Click to edit ${varName}`}
     >
       {value}
