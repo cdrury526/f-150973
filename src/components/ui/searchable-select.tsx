@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { Button } from "@/components/ui/button";
 import { ChevronDown } from "lucide-react";
 import {
@@ -43,6 +43,7 @@ export const SearchableSelect: React.FC<SearchableSelectProps> = ({
 }) => {
   const [open, setOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
+  const listRef = useRef<HTMLDivElement>(null);
   
   // Always ensure options is an array and never undefined
   const safeOptions = Array.isArray(options) ? options : [];
@@ -86,7 +87,7 @@ export const SearchableSelect: React.FC<SearchableSelectProps> = ({
         sideOffset={4}
         avoidCollisions={true}
       >
-        <div className="overflow-hidden rounded-md border border-input bg-popover text-popover-foreground shadow-md">
+        <div className="z-[101] overflow-hidden rounded-md border border-input bg-popover text-popover-foreground shadow-md">
           <div className="flex items-center border-b px-3">
             <input 
               className="flex h-11 w-full rounded-md bg-transparent py-3 text-sm outline-none placeholder:text-muted-foreground disabled:cursor-not-allowed disabled:opacity-50"
@@ -97,7 +98,7 @@ export const SearchableSelect: React.FC<SearchableSelectProps> = ({
               aria-autocomplete="list"
             />
           </div>
-          <div className="overflow-y-auto" style={{ maxHeight: `${maxHeight}px` }}>
+          <div className="overflow-y-auto" style={{ maxHeight: `${maxHeight}px` }} ref={listRef}>
             {filteredOptions.length === 0 ? (
               <div className="py-6 text-center text-sm">{emptyMessage}</div>
             ) : (
@@ -106,7 +107,10 @@ export const SearchableSelect: React.FC<SearchableSelectProps> = ({
                   <div
                     key={`option-${option.value}`}
                     className={`relative flex cursor-pointer select-none items-center rounded-sm px-2 py-1.5 text-sm outline-none hover:bg-accent hover:text-accent-foreground ${value === option.value ? 'bg-accent text-accent-foreground' : ''}`}
-                    onClick={() => handleSelect(option.value)}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleSelect(option.value);
+                    }}
                     role="option"
                     aria-selected={value === option.value}
                     tabIndex={0}
@@ -116,6 +120,7 @@ export const SearchableSelect: React.FC<SearchableSelectProps> = ({
                         handleSelect(option.value);
                       }
                     }}
+                    style={{ cursor: 'pointer' }}
                   >
                     <div className={option.description ? 'flex flex-col items-start' : ''}>
                       <span className={option.description ? 'font-medium' : ''}>{option.label}</span>
