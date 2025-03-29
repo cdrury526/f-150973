@@ -36,6 +36,7 @@ const DOWForm: React.FC<DOWFormProps> = ({
 }) => {
   const { user, userRole } = useAuth();
   const [builderProfile, setBuilderProfile] = useState<BuilderProfile | null>(null);
+  const [isLoadingProfile, setIsLoadingProfile] = useState(false);
 
   const {
     variables,
@@ -53,10 +54,11 @@ const DOWForm: React.FC<DOWFormProps> = ({
     onSave
   });
 
-  // Fetch builder profile when component mounts
+  // Fetch builder profile when component mounts, but don't auto-populate
   useEffect(() => {
     if (user && (userRole === 'builder' || userRole === 'admin')) {
       const fetchBuilderProfile = async () => {
+        setIsLoadingProfile(true);
         try {
           const { data, error } = await supabase
             .from('builder_profiles')
@@ -71,24 +73,11 @@ const DOWForm: React.FC<DOWFormProps> = ({
           
           if (data) {
             setBuilderProfile(data as BuilderProfile);
-            
-            // Check if any variables match company info fields and offer to prepopulate
-            const companyInfoVars = variables.filter(v => 
-              v.name.toLowerCase().includes('company') || 
-              v.name.toLowerCase().includes('address') ||
-              v.name.toLowerCase().includes('phone') ||
-              v.name.toLowerCase().includes('website') ||
-              v.name.toLowerCase().includes('city') ||
-              v.name.toLowerCase().includes('state') ||
-              v.name.toLowerCase().includes('zip')
-            );
-            
-            if (companyInfoVars.length > 0 && data.company_name) {
-              prepopulateCompanyInfo(data as BuilderProfile);
-            }
           }
         } catch (err) {
           console.error('Error:', err);
+        } finally {
+          setIsLoadingProfile(false);
         }
       };
       
@@ -107,6 +96,7 @@ const DOWForm: React.FC<DOWFormProps> = ({
         onAddVariable={addVariable}
         onSave={handleSave}
         builderProfile={builderProfile}
+        isLoadingProfile={isLoadingProfile}
         onPrepopulate={() => builderProfile && prepopulateCompanyInfo(builderProfile)}
       />
       
