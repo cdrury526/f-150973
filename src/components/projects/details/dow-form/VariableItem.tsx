@@ -4,7 +4,6 @@ import { Card, CardContent } from "@/components/ui/card";
 import { DOWVariable } from '../types';
 import { validateValue, formatValueForType } from './utils/validationUtils';
 import VariableNameInput from './variable-inputs/VariableNameInput';
-import TypeSelector from './variable-inputs/TypeSelector';
 import VariableInputControl from './variable-inputs/VariableInputControl';
 import RemoveButton from './variable-inputs/RemoveButton';
 
@@ -30,45 +29,8 @@ const VariableItem: React.FC<VariableItemProps> = ({
     onUpdate(variable.id, 'value', newValue);
   };
 
-  const handleTypeChange = (newType: string) => {
-    setValidationError(null);
-    
-    let formattedValue = variable.value;
-    
-    if (newType === 'date' && variable.type !== 'date') {
-      try {
-        const dateObj = new Date(variable.value);
-        if (dateObj instanceof Date && !isNaN(dateObj.getTime())) {
-          formattedValue = formatValueForType(variable.value, 'date');
-        } else {
-          formattedValue = '';
-        }
-      } catch {
-        formattedValue = '';
-      }
-    }
-    
-    if (newType === 'number' && variable.type !== 'number') {
-      const numericValue = variable.value.replace(/[^0-9.]/g, '');
-      formattedValue = numericValue || '';
-    }
-    
-    onUpdate(variable.id, 'type', newType);
-    onUpdate(variable.id, 'value', formattedValue);
-  };
-
   const handleKeyDown = (e: React.KeyboardEvent) => {
-    if (e.key === 'Enter' && !e.shiftKey && variable.type !== 'string') {
-      e.preventDefault();
-      
-      if (validateAndSave()) {
-        if (onSaveRequested) {
-          onSaveRequested();
-        }
-      }
-    }
-
-    if (e.key === 'Enter' && (e.ctrlKey || e.metaKey) && variable.type === 'string') {
+    if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) {
       e.preventDefault();
       
       if (validateAndSave()) {
@@ -80,9 +42,9 @@ const VariableItem: React.FC<VariableItemProps> = ({
   };
 
   const validateAndSave = (): boolean => {
-    const result = validateValue(variable.value, variable.type || 'string');
-    setValidationError(result.errorMessage);
-    return result.isValid;
+    // For string type, we don't need to validate
+    setValidationError(null);
+    return true;
   };
 
   const handleBlur = () => {
@@ -93,21 +55,14 @@ const VariableItem: React.FC<VariableItemProps> = ({
     <Card className={`overflow-hidden ${isActive ? 'ring-2 ring-primary' : ''}`}>
       <CardContent className="p-4">
         <div className="grid grid-cols-12 gap-3 items-start">
-          <div className="col-span-3">
+          <div className="col-span-4">
             <VariableNameInput
               value={variable.name}
               onChange={(newValue) => onUpdate(variable.id, 'name', newValue)}
             />
           </div>
           
-          <div className="col-span-2">
-            <TypeSelector
-              value={variable.type || 'string'}
-              onChange={handleTypeChange}
-            />
-          </div>
-          
-          <div className="col-span-6">
+          <div className="col-span-7">
             <VariableInputControl 
               variable={variable}
               validationError={validationError}

@@ -44,8 +44,6 @@ export const useDOWForm = ({ initialVariables, onSave }: UseDOWFormProps) => {
     setVariables(prevVariables => 
       prevVariables.map(v => {
         if (v.id === id) {
-          // When updating value, return the new value without validation
-          // We'll let the VariableItem component handle the validation
           return { ...v, [field]: newValue };
         }
         return v;
