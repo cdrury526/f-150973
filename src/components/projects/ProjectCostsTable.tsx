@@ -136,7 +136,7 @@ const ProjectCostsTable: React.FC<ProjectCostsTableProps> = ({ projectId }) => {
             quote_price: values.quote_price,
             actual_price: values.actual_price || null,
             notes: values.notes || null,
-            updated_at: new Date()
+            updated_at: new Date().toISOString() // Fix: Convert Date to string
           })
           .eq('id', editingCost.id);
 

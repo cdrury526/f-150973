@@ -1,4 +1,3 @@
-
 import React, { useEffect } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
@@ -178,14 +177,18 @@ const ProjectDetails = () => {
           </Card>
           
           <div className="md:col-span-2 space-y-6">
-            <Tabs defaultValue="tasks">
-              <TabsList className="grid w-full grid-cols-3">
+            <Tabs defaultValue="build">
+              <TabsList className="grid w-full grid-cols-4">
+                <TabsTrigger value="build">Build</TabsTrigger>
                 <TabsTrigger value="tasks">Tasks</TabsTrigger>
                 <TabsTrigger value="timeline">Timeline</TabsTrigger>
                 <TabsTrigger value="documents">Documents</TabsTrigger>
               </TabsList>
-              <TabsContent value="tasks">
+              <TabsContent value="build">
                 <ProjectCostsTable projectId={project.id} />
+              </TabsContent>
+              <TabsContent value="tasks">
+                <p className="text-muted-foreground py-4">Task management will be implemented in the next iteration.</p>
               </TabsContent>
               <TabsContent value="timeline">
                 <p className="text-muted-foreground py-4">Project timeline will be implemented in the next iteration.</p>
