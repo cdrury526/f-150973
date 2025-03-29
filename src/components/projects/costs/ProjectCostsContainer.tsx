@@ -36,7 +36,10 @@ const ProjectCostsContainer: React.FC<ProjectCostsContainerProps> = ({ projectId
 
   return (
     <Card>
-      <ProjectCostsHeader onAddCategoryClick={() => setAddCategoryDialogOpen(true)} />
+      <ProjectCostsHeader 
+        onAddCategoryClick={() => setAddCategoryDialogOpen(true)} 
+        costs={data?.costs || []}
+      />
       
       <ProjectCostsContent 
         isLoading={isLoading}
