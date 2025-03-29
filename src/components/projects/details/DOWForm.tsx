@@ -54,6 +54,7 @@ const DOWForm: React.FC<DOWFormProps> = ({
         activeVariableName={activeVariableName || null}
         onUpdateVariable={updateVariable}
         onRemoveVariable={removeVariable}
+        onSaveRequested={handleSave} // Pass the save handler
       />
     </div>
   );

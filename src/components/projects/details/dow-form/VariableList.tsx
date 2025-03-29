@@ -1,50 +1,48 @@
 
 import React from 'react';
-import { Card, CardContent } from "@/components/ui/card";
+import { ScrollArea } from "@/components/ui/scroll-area";
 import VariableItem from './VariableItem';
 import { DOWVariable } from '../types';
 
 interface VariableListProps {
   variables: DOWVariable[];
   activeVariableName: string | null;
-  onUpdateVariable: (id: string, field: 'name' | 'value', newValue: string) => void;
+  onUpdateVariable: (id: string, field: 'name' | 'value' | 'type', newValue: string) => void;
   onRemoveVariable: (id: string) => void;
+  onSaveRequested?: () => void; // New prop for saving
 }
 
 const VariableList: React.FC<VariableListProps> = ({
   variables,
   activeVariableName,
   onUpdateVariable,
-  onRemoveVariable
+  onRemoveVariable,
+  onSaveRequested
 }) => {
+  // If no variables, show a message
   if (variables.length === 0) {
     return (
-      <Card className="overflow-hidden">
-        <CardContent className="p-0">
-          <div className="text-center py-6 text-muted-foreground">
-            No variables added yet. Click "Add Variable" to start customizing your document.
-          </div>
-        </CardContent>
-      </Card>
+      <div className="text-center p-4 text-muted-foreground">
+        No variables found. Add a variable to get started.
+      </div>
     );
   }
-  
+
   return (
-    <Card className="overflow-hidden">
-      <CardContent className="p-0">
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 p-3">
-          {variables.map((variable) => (
-            <VariableItem
-              key={variable.id}
-              variable={variable}
-              activeVariableName={activeVariableName}
-              onUpdate={onUpdateVariable}
-              onRemove={onRemoveVariable}
-            />
-          ))}
-        </div>
-      </CardContent>
-    </Card>
+    <ScrollArea className="h-[calc(100vh-320px)]">
+      <div className="space-y-2 pr-4">
+        {variables.map((variable) => (
+          <VariableItem
+            key={variable.id}
+            variable={variable}
+            activeVariableName={activeVariableName}
+            onUpdate={onUpdateVariable}
+            onRemove={onRemoveVariable}
+            onSaveRequested={onSaveRequested}
+          />
+        ))}
+      </div>
+    </ScrollArea>
   );
 };
 

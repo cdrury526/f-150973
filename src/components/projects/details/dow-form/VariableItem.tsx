@@ -11,13 +11,15 @@ interface VariableItemProps {
   activeVariableName: string | null;
   onUpdate: (id: string, field: 'name' | 'value' | 'type', newValue: string) => void;
   onRemove: (id: string) => void;
+  onSaveRequested?: () => void; // New prop for handling save requests
 }
 
 const VariableItem: React.FC<VariableItemProps> = ({
   variable,
   activeVariableName,
   onUpdate,
-  onRemove
+  onRemove,
+  onSaveRequested
 }) => {
   const isLongValue = variable.value && variable.value.length > 50;
   const [localValue, setLocalValue] = useState(variable.value || '');
@@ -106,6 +108,22 @@ const VariableItem: React.FC<VariableItemProps> = ({
     validateInput(localValue);
   };
 
+  // Handle key press events
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    // If Enter key is pressed (without Shift for textarea)
+    if (e.key === 'Enter' && !e.shiftKey) {
+      // For textarea, we want to allow multi-line input with Shift+Enter
+      if (!isLongValue) {
+        e.preventDefault(); // Prevent form submission or new line in input
+        
+        // Validate input and trigger save if valid
+        if (validateInput(localValue) && onSaveRequested) {
+          onSaveRequested();
+        }
+      }
+    }
+  };
+
   const getInputType = () => {
     switch (variable.type) {
       case 'date':
@@ -129,6 +147,7 @@ const VariableItem: React.FC<VariableItemProps> = ({
           placeholder="VARIABLE_NAME"
           value={variable.name}
           onChange={(e) => onUpdate(variable.id, 'name', e.target.value.toUpperCase())}
+          onKeyDown={handleKeyDown}
           className="text-xs h-8 font-mono w-full"
         />
       </div>
@@ -143,6 +162,15 @@ const VariableItem: React.FC<VariableItemProps> = ({
             value={localValue}
             onChange={handleInputChange}
             onBlur={handleInputBlur}
+            onKeyDown={(e) => {
+              // For textarea, allow Enter + Ctrl to save
+              if (e.key === 'Enter' && e.ctrlKey && onSaveRequested) {
+                e.preventDefault();
+                if (validateInput(localValue)) {
+                  onSaveRequested();
+                }
+              }
+            }}
             className={`text-sm min-h-[60px] w-full 
               ${activeVariableName === variable.name ? 'ring-2 ring-primary' : ''}
               ${error ? 'border-red-300 focus:border-red-500' : ''}`}
@@ -155,6 +183,7 @@ const VariableItem: React.FC<VariableItemProps> = ({
             value={localValue}
             onChange={handleInputChange}
             onBlur={handleInputBlur}
+            onKeyDown={handleKeyDown}
             className={`text-sm h-8 w-full 
               ${activeVariableName === variable.name ? 'ring-2 ring-primary' : ''}
               ${error ? 'border-red-300 focus:border-red-500' : ''}`}
