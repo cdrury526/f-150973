@@ -2,7 +2,7 @@
 import React from 'react';
 import { Button } from "@/components/ui/button";
 import { Menu, Bell, Plus, LogOut } from "lucide-react";
-import { SidebarTrigger } from "@/components/ui/sidebar";
+import { SidebarTrigger, useSidebar } from "@/components/ui/sidebar";
 import { useAuth } from '@/context/AuthContext';
 import { Link, useNavigate } from 'react-router-dom';
 import {
@@ -18,6 +18,7 @@ import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 const Navbar = () => {
   const { user, profile, signOut, userRole } = useAuth();
   const navigate = useNavigate();
+  const { setOpen } = useSidebar();
   
   // Generate initials from user's name if available
   const getInitials = () => {
@@ -45,11 +46,14 @@ const Navbar = () => {
     <header className="sticky top-0 z-50 w-full border-b bg-background">
       <div className="container flex h-16 items-center justify-between">
         <div className="flex items-center gap-2">
-          <SidebarTrigger>
-            <Button variant="outline" size="icon" className="md:hidden">
-              <Menu className="h-5 w-5" />
-            </Button>
-          </SidebarTrigger>
+          <Button 
+            variant="outline" 
+            size="icon" 
+            className="md:flex"
+            onClick={() => setOpen(prev => !prev)}
+          >
+            <Menu className="h-5 w-5" />
+          </Button>
           <Link to="/" className="text-xl font-semibold hidden md:inline-flex">Home Build Hub</Link>
         </div>
         <div className="flex items-center gap-2">

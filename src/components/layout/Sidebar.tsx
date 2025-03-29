@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { Home, Building, Calendar, List, Settings } from "lucide-react";
+import { Home, Building, Calendar, List, Settings, ChevronLeft } from "lucide-react";
 import {
   Sidebar,
   SidebarContent,
@@ -10,8 +10,10 @@ import {
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
+  useSidebar,
 } from "@/components/ui/sidebar";
 import { Link } from 'react-router-dom';
+import { Button } from "@/components/ui/button";
 
 // Menu items for the sidebar
 const menuItems = [
@@ -43,10 +45,28 @@ const menuItems = [
 ];
 
 const AppSidebar = () => {
+  const { open, setOpen } = useSidebar();
+  
   return (
     <Sidebar>
-      <SidebarHeader className="flex items-center justify-center py-6">
-        <h1 className="text-xl font-bold text-white">Home Build Hub</h1>
+      <SidebarHeader className="flex items-center justify-between py-6 px-4">
+        {open ? (
+          <>
+            <h1 className="text-xl font-bold text-white">Home Build Hub</h1>
+            <Button 
+              variant="ghost" 
+              size="icon" 
+              onClick={() => setOpen(false)} 
+              className="text-white hover:bg-sidebar-accent"
+            >
+              <ChevronLeft className="h-5 w-5" />
+            </Button>
+          </>
+        ) : (
+          <div className="w-full flex justify-center">
+            <h1 className="text-xl font-bold text-white">HBH</h1>
+          </div>
+        )}
       </SidebarHeader>
       <SidebarContent>
         <SidebarGroup>
@@ -57,7 +77,7 @@ const AppSidebar = () => {
                   <SidebarMenuButton asChild>
                     <Link to={item.path} className="flex items-center">
                       <item.icon className="mr-3 h-5 w-5" />
-                      <span>{item.title}</span>
+                      <span>{open ? item.title : ""}</span>
                     </Link>
                   </SidebarMenuButton>
                 </SidebarMenuItem>
