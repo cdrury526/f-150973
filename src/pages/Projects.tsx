@@ -4,7 +4,6 @@ import { useQuery } from '@tanstack/react-query';
 import { Plus } from 'lucide-react';
 import DashboardLayout from '@/components/layout/DashboardLayout';
 import ProjectList from '@/components/projects/ProjectList';
-import { Button } from '@/components/ui/button';
 import EmptyState from '@/components/ui/EmptyState';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { useAuth } from '@/context/AuthContext';
@@ -100,15 +99,7 @@ const Projects = () => {
               Manage and track all your building projects
             </p>
           </div>
-          {/* Always show the button for now */}
-          <Button 
-            onClick={handleOpenCreateDialog}
-            className="flex items-center"
-            data-testid="create-project-button"
-          >
-            <Plus className="h-4 w-4 mr-2" />
-            New Project
-          </Button>
+          {/* Removed duplicate button - now only using the one in Navbar */}
         </div>
 
         {isLoading ? (
