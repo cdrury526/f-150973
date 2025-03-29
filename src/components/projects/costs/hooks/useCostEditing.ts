@@ -73,7 +73,10 @@ export const useCostEditing = (projectId: string, refetchData: () => void) => {
         if (error) throw error;
 
         // Create update details object with formatted changes
-        const updateDetails: Record<string, any> = {};
+        const updateDetails: Record<string, any> = {
+          // Add the category name as the first detail
+          category: editingCost.category_name
+        };
         
         if (changes.quote_price) {
           updateDetails.quotePrice = `${formatCurrency(changes.quote_price.from)} → ${formatCurrency(changes.quote_price.to)}`;
@@ -109,6 +112,7 @@ export const useCostEditing = (projectId: string, refetchData: () => void) => {
           `Added costs for ${editingCost.category_name}`,
           "cost_update",
           {
+            category: editingCost.category_name,
             quotePrice: formatCurrency(values.quote_price),
             actualPrice: values.actual_price ? formatCurrency(values.actual_price) : 'Not set'
           }
