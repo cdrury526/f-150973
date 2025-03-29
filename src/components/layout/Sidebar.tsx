@@ -50,7 +50,7 @@ const menuItems = [
   {
     title: "Settings",
     icon: Settings,
-    path: "/settings",
+    path: "/account",  // Changed from /settings to /account
   },
 ];
 
