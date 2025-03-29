@@ -19,13 +19,15 @@ interface DOWFormProps {
   variables: DOWVariable[];
   onSave: (variables: DOWVariable[]) => void;
   getSortedVariables?: () => DOWVariable[]; // Prop for getting variables in order
+  activeVariableName?: string | null; // New prop for highlighting active variable
 }
 
 const DOWForm: React.FC<DOWFormProps> = ({ 
   projectId, 
   variables: initialVariables, 
   onSave,
-  getSortedVariables 
+  getSortedVariables,
+  activeVariableName 
 }) => {
   const [variables, setVariables] = useState<DOWVariable[]>(initialVariables || []);
   const [autoSave, setAutoSave] = useState(false);
@@ -151,7 +153,11 @@ const DOWForm: React.FC<DOWFormProps> = ({
           ) : (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 p-3">
               {displayVariables.map((variable) => (
-                <div key={variable.id} className="p-2 border rounded-md hover:bg-muted/50 relative">
+                <div 
+                  key={variable.id} 
+                  className={`p-2 border rounded-md hover:bg-muted/50 relative transition-all
+                    ${activeVariableName === variable.name ? 'border-primary bg-primary/5' : ''}`}
+                >
                   <div className="mb-1">
                     <label className="text-xs text-muted-foreground mb-1 block">Variable Name:</label>
                     <Input
@@ -167,7 +173,8 @@ const DOWForm: React.FC<DOWFormProps> = ({
                       placeholder="Variable value"
                       value={variable.value}
                       onChange={(e) => updateVariable(variable.id, 'value', e.target.value)}
-                      className="text-sm h-8 w-full"
+                      className={`text-sm h-8 w-full ${activeVariableName === variable.name ? 'ring-2 ring-primary' : ''}`}
+                      data-variable-name={variable.name}
                     />
                   </div>
                   <Button

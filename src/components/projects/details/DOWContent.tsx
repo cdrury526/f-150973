@@ -1,8 +1,9 @@
+
 /**
  * DOW (Description of Work) Content component
  */
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { Separator } from '@/components/ui/separator';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -26,6 +27,8 @@ const DOWContent: React.FC<DOWContentProps> = ({ projectId }) => {
   const [uploadError, setUploadError] = useState<string | null>(null);
   const [isUploading, setIsUploading] = useState(false);
   const [authError, setAuthError] = useState<string | null>(null);
+  const [activeVariableName, setActiveVariableName] = useState<string | null>(null);
+  const formRef = useRef<HTMLDivElement>(null);
 
   // Use our custom hook for template variables management
   const {
@@ -61,6 +64,30 @@ const DOWContent: React.FC<DOWContentProps> = ({ projectId }) => {
     
     return () => subscription.unsubscribe();
   }, []);
+
+  // Handle variable click in preview
+  const handleVariableClick = (variableName: string) => {
+    setActiveVariableName(variableName);
+    
+    // Find and scroll to the variable input
+    if (formRef.current) {
+      // Look for an input with the variable name
+      const input = formRef.current.querySelector(`[data-variable-name="${variableName}"]`);
+      if (input) {
+        // Scroll the input into view with smooth behavior
+        input.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        
+        // Add a visual highlight effect that fades out
+        (input as HTMLElement).classList.add('variable-highlight-pulse');
+        setTimeout(() => {
+          (input as HTMLElement).classList.remove('variable-highlight-pulse');
+        }, 1500);
+        
+        // Focus the input
+        (input as HTMLElement).focus();
+      }
+    }
+  };
   
   const handleUploadClick = () => {
     document.getElementById('template-upload')?.click();
@@ -152,19 +179,41 @@ const DOWContent: React.FC<DOWContentProps> = ({ projectId }) => {
         />
       </div>
       
+      <style jsx global>{`
+        .variable-highlight-pulse {
+          animation: pulse-highlight 1.5s ease-in-out;
+        }
+
+        @keyframes pulse-highlight {
+          0%, 100% { 
+            box-shadow: 0 0 0 0 rgba(59, 130, 246, 0); 
+            border-color: var(--border);
+          }
+          25% { 
+            box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.5); 
+            border-color: rgb(59, 130, 246);
+          }
+          75% { 
+            box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.3); 
+            border-color: rgb(59, 130, 246);
+          }
+        }
+      `}</style>
+      
       <ResizablePanelGroup 
         direction="horizontal" 
         className="min-h-[600px] rounded-lg border"
       >
         {/* Left panel for the variables form */}
         <ResizablePanel defaultSize={50} minSize={40}>
-          <div className="p-4 h-full overflow-auto">
+          <div className="p-4 h-full overflow-auto" ref={formRef}>
             <h3 className="text-base font-medium mb-3">Document Variables</h3>
             <DOWForm 
               projectId={projectId} 
               variables={variablesQuery.data || []}
               onSave={handleSave}
               getSortedVariables={getSortedVariables}
+              activeVariableName={activeVariableName}
             />
           </div>
         </ResizablePanel>
@@ -178,6 +227,7 @@ const DOWContent: React.FC<DOWContentProps> = ({ projectId }) => {
             <DOWPreview 
               variables={getSortedVariables()}
               templateContent={templateQuery.data || ''}
+              onVariableClick={handleVariableClick}
             />
           </div>
         </ResizablePanel>

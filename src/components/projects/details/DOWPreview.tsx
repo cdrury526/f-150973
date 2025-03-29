@@ -12,12 +12,14 @@ import { useToast } from "@/hooks/use-toast";
 interface DOWPreviewProps {
   variables: DOWVariable[];
   templateContent: string;
+  onVariableClick?: (variableName: string) => void;
 }
 
-const DOWPreview: React.FC<DOWPreviewProps> = ({ variables, templateContent }) => {
+const DOWPreview: React.FC<DOWPreviewProps> = ({ variables, templateContent, onVariableClick }) => {
   const [generatedDocument, setGeneratedDocument] = useState<string>('');
   const [error, setError] = useState<string | null>(null);
   const [missingVariables, setMissingVariables] = useState<string[]>([]);
+  const [highlightedVariables, setHighlightedVariables] = useState<Record<string, boolean>>({});
   const { toast } = useToast();
 
   useEffect(() => {
@@ -112,6 +114,79 @@ const DOWPreview: React.FC<DOWPreviewProps> = ({ variables, templateContent }) =
     URL.revokeObjectURL(url);
   };
 
+  // For the interactive preview with highlighted variables
+  const renderDocumentWithInteractiveVariables = () => {
+    if (!templateContent) return <p>No template content available.</p>;
+    
+    // Get all variables that appear in the template
+    const allPlaceholders = templateContent.match(/{{([A-Z0-9_]+)}}/g) || [];
+    const uniqueVarNames = [...new Set(allPlaceholders.map(p => p.replace(/{{|}}/g, '')))];
+    
+    // Create a map of variable names to values
+    const varMap = new Map(variables.map(v => [v.name, v.value || `[${v.name}]`]));
+    
+    // Split the document by lines to maintain formatting
+    const lines = generatedDocument.split('\n');
+    
+    return lines.map((line, lineIdx) => {
+      // For each unique variable, check if it appears in the line
+      const lineElements: React.ReactNode[] = [line];
+      
+      uniqueVarNames.forEach(varName => {
+        // Check if this variable's value appears in the line
+        const value = varMap.get(varName);
+        if (!value || value === `[${varName}]`) return;
+        
+        // If the value is in this line, create interactive elements
+        if (line.includes(value)) {
+          // Split the line by this value to maintain surrounding text
+          const parts = line.split(value);
+          
+          // Rebuild the line with interactive spans
+          const newLineElements: React.ReactNode[] = [];
+          
+          parts.forEach((part, partIdx) => {
+            // Add the text part
+            if (part) newLineElements.push(part);
+            
+            // Add the interactive variable (except after the last part)
+            if (partIdx < parts.length - 1) {
+              newLineElements.push(
+                <span 
+                  key={`${lineIdx}-${varName}-${partIdx}`}
+                  className={`cursor-pointer px-1 rounded-md ${highlightedVariables[varName] ? 'bg-yellow-200 dark:bg-yellow-800 ring-2 ring-yellow-400 dark:ring-yellow-600' : 'hover:bg-yellow-100 dark:hover:bg-yellow-900'}`}
+                  onClick={() => {
+                    // Toggle highlight
+                    setHighlightedVariables(prev => ({
+                      ...prev,
+                      [varName]: !prev[varName]
+                    }));
+                    // Notify parent component
+                    if (onVariableClick) {
+                      onVariableClick(varName);
+                    }
+                  }}
+                  title={`Click to edit ${varName}`}
+                >
+                  {value}
+                </span>
+              );
+            }
+          });
+          
+          lineElements.splice(0, 1, ...newLineElements);
+        }
+      });
+      
+      return (
+        <React.Fragment key={lineIdx}>
+          {lineElements}
+          <br />
+        </React.Fragment>
+      );
+    });
+  };
+
   return (
     <div className="space-y-4">
       <div className="flex justify-end items-center space-x-2">
@@ -155,12 +230,7 @@ const DOWPreview: React.FC<DOWPreviewProps> = ({ variables, templateContent }) =
           <Card>
             <CardContent className="p-4 max-h-[500px] overflow-y-auto">
               <div className="prose max-w-none break-words whitespace-pre-wrap">
-                {generatedDocument.split('\n').map((line, idx) => (
-                  <React.Fragment key={idx}>
-                    {line}
-                    <br />
-                  </React.Fragment>
-                ))}
+                {renderDocumentWithInteractiveVariables()}
               </div>
             </CardContent>
           </Card>
