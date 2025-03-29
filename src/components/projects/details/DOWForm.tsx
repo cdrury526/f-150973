@@ -149,32 +149,34 @@ const DOWForm: React.FC<DOWFormProps> = ({
               No variables added yet. Click "Add Variable" to start customizing your document.
             </div>
           ) : (
-            <div className="space-y-0 divide-y">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 p-3">
               {displayVariables.map((variable) => (
-                <div key={variable.id} className="flex items-center gap-3 p-2 hover:bg-muted/50">
-                  <div className="w-2/5">
+                <div key={variable.id} className="p-2 border rounded-md hover:bg-muted/50 relative">
+                  <div className="mb-1">
+                    <label className="text-xs text-muted-foreground mb-1 block">Variable Name:</label>
                     <Input
                       placeholder="VARIABLE_NAME"
                       value={variable.name}
                       onChange={(e) => updateVariable(variable.id, 'name', e.target.value.toUpperCase())}
-                      className="text-xs h-8 font-mono"
+                      className="text-xs h-8 font-mono w-full"
                     />
                   </div>
-                  <div className="flex-1">
+                  <div className="mb-1">
+                    <label className="text-xs text-muted-foreground mb-1 block">Value:</label>
                     <Input
                       placeholder="Variable value"
                       value={variable.value}
                       onChange={(e) => updateVariable(variable.id, 'value', e.target.value)}
-                      className="text-sm h-8"
+                      className="text-sm h-8 w-full"
                     />
                   </div>
                   <Button
                     variant="ghost"
                     size="icon"
                     onClick={() => removeVariable(variable.id)}
-                    className="text-destructive hover:text-destructive/90 h-8 w-8 flex-shrink-0"
+                    className="text-destructive hover:text-destructive/90 h-6 w-6 absolute top-1 right-1"
                   >
-                    <Trash2 className="h-4 w-4" />
+                    <Trash2 className="h-3 w-3" />
                   </Button>
                 </div>
               ))}
