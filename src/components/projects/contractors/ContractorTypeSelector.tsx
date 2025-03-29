@@ -40,7 +40,7 @@ export const ContractorTypeSelector: React.FC<ContractorTypeSelectorProps> = ({
             aria-expanded={open}
             className="w-full justify-between"
             disabled={disabled}
-            type="button" // Add type="button" to prevent form submission
+            type="button"
           >
             {value || "Select contractor type"}
             <ChevronDown className="ml-2 h-4 w-4 shrink-0 opacity-70" />
@@ -48,13 +48,10 @@ export const ContractorTypeSelector: React.FC<ContractorTypeSelectorProps> = ({
         </PopoverTrigger>
         <PopoverContent className="w-[300px] p-0" align="start">
           <Command>
-            <CommandInput 
-              placeholder="Search contractor type..." 
-              className="h-9"
-            />
+            <CommandInput placeholder="Search contractor type..." className="h-9" />
             <CommandEmpty>No contractor type found.</CommandEmpty>
             <CommandGroup className="max-h-[300px] overflow-y-auto">
-              {Object.entries(contractorTypeDescriptions).map(([type, description]) => (
+              {Object.keys(contractorTypeDescriptions).map((type) => (
                 <CommandItem
                   key={type}
                   value={type}
@@ -65,7 +62,9 @@ export const ContractorTypeSelector: React.FC<ContractorTypeSelectorProps> = ({
                   className="flex flex-col items-start py-2"
                 >
                   <span className="font-medium">{type}</span>
-                  <span className="text-xs text-muted-foreground">{description}</span>
+                  <span className="text-xs text-muted-foreground">
+                    {contractorTypeDescriptions[type as ContractorType]}
+                  </span>
                 </CommandItem>
               ))}
             </CommandGroup>
@@ -81,13 +80,13 @@ export const ContractorTypeSelector: React.FC<ContractorTypeSelectorProps> = ({
               size="icon" 
               className="h-8 w-8" 
               disabled={disabled}
-              type="button" // Add type="button" to prevent form submission
+              type="button"
             >
               <Info size={16} />
             </Button>
           </TooltipTrigger>
           <TooltipContent>
-            <p className="max-w-xs">{contractorTypeDescriptions[value] || 'Select a contractor type'}</p>
+            <p className="max-w-xs">{contractorTypeDescriptions[value as ContractorType] || 'Select a contractor type'}</p>
           </TooltipContent>
         </Tooltip>
       </TooltipProvider>
@@ -109,7 +108,7 @@ export const ContractorTypeCell: React.FC<ContractorTypeSelectorProps> = ({
         <Button 
           variant="ghost" 
           className="h-8 justify-start p-2 w-full"
-          type="button" // Add type="button" to prevent form submission
+          type="button"
         >
           <span className="truncate flex-1 text-left">{value}</span>
           <ChevronDown className="h-4 w-4 opacity-50" />
@@ -120,7 +119,7 @@ export const ContractorTypeCell: React.FC<ContractorTypeSelectorProps> = ({
           <CommandInput placeholder="Search..." className="h-9" />
           <CommandEmpty>No contractor type found.</CommandEmpty>
           <CommandGroup className="max-h-[300px] overflow-y-auto">
-            {Object.entries(contractorTypeDescriptions).map(([type, description]) => (
+            {Object.keys(contractorTypeDescriptions).map((type) => (
               <CommandItem
                 key={type}
                 value={type}
@@ -131,7 +130,9 @@ export const ContractorTypeCell: React.FC<ContractorTypeSelectorProps> = ({
                 className="flex flex-col items-start py-2"
               >
                 <span className="font-medium">{type}</span>
-                <span className="text-xs text-muted-foreground">{description}</span>
+                <span className="text-xs text-muted-foreground">
+                  {contractorTypeDescriptions[type as ContractorType]}
+                </span>
               </CommandItem>
             ))}
           </CommandGroup>

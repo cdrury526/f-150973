@@ -76,18 +76,20 @@ const ContractorSelector: React.FC<ContractorSelectorProps> = ({
                       >
                         <span>None</span>
                       </CommandItem>
-                      {contractors.map((contractor) => (
-                        <CommandItem
-                          key={contractor.id}
-                          value={contractor.companyName.toLowerCase()}
-                          onSelect={() => {
-                            field.onChange(contractor.id);
-                            setOpen(false);
-                          }}
-                        >
-                          <span>{contractor.companyName} - {contractor.contractorType}</span>
-                        </CommandItem>
-                      ))}
+                      {Array.isArray(contractors) && contractors.length > 0 ? (
+                        contractors.map((contractor) => (
+                          <CommandItem
+                            key={contractor.id}
+                            value={contractor.companyName.toLowerCase()}
+                            onSelect={() => {
+                              field.onChange(contractor.id);
+                              setOpen(false);
+                            }}
+                          >
+                            <span>{contractor.companyName} - {contractor.contractorType}</span>
+                          </CommandItem>
+                        ))
+                      ) : null}
                     </CommandGroup>
                   </Command>
                 </PopoverContent>
