@@ -1,55 +1,55 @@
-import React from 'react';
+
 import { DOWVariable } from '../../types';
 
 /**
- * Highlights variables in the document content
- * @param {string} content - The document content
- * @param {DOWVariable[]} variables - The variables to highlight
- * @returns {string} - The content with variables highlighted
+ * Interface for variable position tracking in document
  */
-export const highlightVariables = (content: string, variables: DOWVariable[]): string => {
-  let highlightedContent = content;
-  variables.forEach(variable => {
-    const regex = new RegExp(`{{${variable.name}}}`, 'g');
-    highlightedContent = highlightedContent.replace(regex, `<span class="variable-highlight">${variable.name}</span>`);
-  });
-  return highlightedContent;
-};
+interface VariablePosition {
+  varName: string;
+  value: string;
+  starts: number[];
+  isMissing: boolean;
+}
 
 /**
- * Replaces variables in the document content with their values
- * @param {string} content - The document content
- * @param {DOWVariable[]} variables - The variables to replace
- * @returns {string} - The content with variables replaced
+ * Finds all occurrences of variables in the document
+ * and tracks their positions for interactive highlighting
  */
-export const replaceVariables = (content: string, variables: DOWVariable[]): string => {
-  let replacedContent = content;
-  variables.forEach(variable => {
-    const regex = new RegExp(`{{${variable.name}}}`, 'g');
-    replacedContent = replacedContent.replace(regex, variable.value);
-  });
-  return replacedContent;
-};
+export const findVariablesInDocument = (
+  generatedDocument: string,
+  templateContent: string,
+  variables: DOWVariable[]
+): VariablePosition[] => {
+  if (!generatedDocument || !templateContent) {
+    return [];
+  }
 
-/**
- * Wraps a variable name in a span for interactive highlighting
- * @param {string} variableName - The name of the variable
- * @param {boolean} highlighted - Whether the variable is highlighted
- * @param {Function} onClick - The function to call when the variable is clicked
- * @returns {React.ReactNode} - A React span element
- */
-export const createInteractiveSpan = (
-  variableName: string,
-  highlighted: boolean,
-  onClick: (variableName: string) => void
-): React.ReactNode => {
-  return (
-    <span
-      key={variableName}
-      className={`variable-interactive ${highlighted ? 'variable-highlighted' : ''}`}
-      onClick={() => onClick(variableName)}
-    >
-      {variableName}
-    </span>
-  );
+  // Create a map of variable names to values for quick lookup
+  const varMap = new Map(variables.map(v => [v.name, v.value || `[${v.name}]`]));
+  
+  // Extract all variable names from the template
+  const variablePlaceholders = templateContent.match(/{{([A-Z0-9_]+)}}/g) || [];
+  const variableNames = [...new Set(variablePlaceholders.map(p => p.replace(/{{|}}/g, '')))];
+  
+  // Find positions of all variable values in the generated document
+  return variableNames.map(varName => {
+    const value = varMap.get(varName) || `[${varName}]`;
+    const isMissing = !varMap.get(varName) || varMap.get(varName) === '';
+    
+    // Find all occurrences of this variable's value in the document
+    const starts: number[] = [];
+    let pos = generatedDocument.indexOf(value);
+    
+    while (pos !== -1) {
+      starts.push(pos);
+      pos = generatedDocument.indexOf(value, pos + 1);
+    }
+    
+    return {
+      varName,
+      value,
+      starts,
+      isMissing
+    };
+  });
 };
