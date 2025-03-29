@@ -1,17 +1,20 @@
 
-import React, { useState, useEffect } from 'react';
-import { Textarea } from "@/components/ui/textarea";
+import React, { useState, useRef } from 'react';
+import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
-import { Trash2, AlertCircle } from "lucide-react";
+import { Calendar } from "lucide-react";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { DOWVariable } from '../types';
+import { format, isValid, parse } from 'date-fns';
 
 interface VariableItemProps {
   variable: DOWVariable;
   activeVariableName: string | null;
   onUpdate: (id: string, field: 'name' | 'value' | 'type', newValue: string) => void;
   onRemove: (id: string) => void;
-  onSaveRequested?: () => void; // New prop for handling save requests
+  onSaveRequested?: () => boolean; // Updated to return boolean success status
 }
 
 const VariableItem: React.FC<VariableItemProps> = ({
@@ -21,191 +24,233 @@ const VariableItem: React.FC<VariableItemProps> = ({
   onRemove,
   onSaveRequested
 }) => {
-  const isLongValue = variable.value && variable.value.length > 50;
-  const [localValue, setLocalValue] = useState(variable.value || '');
-  const [error, setError] = useState<string | null>(null);
+  const [validationError, setValidationError] = useState<string | null>(null);
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
 
-  // Update local value when the variable changes (e.g., from parent component)
-  useEffect(() => {
-    setLocalValue(variable.value || '');
-  }, [variable.value]);
+  const isActive = activeVariableName === variable.name;
 
-  // Detect type based on variable name pattern
-  useEffect(() => {
-    // Try to detect type from variable name pattern
-    if (variable.name) {
-      const name = variable.name.toUpperCase();
+  const validateValue = (value: string, type: string): boolean => {
+    setValidationError(null); // Reset error state
+
+    switch (type) {
+      case 'number':
+        if (value === '') return true; // Allow empty for optional fields
+        const num = parseFloat(value);
+        if (isNaN(num) || num < 0) {
+          setValidationError('Please enter a valid non-negative number');
+          return false;
+        }
+        return true;
       
-      // Detect date variables
-      if (name.includes('DATE') || name.includes('DAY') || name.includes('MONTH') || name.includes('YEAR')) {
-        onUpdate(variable.id, 'type', 'date');
-      }
-      // Detect number variables 
-      else if (
-        name.includes('COUNT') || 
-        name.includes('NUMBER') || 
-        name.includes('PRICE') || 
-        name.includes('COST') || 
-        name.includes('AMOUNT') ||
-        name.includes('QTY') ||
-        name.includes('SIZE') ||
-        name.includes('HEIGHT') ||
-        name.includes('WIDTH') ||
-        name.includes('ALLOWANCE')
-      ) {
-        onUpdate(variable.id, 'type', 'number');
-      } else {
-        onUpdate(variable.id, 'type', 'string');
-      }
+      case 'date':
+        if (value === '') return true; // Allow empty for optional fields
+        try {
+          const dateObj = parse(value, 'yyyy-MM-dd', new Date());
+          if (!isValid(dateObj)) {
+            setValidationError('Please enter a valid date (YYYY-MM-DD)');
+            return false;
+          }
+          return true;
+        } catch {
+          setValidationError('Please enter a valid date (YYYY-MM-DD)');
+          return false;
+        }
+      
+      default: // 'string' or any other type
+        return true; // No validation needed for string type
     }
-  }, [variable.name, onUpdate, variable.id]);
-
-  const validateInput = (value: string): boolean => {
-    const type = variable.type || 'string';
-    
-    if (value.trim() === '') {
-      setError('Value cannot be empty');
-      return false;
-    }
-    
-    if (type === 'number') {
-      const num = Number(value);
-      if (isNaN(num)) {
-        setError('Must be a valid number');
-        return false;
-      }
-      if (num < 0) {
-        setError('Number cannot be negative');
-        return false;
-      }
-    } else if (type === 'date') {
-      const date = new Date(value);
-      if (date.toString() === 'Invalid Date') {
-        setError('Must be a valid date');
-        return false;
-      }
-    }
-    
-    setError(null);
-    return true;
   };
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-    const newValue = e.target.value;
-    setLocalValue(newValue);
-    
-    // Immediately update the parent component with the new value
-    // This ensures the preview updates in real-time
+  const formatValueForType = (value: string, type: string): string => {
+    switch (type) {
+      case 'date':
+        try {
+          const dateObj = parse(value, 'yyyy-MM-dd', new Date());
+          if (isValid(dateObj)) {
+            return format(dateObj, 'yyyy-MM-dd');
+          }
+          return value;
+        } catch {
+          return value;
+        }
+      default:
+        return value;
+    }
+  };
+  
+  const handleValueChange = (newValue: string) => {
     onUpdate(variable.id, 'value', newValue);
+  };
+
+  const handleTypeChange = (newType: string) => {
+    // Clear validation errors when changing type
+    setValidationError(null);
     
-    // Validate after a short delay for better UX
-    setTimeout(() => {
-      validateInput(newValue);
-    }, 300);
+    // Format the current value appropriately for the new type
+    let formattedValue = variable.value;
+    
+    // When changing to date type, try to convert from string if possible
+    if (newType === 'date' && variable.type !== 'date') {
+      try {
+        // Try to parse as a date if it looks like one
+        const dateObj = new Date(variable.value);
+        if (isValid(dateObj)) {
+          formattedValue = format(dateObj, 'yyyy-MM-dd');
+        } else {
+          formattedValue = ''; // Reset if not valid
+        }
+      } catch {
+        formattedValue = ''; // Reset if parsing fails
+      }
+    }
+    
+    // When changing to number, try to extract numbers
+    if (newType === 'number' && variable.type !== 'number') {
+      const numericValue = variable.value.replace(/[^0-9.]/g, '');
+      formattedValue = numericValue || '';
+    }
+    
+    onUpdate(variable.id, 'type', newType);
+    onUpdate(variable.id, 'value', formattedValue);
   };
 
-  const handleInputBlur = () => {
-    validateInput(localValue);
-  };
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    // Save on Enter for input fields (not for textarea)
+    if (e.key === 'Enter' && !e.shiftKey && variable.type !== 'string') {
+      e.preventDefault();
+      
+      // Validate before saving
+      if (validateValue(variable.value, variable.type)) {
+        if (onSaveRequested) {
+          onSaveRequested();
+        }
+      }
+    }
 
-  // Handle key press events
-  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-    // If Enter key is pressed (without Shift for textarea)
-    if (e.key === 'Enter' && !e.shiftKey) {
-      // For textarea, we want to allow multi-line input with Shift+Enter
-      if (!isLongValue) {
-        e.preventDefault(); // Prevent form submission or new line in input
-        
-        // Validate input and trigger save if valid
-        if (validateInput(localValue) && onSaveRequested) {
+    // Save on Ctrl+Enter for textarea
+    if (e.key === 'Enter' && (e.ctrlKey || e.metaKey) && variable.type === 'string') {
+      e.preventDefault();
+      
+      // Validate before saving
+      if (validateValue(variable.value, variable.type)) {
+        if (onSaveRequested) {
           onSaveRequested();
         }
       }
     }
   };
 
-  const getInputType = () => {
+  // Determine which input control to show based on the variable type
+  const renderInputControl = () => {
     switch (variable.type) {
-      case 'date':
-        return 'date';
       case 'number':
-        return 'number';
-      default:
-        return 'text';
+        return (
+          <Input
+            ref={inputRef}
+            type="number"
+            min="0"
+            value={variable.value}
+            onChange={(e) => {
+              const newValue = e.target.value;
+              validateValue(newValue, 'number');
+              handleValueChange(newValue);
+            }}
+            onBlur={(e) => validateValue(e.target.value, 'number')}
+            onKeyDown={handleKeyDown}
+            className={validationError ? "border-red-500" : ""}
+            placeholder="Enter a number value"
+          />
+        );
+      
+      case 'date':
+        return (
+          <div className="relative">
+            <Input
+              ref={inputRef}
+              type="date"
+              value={variable.value}
+              onChange={(e) => {
+                const newValue = e.target.value;
+                validateValue(newValue, 'date');
+                handleValueChange(newValue);
+              }}
+              onBlur={(e) => validateValue(e.target.value, 'date')}
+              onKeyDown={handleKeyDown}
+              className={`${validationError ? "border-red-500" : ""} pr-10`}
+              placeholder="YYYY-MM-DD"
+            />
+            <Calendar className="absolute right-3 top-2.5 h-4 w-4 text-muted-foreground" />
+          </div>
+        );
+      
+      default: // 'string' or any other type
+        return (
+          <Textarea
+            ref={textareaRef}
+            value={variable.value}
+            onChange={(e) => handleValueChange(e.target.value)}
+            onKeyDown={handleKeyDown}
+            className="min-h-20 resize-y"
+            placeholder="Enter a text value"
+          />
+        );
     }
   };
 
   return (
-    <div 
-      className={`p-2 border rounded-md hover:bg-muted/50 relative transition-all
-        ${activeVariableName === variable.name ? 'border-primary bg-primary/5' : ''}
-        ${error ? 'border-red-300' : ''}`}
-    >
-      <div className="mb-1">
-        <label className="text-xs text-muted-foreground mb-1 block">Variable Name:</label>
-        <Input
-          placeholder="VARIABLE_NAME"
-          value={variable.name}
-          onChange={(e) => onUpdate(variable.id, 'name', e.target.value.toUpperCase())}
-          onKeyDown={handleKeyDown}
-          className="text-xs h-8 font-mono w-full"
-        />
-      </div>
-      <div className="mb-1">
-        <label className="text-xs text-muted-foreground mb-1 block">
-          Value:
-          {variable.type && <span className="ml-2 text-xs text-muted-foreground">({variable.type})</span>}
-        </label>
-        {isLongValue ? (
-          <Textarea
-            placeholder={`Enter ${variable.type || 'text'} value`}
-            value={localValue}
-            onChange={handleInputChange}
-            onBlur={handleInputBlur}
-            onKeyDown={(e) => {
-              // For textarea, allow Enter + Ctrl to save
-              if (e.key === 'Enter' && e.ctrlKey && onSaveRequested) {
-                e.preventDefault();
-                if (validateInput(localValue)) {
-                  onSaveRequested();
-                }
-              }
-            }}
-            className={`text-sm min-h-[60px] w-full 
-              ${activeVariableName === variable.name ? 'ring-2 ring-primary' : ''}
-              ${error ? 'border-red-300 focus:border-red-500' : ''}`}
-            data-variable-name={variable.name}
-          />
-        ) : (
-          <Input
-            placeholder={`Enter ${variable.type || 'text'} value`}
-            type={getInputType()}
-            value={localValue}
-            onChange={handleInputChange}
-            onBlur={handleInputBlur}
-            onKeyDown={handleKeyDown}
-            className={`text-sm h-8 w-full 
-              ${activeVariableName === variable.name ? 'ring-2 ring-primary' : ''}
-              ${error ? 'border-red-300 focus:border-red-500' : ''}`}
-            data-variable-name={variable.name}
-          />
-        )}
-        {error && (
-          <div className="mt-1 text-xs text-red-500 flex items-center gap-1">
-            <AlertCircle className="h-3 w-3" />
-            <span>{error}</span>
+    <Card className={`overflow-hidden ${isActive ? 'ring-2 ring-primary' : ''}`}>
+      <CardContent className="p-4 space-y-3">
+        <div className="grid grid-cols-6 gap-3">
+          {/* Name input */}
+          <div className="col-span-2">
+            <Input
+              value={variable.name}
+              onChange={(e) => onUpdate(variable.id, 'name', e.target.value.toUpperCase())}
+              placeholder="VARIABLE_NAME"
+              className="font-mono uppercase"
+            />
           </div>
-        )}
-      </div>
-      <Button
-        variant="ghost"
-        size="icon"
-        onClick={() => onRemove(variable.id)}
-        className="text-destructive hover:text-destructive/90 h-6 w-6 absolute top-1 right-1"
-      >
-        <Trash2 className="h-3 w-3" />
-      </Button>
-    </div>
+          
+          {/* Type selector */}
+          <div className="col-span-1">
+            <Select
+              value={variable.type}
+              onValueChange={handleTypeChange}
+            >
+              <SelectTrigger>
+                <SelectValue placeholder="Type" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="string">Text</SelectItem>
+                <SelectItem value="number">Number</SelectItem>
+                <SelectItem value="date">Date</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+          
+          {/* Value input */}
+          <div className="col-span-2">
+            {renderInputControl()}
+            {validationError && (
+              <p className="text-red-500 text-xs mt-1">{validationError}</p>
+            )}
+          </div>
+          
+          {/* Remove button */}
+          <div className="col-span-1 flex justify-end">
+            <Button 
+              variant="outline" 
+              size="sm" 
+              onClick={() => onRemove(variable.id)}
+              className="h-9"
+            >
+              Remove
+            </Button>
+          </div>
+        </div>
+      </CardContent>
+    </Card>
   );
 };
 

@@ -13,6 +13,7 @@ export const useDOWForm = ({ initialVariables, onSave }: UseDOWFormProps) => {
   const [autoSave, setAutoSave] = useState(false);
   const [errors, setErrors] = useState<string[]>([]);
   const { toast } = useToast();
+  const [lastManualSave, setLastManualSave] = useState<number>(0);
 
   // Update local state when the initial variables change (like after auto-extraction)
   useEffect(() => {
@@ -23,7 +24,7 @@ export const useDOWForm = ({ initialVariables, onSave }: UseDOWFormProps) => {
   useEffect(() => {
     if (autoSave && variables.length > 0) {
       const timer = setTimeout(() => {
-        handleSave();
+        saveVariables(false); // Don't show notifications for auto-save
       }, 1000); // Autosave after 1 second of inactivity (reduced from 3s for better UX)
       
       return () => clearTimeout(timer);
@@ -78,20 +79,38 @@ export const useDOWForm = ({ initialVariables, onSave }: UseDOWFormProps) => {
     return newErrors.length === 0;
   };
 
-  const handleSave = () => {
+  const saveVariables = (showNotification = true) => {
     if (validateVariables()) {
       onSave(variables);
-      toast({
-        title: "Variables saved",
-        description: "Your document variables have been saved successfully",
-      });
+      
+      // Only show notification for manual saves, not auto-saves
+      if (showNotification) {
+        // Prevent multiple toast notifications within 1 second
+        const now = Date.now();
+        if (now - lastManualSave > 1000) {
+          toast({
+            title: "Variables saved",
+            description: "Your document variables have been saved successfully",
+          });
+          setLastManualSave(now);
+        }
+      }
+      return true;
     } else {
-      toast({
-        title: "Validation failed",
-        description: "Please fix the errors before saving",
-        variant: "destructive",
-      });
+      if (showNotification) {
+        toast({
+          title: "Validation failed",
+          description: "Please fix the errors before saving",
+          variant: "destructive",
+        });
+      }
+      return false;
     }
+  };
+
+  // For backward compatibility
+  const handleSave = () => {
+    return saveVariables(true);
   };
 
   return {
@@ -102,6 +121,7 @@ export const useDOWForm = ({ initialVariables, onSave }: UseDOWFormProps) => {
     addVariable,
     removeVariable,
     updateVariable,
-    handleSave
+    handleSave,
+    saveVariables
   };
 };

@@ -29,7 +29,8 @@ const DOWForm: React.FC<DOWFormProps> = ({
     addVariable,
     removeVariable,
     updateVariable,
-    handleSave
+    handleSave,
+    saveVariables
   } = useDOWForm({
     initialVariables,
     onSave
@@ -54,7 +55,7 @@ const DOWForm: React.FC<DOWFormProps> = ({
         activeVariableName={activeVariableName || null}
         onUpdateVariable={updateVariable}
         onRemoveVariable={removeVariable}
-        onSaveRequested={handleSave} // Pass the save handler
+        onSaveRequested={() => saveVariables(true)} // Use the new saveVariables function
       />
     </div>
   );

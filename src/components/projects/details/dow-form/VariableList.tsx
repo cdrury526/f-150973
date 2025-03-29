@@ -9,7 +9,7 @@ interface VariableListProps {
   activeVariableName: string | null;
   onUpdateVariable: (id: string, field: 'name' | 'value' | 'type', newValue: string) => void;
   onRemoveVariable: (id: string) => void;
-  onSaveRequested?: () => void; // New prop for saving
+  onSaveRequested?: () => boolean; // Updated to return boolean success status
 }
 
 const VariableList: React.FC<VariableListProps> = ({
