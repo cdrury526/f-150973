@@ -1,11 +1,10 @@
-
 import React, { useEffect, useState } from 'react';
 import { Table, TableHeader, TableBody, TableHead, TableRow, TableCell } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
 import { Pencil, Trash2 } from 'lucide-react';
 import { ProjectCost } from './types';
 import { Contractor } from '../contractors/types';
-import { supabase } from '@/integrations/supabase/client';
+import { fetchContractors } from '../contractors/api/contractorsApi';
 
 interface ProjectCostsDataTableProps {
   costs: ProjectCost[];
@@ -22,7 +21,7 @@ const ProjectCostsDataTable: React.FC<ProjectCostsDataTableProps> = ({
   
   // Fetch contractors for the contractor_ids in the costs array
   useEffect(() => {
-    const fetchContractors = async () => {
+    const getContractors = async () => {
       const contractorIds = costs
         .filter(cost => cost.contractor_id)
         .map(cost => cost.contractor_id as string);
@@ -30,16 +29,11 @@ const ProjectCostsDataTable: React.FC<ProjectCostsDataTableProps> = ({
       if (contractorIds.length === 0) return;
       
       try {
-        const { data, error } = await supabase
-          .from('contractors')
-          .select('*')
-          .in('id', contractorIds);
-          
-        if (error) throw error;
+        const contractorsData = await fetchContractors();
         
         const contractorsMap: Record<string, Contractor> = {};
-        data?.forEach(contractor => {
-          contractorsMap[contractor.id] = contractor as Contractor;
+        contractorsData.forEach(contractor => {
+          contractorsMap[contractor.id] = contractor;
         });
         
         setContractors(contractorsMap);
@@ -48,7 +42,7 @@ const ProjectCostsDataTable: React.FC<ProjectCostsDataTableProps> = ({
       }
     };
     
-    fetchContractors();
+    getContractors();
   }, [costs]);
 
   // Calculate totals

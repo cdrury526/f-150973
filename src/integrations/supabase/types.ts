@@ -9,6 +9,42 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
+      contractors: {
+        Row: {
+          companyemail: string
+          companyname: string
+          companyphone: string
+          contactname: string
+          contractortype: string
+          created_at: string
+          id: string
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          companyemail: string
+          companyname: string
+          companyphone: string
+          contactname: string
+          contractortype: string
+          created_at?: string
+          id?: string
+          status: string
+          updated_at?: string
+        }
+        Update: {
+          companyemail?: string
+          companyname?: string
+          companyphone?: string
+          contactname?: string
+          contractortype?: string
+          created_at?: string
+          id?: string
+          status?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       cost_categories: {
         Row: {
           created_at: string
@@ -103,7 +139,7 @@ export type Database = {
             foreignKeyName: "project_costs_contractor_id_fkey"
             columns: ["contractor_id"]
             isOneToOne: false
-            referencedRelation: "projects"
+            referencedRelation: "contractors"
             referencedColumns: ["id"]
           },
           {

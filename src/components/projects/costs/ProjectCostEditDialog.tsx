@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from 'react';
 import { useForm } from "react-hook-form";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
@@ -10,7 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { DollarSign } from "lucide-react";
 import { ProjectCost } from './types';
 import { Contractor } from '@/components/projects/contractors/types';
-import { supabase } from '@/integrations/supabase/client';
+import { fetchContractors } from '@/components/projects/contractors/api/contractorsApi';
 
 interface ProjectCostEditDialogProps {
   open: boolean;
@@ -44,16 +43,11 @@ const ProjectCostEditDialog: React.FC<ProjectCostEditDialogProps> = ({
 
   // Fetch contractors when the dialog opens
   useEffect(() => {
-    const fetchContractors = async () => {
+    const getContractors = async () => {
       setIsLoadingContractors(true);
       try {
-        const { data, error } = await supabase
-          .from('contractors')
-          .select('*')
-          .eq('status', 'Active');
-          
-        if (error) throw error;
-        setContractors(data || []);
+        const contractorsData = await fetchContractors();
+        setContractors(contractorsData);
       } catch (error) {
         console.error('Error fetching contractors:', error);
       } finally {
@@ -62,7 +56,7 @@ const ProjectCostEditDialog: React.FC<ProjectCostEditDialogProps> = ({
     };
 
     if (open) {
-      fetchContractors();
+      getContractors();
     }
   }, [open]);
 
@@ -153,7 +147,6 @@ const ProjectCostEditDialog: React.FC<ProjectCostEditDialogProps> = ({
                 </FormItem>
               )}
             />
-            {/* Add Contractor selection */}
             <FormField
               control={costForm.control}
               name="contractor_id"
