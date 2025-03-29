@@ -11,6 +11,7 @@ export type Database = {
     Tables: {
       contractors: {
         Row: {
+          archived: boolean
           companyemail: string
           companyname: string
           companyphone: string
@@ -22,6 +23,7 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          archived?: boolean
           companyemail: string
           companyname: string
           companyphone: string
@@ -33,6 +35,7 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          archived?: boolean
           companyemail?: string
           companyname?: string
           companyphone?: string

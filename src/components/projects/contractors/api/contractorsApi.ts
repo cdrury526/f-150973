@@ -37,7 +37,7 @@ export const createContractor = async (contractor: Omit<Contractor, 'id'>) => {
       contactname: contractor.contactName, 
       status: contractor.status,
       contractortype: contractor.contractorType,
-      archived: false
+      archived: contractor.archived || false
     })
     .select()
     .single();
