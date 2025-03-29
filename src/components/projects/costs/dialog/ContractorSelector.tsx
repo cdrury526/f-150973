@@ -21,12 +21,14 @@ const ContractorSelector: React.FC<ContractorSelectorProps> = ({
       control={control}
       name="contractor_id"
       render={({ field }) => {
-        // Convert contractors to option format
-        const contractorOptions: SearchableSelectOption[] = Array.isArray(contractors) ? 
-          contractors.map((contractor) => ({
-            value: contractor.id,
-            label: `${contractor.companyName} - ${contractor.contractorType}`
-          })) : [];
+        // Ensure contractors is always an array
+        const safeContractors = Array.isArray(contractors) ? contractors : [];
+        
+        // Convert contractors to option format with safeguards
+        const contractorOptions: SearchableSelectOption[] = safeContractors.map((contractor) => ({
+          value: contractor.id,
+          label: `${contractor.companyName} - ${contractor.contractorType}`
+        }));
 
         // Add a "None" option
         const options = [

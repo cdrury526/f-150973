@@ -17,12 +17,16 @@ export const ContractorTypeSelector: React.FC<ContractorTypeSelectorProps> = ({
   onChange, 
   disabled = false 
 }) => {
-  // Convert contractor types to options format
-  const contractorTypeOptions: SearchableSelectOption[] = Object.keys(contractorTypeDescriptions).map((type) => ({
-    value: type,
-    label: type,
-    description: contractorTypeDescriptions[type as ContractorType]
-  }));
+  // Ensure we have a valid contractorTypeDescriptions object
+  const typeDescriptions = contractorTypeDescriptions || {};
+  
+  // Convert contractor types to options format - safeguard against undefined
+  const contractorTypeOptions: SearchableSelectOption[] = 
+    Object.keys(typeDescriptions).map((type) => ({
+      value: type,
+      label: type,
+      description: typeDescriptions[type as ContractorType] || ''
+    }));
   
   return (
     <div className="flex items-center gap-2">
@@ -51,7 +55,7 @@ export const ContractorTypeSelector: React.FC<ContractorTypeSelectorProps> = ({
             </Button>
           </TooltipTrigger>
           <TooltipContent>
-            <p className="max-w-xs">{contractorTypeDescriptions[value as ContractorType] || 'Select a contractor type'}</p>
+            <p className="max-w-xs">{typeDescriptions[value as ContractorType] || 'Select a contractor type'}</p>
           </TooltipContent>
         </Tooltip>
       </TooltipProvider>
@@ -65,12 +69,16 @@ export const ContractorTypeCell: React.FC<ContractorTypeSelectorProps> = ({
   onChange,
   disabled = false
 }) => {
+  // Ensure we have a valid contractorTypeDescriptions object
+  const typeDescriptions = contractorTypeDescriptions || {};
+  
   // Convert contractor types to options format
-  const contractorTypeOptions: SearchableSelectOption[] = Object.keys(contractorTypeDescriptions).map((type) => ({
-    value: type,
-    label: type,
-    description: contractorTypeDescriptions[type as ContractorType]
-  }));
+  const contractorTypeOptions: SearchableSelectOption[] = 
+    Object.keys(typeDescriptions).map((type) => ({
+      value: type,
+      label: type,
+      description: typeDescriptions[type as ContractorType] || ''
+    }));
   
   return (
     <SearchableSelect

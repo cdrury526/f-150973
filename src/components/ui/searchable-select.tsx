@@ -36,7 +36,7 @@ interface SearchableSelectProps {
 }
 
 export const SearchableSelect: React.FC<SearchableSelectProps> = ({
-  options,
+  options = [],
   value,
   onChange,
   placeholder = "Select an option",
@@ -50,9 +50,12 @@ export const SearchableSelect: React.FC<SearchableSelectProps> = ({
 }) => {
   const [open, setOpen] = useState(false);
   
+  // Ensure options is always an array
+  const safeOptions = Array.isArray(options) ? options : [];
+  
   // Find the selected option to display
-  const selectedOption = value
-    ? options.find(option => option.value === value)
+  const selectedOption = value && safeOptions.length > 0
+    ? safeOptions.find(option => option.value === value)
     : null;
   
   return (
@@ -81,7 +84,7 @@ export const SearchableSelect: React.FC<SearchableSelectProps> = ({
           <CommandInput placeholder={searchPlaceholder} className="h-9" />
           <CommandEmpty>{emptyMessage}</CommandEmpty>
           <CommandGroup className="overflow-y-auto" style={{ maxHeight: `${maxHeight}px` }}>
-            {Array.isArray(options) && options.map(option => (
+            {safeOptions.map(option => (
               <CommandItem
                 key={option.value}
                 value={option.value}
