@@ -15,9 +15,9 @@ const VariableSpan: React.FC<VariableSpanProps> = ({
   onClick
 }) => {
   const handleClick = (e: React.MouseEvent) => {
-    // Completely prevent default and stop propagation to avoid any scrolling
+    // Prevent default browser behavior but don't stop propagation
+    // This allows the click to bubble up while preventing page navigation
     e.preventDefault();
-    e.stopPropagation();
     
     // Call the onClick handler with the variable name
     onClick(e, varName);

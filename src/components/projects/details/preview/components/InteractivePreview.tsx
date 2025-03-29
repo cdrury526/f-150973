@@ -45,7 +45,7 @@ const InteractivePreview: React.FC<InteractivePreviewProps> = ({
   const previewContainerRef = useRef<HTMLDivElement>(null);
   
   const handleVariableClick = useCallback((e: React.MouseEvent, varName: string) => {
-    // The prevention of default and propagation is now handled in VariableSpan
+    // The event handling is delegated to VariableSpan
     
     // Call the provided click handler
     onVariableClick(varName);
@@ -78,7 +78,7 @@ const InteractivePreview: React.FC<InteractivePreviewProps> = ({
     
     return (
       <div 
-        className="space-y-1 preview-container"
+        className="space-y-1 preview-container overflow-auto"
         ref={previewContainerRef}
       >
         {/* Add the style element with our CSS animation */}

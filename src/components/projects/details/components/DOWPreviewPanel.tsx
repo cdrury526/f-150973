@@ -23,7 +23,7 @@ const DOWPreviewPanel: React.FC<DOWPreviewPanelProps> = ({
   }, [variables]);
 
   return (
-    <div className="p-4 h-full overflow-auto">
+    <div className="p-4 h-full overflow-hidden">
       <h3 className="text-base font-medium mb-3">Document Preview</h3>
       <DOWPreview 
         key={key}

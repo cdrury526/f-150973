@@ -10,7 +10,7 @@ export function useDOWState(projectId: string) {
   const [authError, setAuthError] = useState<string | null>(null);
   const [activeVariableName, setActiveVariableName] = useState<string | null>(null);
   const formRef = useRef<HTMLDivElement>(null);
-  const previewPosition = useRef<number>(0);
+  const previewScrollPosition = useRef<number>(0);
 
   // Use our custom hook for template variables management
   const {
@@ -50,16 +50,17 @@ export function useDOWState(projectId: string) {
   const handleVariableClick = (variableName: string) => {
     console.log(`Variable clicked: ${variableName}`);
     
-    // Save the current scroll position of the preview
-    const previewContainer = document.querySelector('.preview-container');
-    if (previewContainer) {
-      previewPosition.current = window.scrollY;
+    // First, capture the current scroll position
+    const previewElement = document.querySelector('.preview-container');
+    if (previewElement) {
+      previewScrollPosition.current = previewElement.scrollTop;
+      console.log(`Saved scroll position: ${previewScrollPosition.current}`);
     }
     
     // Set the active variable name for highlighting
     setActiveVariableName(variableName);
     
-    // Find and scroll to the variable input after a short delay to ensure DOM is updated
+    // Find and scroll to the variable input after a short delay
     setTimeout(() => {
       if (formRef.current) {
         console.log("formRef is available, looking for variable item");
@@ -70,7 +71,7 @@ export function useDOWState(projectId: string) {
         if (variableCard) {
           console.log(`Found variable card for ${variableName}, scrolling into view`);
           
-          // Use scrollIntoView with behavior: 'smooth' to avoid jumpy scrolling
+          // Use scrollIntoView with behavior: 'smooth' for better UX
           variableCard.scrollIntoView({ 
             behavior: 'smooth', 
             block: 'center' 
@@ -86,20 +87,17 @@ export function useDOWState(projectId: string) {
           const input = variableCard.querySelector('textarea');
           if (input) {
             console.log("Found textarea, focusing");
-            // Delay focus slightly to ensure scroll completes first
-            setTimeout(() => {
-              input.focus();
-              
-              // Restore the preview's scroll position
-              if (previewContainer) {
-                window.scrollTo({
-                  top: previewPosition.current,
-                  behavior: 'instant' // Changed to instant to avoid animation
-                });
-              }
-            }, 200);
+            input.focus();
           } else {
             console.log("Could not find textarea to focus");
+          }
+          
+          // Restore the preview's scroll position
+          if (previewElement) {
+            console.log(`Restoring scroll position to: ${previewScrollPosition.current}`);
+            setTimeout(() => {
+              previewElement.scrollTop = previewScrollPosition.current;
+            }, 50);
           }
         } else {
           console.log(`Could not find variable card for ${variableName}`);
