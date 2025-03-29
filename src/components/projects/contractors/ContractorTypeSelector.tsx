@@ -22,22 +22,22 @@ export const ContractorTypeSelector: React.FC<ContractorTypeSelectorProps> = ({
   // Process contractor types into options safely
   useEffect(() => {
     try {
-      // Ensure we have a valid contractorTypeDescriptions object
-      if (!contractorTypeDescriptions || typeof contractorTypeDescriptions !== 'object') {
-        console.error('Invalid contractorTypeDescriptions:', contractorTypeDescriptions);
-        setOptions([]);
-        return;
-      }
+      // Create default empty options array
+      const typeOptions: SearchableSelectOption[] = [];
       
-      // Convert contractor types to options format with strong safeguards
-      const typeOptions: SearchableSelectOption[] = 
+      // Ensure we have a valid contractorTypeDescriptions object
+      if (contractorTypeDescriptions && typeof contractorTypeDescriptions === 'object') {
+        // Convert contractor types to options format with strong safeguards
         Object.keys(contractorTypeDescriptions)
           .filter(key => key && typeof key === 'string') // Ensure keys are valid strings
-          .map((type) => ({
-            value: type,
-            label: type,
-            description: (contractorTypeDescriptions as Record<string, string>)[type] || ''
-          }));
+          .forEach((type) => {
+            typeOptions.push({
+              value: type,
+              label: type,
+              description: (contractorTypeDescriptions as Record<string, string>)[type] || ''
+            });
+          });
+      }
       
       setOptions(typeOptions);
     } catch (error) {
@@ -106,22 +106,22 @@ export const ContractorTypeCell: React.FC<ContractorTypeSelectorProps> = ({
   // Process contractor types into options safely
   useEffect(() => {
     try {
-      // Ensure we have a valid contractorTypeDescriptions object
-      if (!contractorTypeDescriptions || typeof contractorTypeDescriptions !== 'object') {
-        console.error('Invalid contractorTypeDescriptions:', contractorTypeDescriptions);
-        setOptions([]);
-        return;
-      }
+      // Create default empty options array
+      const typeOptions: SearchableSelectOption[] = [];
       
-      // Convert contractor types to options format with strong safeguards
-      const typeOptions: SearchableSelectOption[] = 
+      // Ensure we have a valid contractorTypeDescriptions object
+      if (contractorTypeDescriptions && typeof contractorTypeDescriptions === 'object') {
+        // Convert contractor types to options format with strong safeguards
         Object.keys(contractorTypeDescriptions)
           .filter(key => key && typeof key === 'string') // Ensure keys are valid strings
-          .map((type) => ({
-            value: type,
-            label: type,
-            description: (contractorTypeDescriptions as Record<string, string>)[type] || ''
-          }));
+          .forEach((type) => {
+            typeOptions.push({
+              value: type,
+              label: type,
+              description: (contractorTypeDescriptions as Record<string, string>)[type] || ''
+            });
+          });
+      }
       
       setOptions(typeOptions);
     } catch (error) {

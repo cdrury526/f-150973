@@ -18,29 +18,37 @@ const ContractorSelector: React.FC<ContractorSelectorProps> = ({
 }) => {
   // Pre-process contractor options safely
   const contractorOptions = useMemo(() => {
-    // Ensure contractors is always a valid array
-    const safeContractors = Array.isArray(contractors) 
-      ? contractors.filter(c => c && typeof c === 'object') 
-      : [];
-    
-    // Add strong safeguards for each contractor object and its properties
-    const options: SearchableSelectOption[] = safeContractors
-      .filter(contractor => 
-        contractor && 
-        typeof contractor === 'object' && 
-        'id' in contractor &&
-        'companyName' in contractor
-      )
-      .map((contractor) => ({
-        value: contractor.id || '',
-        label: `${contractor.companyName || 'Unknown'} - ${contractor.contractorType || 'Unknown'}`
-      }));
-
-    // Add a "None" option
-    return [
-      { value: "", label: "None" },
-      ...options
+    // Initialize with the "None" option
+    const options: SearchableSelectOption[] = [
+      { value: "", label: "None" }
     ];
+    
+    try {
+      // Ensure contractors is always a valid array
+      const safeContractors = Array.isArray(contractors) 
+        ? contractors.filter(c => c && typeof c === 'object') 
+        : [];
+      
+      // Add strong safeguards for each contractor object and its properties
+      safeContractors
+        .filter(contractor => 
+          contractor && 
+          typeof contractor === 'object' && 
+          'id' in contractor &&
+          'companyName' in contractor
+        )
+        .forEach((contractor) => {
+          options.push({
+            value: contractor.id || '',
+            label: `${contractor.companyName || 'Unknown'} - ${contractor.contractorType || 'Unknown'}`
+          });
+        });
+        
+      return options;
+    } catch (error) {
+      console.error('Error processing contractor options:', error);
+      return options; // Return just the "None" option if there's an error
+    }
   }, [contractors]);
 
   return (

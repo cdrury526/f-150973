@@ -51,7 +51,7 @@ export const SearchableSelect: React.FC<SearchableSelectProps> = ({
   const [open, setOpen] = useState(false);
   const popoverRef = useRef<HTMLDivElement>(null);
   
-  // Ensure options is always a valid array with valid objects
+  // Create a default empty option array if options is undefined
   const safeOptions = Array.isArray(options) 
     ? options.filter(opt => opt && typeof opt === 'object' && 'value' in opt && 'label' in opt)
     : [];
@@ -71,17 +71,9 @@ export const SearchableSelect: React.FC<SearchableSelectProps> = ({
     return () => window.removeEventListener('error', handleError);
   }, [open]);
 
-  // Prevent rendering if we don't have valid options
-  useEffect(() => {
-    if (open && !Array.isArray(options)) {
-      console.warn('SearchableSelect: options is not an array', options);
-      setOpen(false);
-    }
-  }, [open, options]);
-
   // Ensure we always have a valid array before opening the popover
   const handleOpenChange = (newOpen: boolean) => {
-    if (newOpen && (!Array.isArray(options) || options.length === 0)) {
+    if (newOpen && (!Array.isArray(safeOptions) || safeOptions.length === 0)) {
       console.warn('SearchableSelect: Cannot open with invalid options', options);
       return;
     }
