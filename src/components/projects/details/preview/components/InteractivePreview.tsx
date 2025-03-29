@@ -1,3 +1,4 @@
+
 import React, { useCallback } from 'react';
 import { DOWVariable } from '../../types';
 import { findVariablesInDocument } from '../utils/variableUtils';
@@ -41,16 +42,11 @@ const InteractivePreview: React.FC<InteractivePreviewProps> = ({
   onVariableClick,
 }) => {
   const handleVariableClick = useCallback((e: React.MouseEvent, varName: string) => {
-    // Only prevent scrolling behavior but allow other events to propagate
-    // This allows the input field to receive focus
-    if (e.target === e.currentTarget) {
-      e.preventDefault();
-    }
+    // We don't need to prevent default at all here
+    // Let the event propagate naturally to allow focus
     
     // Call the provided click handler
     onVariableClick(varName);
-    
-    // Don't return false as it can interfere with event handling
   }, [onVariableClick]);
 
   // Calculate line positions for the document
