@@ -1,4 +1,3 @@
-
 /**
  * Utility functions for DOW template handling
  */
@@ -59,8 +58,7 @@ export const mergeVariables = (
       result.push({
         id: `var-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
         name,
-        value: '',
-        type: 'string' // Default type for new variables
+        value: ''
       });
     }
   });
