@@ -70,7 +70,7 @@ const DOWForm: React.FC<DOWFormProps> = ({
           }
           
           if (data) {
-            setBuilderProfile(data);
+            setBuilderProfile(data as BuilderProfile);
             
             // Check if any variables match company info fields and offer to prepopulate
             const companyInfoVars = variables.filter(v => 
@@ -84,7 +84,7 @@ const DOWForm: React.FC<DOWFormProps> = ({
             );
             
             if (companyInfoVars.length > 0 && data.company_name) {
-              prepopulateCompanyInfo(data);
+              prepopulateCompanyInfo(data as BuilderProfile);
             }
           }
         } catch (err) {

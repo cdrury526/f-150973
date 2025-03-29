@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '@/context/AuthContext';
 import { Button } from '@/components/ui/button';
@@ -17,7 +16,6 @@ import { z } from 'zod';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 
-// Define type for builder profile with extended fields
 interface BuilderProfile {
   id: string;
   user_id: string;
@@ -34,7 +32,6 @@ interface BuilderProfile {
   updated_at: string;
 }
 
-// Define the form schema
 const builderProfileSchema = z.object({
   company_name: z.string().min(1, "Company name is required"),
   description: z.string().optional(),
@@ -61,7 +58,6 @@ const AccountSettings = () => {
   const [builderProfile, setBuilderProfile] = useState<BuilderProfile | null>(null);
   const { toast } = useToast();
 
-  // Setup form with react-hook-form and zod validation
   const form = useForm<BuilderProfileFormValues>({
     resolver: zodResolver(builderProfileSchema),
     defaultValues: {
@@ -76,12 +72,10 @@ const AccountSettings = () => {
     }
   });
 
-  // Redirect if user is not logged in
   if (!loading && !user) {
     return <Navigate to="/auth/login" />;
   }
 
-  // Fetch builder profile if user is a builder or admin
   useEffect(() => {
     if (user && (userRole === 'builder' || userRole === 'admin')) {
       fetchBuilderProfile();
@@ -99,15 +93,13 @@ const AccountSettings = () => {
         .single();
       
       if (error && error.code !== 'PGRST116') {
-        // PGRST116 is the error code for no rows returned
         console.error('Error fetching builder profile:', error);
         return;
       }
       
       if (data) {
-        setBuilderProfile(data);
+        setBuilderProfile(data as BuilderProfile);
         
-        // Set form values
         form.reset({
           company_name: data.company_name || '',
           description: data.description || '',
@@ -140,7 +132,6 @@ const AccountSettings = () => {
     setSuccess(false);
     
     try {
-      // Update profile in profiles table
       const { error: profileError } = await supabase
         .from('profiles')
         .update({ 
@@ -175,7 +166,6 @@ const AccountSettings = () => {
     setSuccess(false);
     
     try {
-      // Upload logo if a new one is selected
       let logoUrlToUpdate = logoUrl;
       
       if (logoFile) {
@@ -189,7 +179,6 @@ const AccountSettings = () => {
         
         if (uploadError) throw uploadError;
         
-        // Get public URL
         const { data: publicUrlData } = supabase.storage
           .from('company-logos')
           .getPublicUrl(filePath);
@@ -199,7 +188,6 @@ const AccountSettings = () => {
         setIsUploadingLogo(false);
       }
       
-      // Prepare the data to update or insert
       const builderData = {
         user_id: user?.id,
         company_name: formData.company_name,
@@ -214,9 +202,7 @@ const AccountSettings = () => {
         updated_at: new Date().toISOString()
       };
       
-      // Check if builder profile exists
       if (builderProfile) {
-        // Update existing profile
         const { error: builderError } = await supabase
           .from('builder_profiles')
           .update(builderData)
@@ -224,7 +210,6 @@ const AccountSettings = () => {
           
         if (builderError) throw builderError;
       } else {
-        // Create new profile
         const { error: builderError } = await supabase
           .from('builder_profiles')
           .insert(builderData);
@@ -252,7 +237,6 @@ const AccountSettings = () => {
   const handleLogoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
       const file = e.target.files[0];
-      // Check if file is an image
       if (!file.type.includes('image/')) {
         toast({
           title: "Invalid file",
@@ -262,7 +246,6 @@ const AccountSettings = () => {
         return;
       }
       
-      // Check if file size is less than 5MB
       if (file.size > 5 * 1024 * 1024) {
         toast({
           title: "File too large",
@@ -273,7 +256,6 @@ const AccountSettings = () => {
       }
       
       setLogoFile(file);
-      // Show preview
       const reader = new FileReader();
       reader.onload = (e) => {
         if (e.target && e.target.result) {

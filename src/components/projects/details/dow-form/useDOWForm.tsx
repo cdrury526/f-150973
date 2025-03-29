@@ -73,7 +73,7 @@ export function useDOWForm({ initialVariables, onSave }: UseDOWFormProps) {
       id: uuidv4(),
       name: '',
       value: '',
-      type: 'text'
+      type: 'string'  // Changed from 'text' to 'string' to match the expected type
     };
     
     setVariables(prev => [...prev, newVariable]);
@@ -172,4 +172,3 @@ export function useDOWForm({ initialVariables, onSave }: UseDOWFormProps) {
     prepopulateCompanyInfo
   };
 }
-
