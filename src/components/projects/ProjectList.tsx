@@ -54,8 +54,19 @@ const ProjectList: React.FC<ProjectListProps> = ({
   projects = sampleProjects,
   columns = 3
 }) => {
+  // Create the grid columns class dynamically
+  const getGridClass = () => {
+    const colCount = Math.min(columns, 4); // Cap at 4 columns max
+    
+    return `grid gap-6 grid-cols-1 sm:grid-cols-2 ${
+      colCount >= 3 ? 'lg:grid-cols-3' : ''
+    } ${
+      colCount >= 4 ? 'xl:grid-cols-4' : ''
+    }`;
+  };
+  
   return (
-    <div className={`grid gap-6 sm:grid-cols-2 lg:grid-cols-${Math.min(columns, 4)}`}>
+    <div className={getGridClass()}>
       {projects.map((project) => (
         <ProjectCard key={project.id} project={project} />
       ))}
