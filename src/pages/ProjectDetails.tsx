@@ -1,23 +1,91 @@
-import React from 'react';
-import { useParams, Link } from 'react-router-dom';
+
+import React, { useEffect } from 'react';
+import { useParams, Link, useNavigate } from 'react-router-dom';
+import { useQuery } from '@tanstack/react-query';
 import DashboardLayout from '@/components/layout/DashboardLayout';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ArrowLeft, Calendar, CheckSquare, Clock, MapPin, User, AlertTriangle } from "lucide-react";
-import { sampleProjects } from '@/components/projects/ProjectList';
+import { supabase } from '@/integrations/supabase/client';
+import { useToast } from '@/hooks/use-toast';
+import { Project } from '@/components/projects/ProjectCard';
 
 const statusIcons = {
   'In Progress': <Clock className="h-4 w-4 mr-1" />,
   'Completed': <CheckSquare className="h-4 w-4 mr-1" />,
   'Delayed': <AlertTriangle className="h-4 w-4 mr-1" />,
-  'On Hold': <AlertTriangle className="h-4 w-4 mr-1" />
+  'On Hold': <AlertTriangle className="h-4 w-4 mr-1" />,
+  'Not Started': <Clock className="h-4 w-4 mr-1" />
+};
+
+// Fetch a single project from Supabase
+const fetchProject = async (id: string) => {
+  const { data, error } = await supabase
+    .from('projects')
+    .select('*')
+    .eq('id', id)
+    .single();
+    
+  if (error) {
+    throw new Error(error.message);
+  }
+  
+  // Transform the data to match the Project interface
+  return {
+    id: data.id,
+    title: data.project_name,
+    client: data.client || 'Not specified',
+    location: data.location || 'Not specified',
+    status: data.status || 'Not started',
+    progress: data.progress || 0,
+    dueDate: data.due_date ? new Date(data.due_date).toLocaleDateString('en-US', { 
+      month: 'short', 
+      day: 'numeric', 
+      year: 'numeric'
+    }) : 'No due date',
+    thumbnail: data.thumbnail,
+    projectType: data.project_type
+  } as Project & { projectType: string };
 };
 
 const ProjectDetails = () => {
   const { id } = useParams<{ id: string }>();
-  const project = sampleProjects.find(p => p.id === id);
+  const { toast } = useToast();
+  const navigate = useNavigate();
+
+  // Query for fetching the project
+  const { 
+    data: project, 
+    isLoading, 
+    error 
+  } = useQuery({
+    queryKey: ['project', id],
+    queryFn: () => fetchProject(id as string),
+    enabled: !!id,
+  });
+  
+  useEffect(() => {
+    if (error) {
+      toast({
+        title: 'Error loading project',
+        description: 'Could not load the project details.',
+        variant: 'destructive',
+      });
+      navigate('/projects');
+    }
+  }, [error, toast, navigate]);
+  
+  if (isLoading) {
+    return (
+      <DashboardLayout>
+        <div className="flex items-center justify-center h-64">
+          <p className="text-muted-foreground">Loading project details...</p>
+        </div>
+      </DashboardLayout>
+    );
+  }
   
   if (!project) {
     return (
@@ -25,9 +93,9 @@ const ProjectDetails = () => {
         <div className="text-center">
           <h1 className="text-2xl font-bold mb-4">Project not found</h1>
           <Button variant="outline" asChild>
-            <Link to="/">
+            <Link to="/projects">
               <ArrowLeft className="h-4 w-4 mr-2" />
-              Back to Dashboard
+              Back to Projects
             </Link>
           </Button>
         </div>
@@ -40,14 +108,14 @@ const ProjectDetails = () => {
       <div className="py-6 space-y-6">
         <div className="flex items-center space-x-2">
           <Button variant="outline" size="sm" asChild>
-            <Link to="/">
+            <Link to="/projects">
               <ArrowLeft className="h-4 w-4 mr-2" />
               Back
             </Link>
           </Button>
           <h1 className="text-2xl font-bold">{project.title}</h1>
-          <Badge className="ml-2">
-            {statusIcons[project.status]}
+          <Badge className="ml-2 flex items-center">
+            {statusIcons[project.status as keyof typeof statusIcons]}
             {project.status}
           </Badge>
         </div>
@@ -83,6 +151,11 @@ const ProjectDetails = () => {
                   <Calendar className="h-4 w-4 mr-2 text-muted-foreground" />
                   <span className="text-muted-foreground">Due Date:</span> 
                   <span className="ml-1 font-medium">{project.dueDate}</span>
+                </div>
+                <div className="flex items-center text-sm">
+                  <CheckSquare className="h-4 w-4 mr-2 text-muted-foreground" />
+                  <span className="text-muted-foreground">Type:</span> 
+                  <span className="ml-1 font-medium">{project.projectType}</span>
                 </div>
               </div>
               
