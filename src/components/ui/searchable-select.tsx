@@ -63,8 +63,26 @@ export const SearchableSelect: React.FC<SearchableSelectProps> = ({
     setOpen(false);
   };
 
+  // Close the dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      // Only handle if the dropdown is open
+      if (!open) return;
+      
+      // Check if click is outside the dropdown elements
+      if (listRef.current && !listRef.current.contains(event.target as Node)) {
+        setOpen(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [open]);
+
   return (
-    <>
+    <div className="relative">
       {/* Semi-transparent overlay when dropdown is open */}
       {open && (
         <div 
@@ -90,13 +108,13 @@ export const SearchableSelect: React.FC<SearchableSelectProps> = ({
           </Button>
         </PopoverTrigger>
         <PopoverContent 
-          className="p-0" 
+          className="p-0 border shadow-md" 
           style={{ width: typeof width === 'number' ? `${width}px` : width }}
           align="start"
           sideOffset={4}
           avoidCollisions={true}
         >
-          <div className="z-[101] overflow-hidden rounded-md border border-input bg-popover text-popover-foreground shadow-md">
+          <div className="overflow-hidden rounded-md border border-input bg-popover text-popover-foreground shadow-md z-[200]">
             <div className="flex items-center border-b px-3">
               <input 
                 className="flex h-11 w-full rounded-md bg-transparent py-3 text-sm outline-none placeholder:text-muted-foreground disabled:cursor-not-allowed disabled:opacity-50"
@@ -105,9 +123,15 @@ export const SearchableSelect: React.FC<SearchableSelectProps> = ({
                 onChange={(e) => setSearchQuery(e.target.value)}
                 autoComplete="off"
                 aria-autocomplete="list"
+                onClick={(e) => e.stopPropagation()}
               />
             </div>
-            <div className="overflow-y-auto" style={{ maxHeight: `${maxHeight}px` }} ref={listRef}>
+            <div 
+              className="overflow-y-auto" 
+              style={{ maxHeight: `${maxHeight}px` }} 
+              ref={listRef}
+              onClick={(e) => e.stopPropagation()}
+            >
               {filteredOptions.length === 0 ? (
                 <div className="py-6 text-center text-sm">{emptyMessage}</div>
               ) : (
@@ -115,10 +139,15 @@ export const SearchableSelect: React.FC<SearchableSelectProps> = ({
                   {filteredOptions.map((option) => (
                     <div
                       key={`option-${option.value}`}
-                      className={`relative flex cursor-pointer select-none items-center rounded-sm px-2 py-1.5 text-sm outline-none hover:bg-accent hover:text-accent-foreground ${value === option.value ? 'bg-accent text-accent-foreground' : ''}`}
+                      className={`relative flex cursor-pointer select-none items-center rounded-sm px-2 py-1.5 text-sm outline-none hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground ${value === option.value ? 'bg-accent text-accent-foreground' : ''}`}
                       onClick={(e) => {
+                        e.preventDefault();
                         e.stopPropagation();
                         handleSelect(option.value);
+                      }}
+                      onMouseDown={(e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
                       }}
                       role="option"
                       aria-selected={value === option.value}
@@ -129,7 +158,6 @@ export const SearchableSelect: React.FC<SearchableSelectProps> = ({
                           handleSelect(option.value);
                         }
                       }}
-                      style={{ cursor: 'pointer' }}
                     >
                       <div className={option.description ? 'flex flex-col items-start' : ''}>
                         <span className={option.description ? 'font-medium' : ''}>{option.label}</span>
@@ -147,6 +175,6 @@ export const SearchableSelect: React.FC<SearchableSelectProps> = ({
           </div>
         </PopoverContent>
       </Popover>
-    </>
+    </div>
   );
 };
