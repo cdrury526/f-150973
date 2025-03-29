@@ -7,6 +7,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Separator } from '@/components/ui/separator';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useToast } from '@/hooks/use-toast';
+import { Button } from "@/components/ui/button";
 
 interface DOWContentProps {
   projectId: string;
@@ -14,25 +15,34 @@ interface DOWContentProps {
 
 // Function to fetch the template content
 const fetchTemplateContent = async (): Promise<string> => {
-  try {
-    // Try with the absolute path first
-    let response = await fetch('/REFERENCE DOCS/construction-scope-of-work.md');
-    
-    // If that fails, try with a relative path
-    if (!response.ok) {
-      console.log('Trying fallback path for template document');
-      response = await fetch('./REFERENCE DOCS/construction-scope-of-work.md');
+  const possiblePaths = [
+    '/REFERENCE DOCS/construction-scope-of-work.md',
+    './REFERENCE DOCS/construction-scope-of-work.md',
+    '../REFERENCE DOCS/construction-scope-of-work.md',
+    '../../REFERENCE DOCS/construction-scope-of-work.md',
+    'REFERENCE DOCS/construction-scope-of-work.md'
+  ];
+  
+  let lastError: Error | null = null;
+  
+  // Try each path until one works
+  for (const path of possiblePaths) {
+    try {
+      console.log(`Attempting to fetch template from: ${path}`);
+      const response = await fetch(path);
+      
+      if (response.ok) {
+        console.log(`Successfully loaded template from: ${path}`);
+        return response.text();
+      }
+    } catch (error) {
+      console.warn(`Failed to fetch from ${path}:`, error);
+      lastError = error instanceof Error ? error : new Error(String(error));
     }
-    
-    if (!response.ok) {
-      throw new Error(`Failed to load template document: ${response.status} ${response.statusText}`);
-    }
-    
-    return response.text();
-  } catch (error) {
-    console.error('Template fetch error:', error);
-    throw new Error('Failed to load template document');
   }
+  
+  // If we've tried all paths and none worked, throw the last error
+  throw lastError || new Error('Failed to load template document from any location');
 };
 
 // Function to fetch project variables
@@ -94,7 +104,9 @@ const DOWContent: React.FC<DOWContentProps> = ({ projectId }) => {
   // Query to fetch the template content
   const templateQuery = useQuery({
     queryKey: ['dowTemplate'],
-    queryFn: fetchTemplateContent
+    queryFn: fetchTemplateContent,
+    retry: 3,
+    retryDelay: (attempt) => Math.min(1000 * 2 ** attempt, 10000)
   });
 
   // Query to fetch project variables
@@ -109,6 +121,10 @@ const DOWContent: React.FC<DOWContentProps> = ({ projectId }) => {
     mutationFn: (variables: DOWVariable[]) => saveProjectVariables(projectId, variables),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['projectVariables', projectId] });
+      toast({
+        title: "Variables saved",
+        description: "Project variables have been updated successfully",
+      });
     },
     onError: (error) => {
       toast({
@@ -141,6 +157,16 @@ const DOWContent: React.FC<DOWContentProps> = ({ projectId }) => {
         <p>{templateQuery.error instanceof Error ? templateQuery.error.message : 
             variablesQuery.error instanceof Error ? variablesQuery.error.message : 
             "An unknown error occurred"}</p>
+        <Button 
+          variant="outline" 
+          className="mt-4" 
+          onClick={() => {
+            templateQuery.refetch();
+            variablesQuery.refetch();
+          }}
+        >
+          Retry
+        </Button>
       </div>
     );
   }
