@@ -40,6 +40,18 @@ const InteractivePreview: React.FC<InteractivePreviewProps> = ({
   highlightedVariables,
   onVariableClick,
 }) => {
+  const handleVariableClick = useCallback((e: React.MouseEvent, varName: string) => {
+    // Prevent default browser behavior (like scrolling to top)
+    e.preventDefault();
+    e.stopPropagation();
+    
+    // Call the provided click handler
+    onVariableClick(varName);
+    
+    // Return false to prevent any other default behaviors
+    return false;
+  }, [onVariableClick]);
+
   const renderDocumentWithInteractiveVariables = useCallback(() => {
     if (!templateContent) return <p>No template content available.</p>;
     
@@ -153,7 +165,7 @@ const InteractivePreview: React.FC<InteractivePreviewProps> = ({
                   }
                   transition-all duration-150
                 `}
-                onClick={() => onVariableClick(occ.varName)}
+                onClick={(e) => handleVariableClick(e, occ.varName)}
                 title={`Click to edit ${occ.varName}`}
               >
                 {occ.value}
@@ -186,7 +198,7 @@ const InteractivePreview: React.FC<InteractivePreviewProps> = ({
         })}
       </div>
     );
-  }, [generatedDocument, templateContent, variables, highlightedVariables, onVariableClick]);
+  }, [generatedDocument, templateContent, variables, highlightedVariables, handleVariableClick]);
 
   return renderDocumentWithInteractiveVariables();
 };
