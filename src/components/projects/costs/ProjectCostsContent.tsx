@@ -2,6 +2,7 @@
 import React from 'react';
 import { CardContent } from "@/components/ui/card";
 import ProjectCostsDataTable from './ProjectCostsDataTable';
+import ProjectCostsSummary from './ProjectCostsSummary';
 
 interface ProjectCostsContentProps {
   isLoading: boolean;
@@ -26,6 +27,7 @@ const ProjectCostsContent: React.FC<ProjectCostsContentProps> = ({
   
   return (
     <CardContent>
+      <ProjectCostsSummary costs={costs} />
       <ProjectCostsDataTable 
         costs={costs || []}
         onEditClick={onEditClick}
