@@ -15,6 +15,7 @@ import { Form, FormField, FormItem, FormLabel, FormControl, FormDescription } fr
 import { z } from 'zod';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
+import DashboardLayout from '@/components/layout/DashboardLayout';
 
 interface BuilderProfile {
   id: string;
@@ -268,318 +269,322 @@ const AccountSettings = () => {
 
   if (loading) {
     return (
-      <div className="flex min-h-screen items-center justify-center">
-        <p>Loading...</p>
-      </div>
+      <DashboardLayout>
+        <div className="flex min-h-screen items-center justify-center">
+          <p>Loading...</p>
+        </div>
+      </DashboardLayout>
     );
   }
 
   return (
-    <div className="container py-12">
-      <Tabs defaultValue="profile" className="mx-auto max-w-2xl">
-        <TabsList className="grid w-full grid-cols-3">
-          <TabsTrigger value="profile">Profile</TabsTrigger>
-          {(userRole === 'builder' || userRole === 'admin') && (
-            <TabsTrigger value="company">Company Info</TabsTrigger>
-          )}
-          <TabsTrigger value="preferences">Preferences</TabsTrigger>
-        </TabsList>
-        
-        <TabsContent value="profile">
-          <Card>
-            <CardHeader className="space-y-1">
-              <CardTitle className="text-2xl font-bold">Personal Information</CardTitle>
-              <CardDescription>Update your personal information</CardDescription>
-            </CardHeader>
-            
-            <form onSubmit={handleSubmit}>
-              <CardContent className="space-y-4">
-                {error && (
-                  <Alert variant="destructive">
-                    <AlertCircle className="h-4 w-4" />
-                    <AlertDescription>{error}</AlertDescription>
-                  </Alert>
-                )}
-                
-                {success && (
-                  <Alert className="bg-green-50 text-green-800 border-green-200">
-                    <CheckCircle className="h-4 w-4 text-green-600" />
-                    <AlertDescription>Profile updated successfully</AlertDescription>
-                  </Alert>
-                )}
-                
-                <div className="space-y-2">
-                  <Label htmlFor="email">Email</Label>
-                  <Input 
-                    id="email" 
-                    type="email" 
-                    value={user?.email || ''}
-                    disabled
-                    className="bg-gray-50"
-                  />
-                  <p className="text-sm text-muted-foreground">Your email cannot be changed</p>
-                </div>
-                
-                <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-                  <div className="space-y-2">
-                    <Label htmlFor="firstName">First Name</Label>
-                    <Input 
-                      id="firstName" 
-                      placeholder="John" 
-                      value={firstName}
-                      onChange={(e) => setFirstName(e.target.value)}
-                      required
-                    />
-                  </div>
-                  
-                  <div className="space-y-2">
-                    <Label htmlFor="lastName">Last Name</Label>
-                    <Input 
-                      id="lastName" 
-                      placeholder="Doe" 
-                      value={lastName}
-                      onChange={(e) => setLastName(e.target.value)}
-                      required
-                    />
-                  </div>
-                </div>
-                
-                <div className="space-y-2">
-                  <Label htmlFor="role">Account Type</Label>
-                  <Input 
-                    id="role" 
-                    value={profile?.role || 'customer'}
-                    disabled
-                    className="bg-gray-50 capitalize"
-                  />
-                  <p className="text-sm text-muted-foreground">Your account type cannot be changed</p>
-                </div>
-              </CardContent>
-              
-              <CardFooter>
-                <Button 
-                  type="submit" 
-                  disabled={isUpdating}
-                  className="ml-auto"
-                >
-                  {isUpdating ? 'Updating...' : 'Save Changes'}
-                </Button>
-              </CardFooter>
-            </form>
-          </Card>
-        </TabsContent>
-        
-        {(userRole === 'builder' || userRole === 'admin') && (
-          <TabsContent value="company">
+    <DashboardLayout>
+      <div className="container py-12">
+        <Tabs defaultValue="profile" className="mx-auto max-w-2xl">
+          <TabsList className="grid w-full grid-cols-3">
+            <TabsTrigger value="profile">Profile</TabsTrigger>
+            {(userRole === 'builder' || userRole === 'admin') && (
+              <TabsTrigger value="company">Company Info</TabsTrigger>
+            )}
+            <TabsTrigger value="preferences">Preferences</TabsTrigger>
+          </TabsList>
+          
+          <TabsContent value="profile">
             <Card>
               <CardHeader className="space-y-1">
-                <CardTitle className="text-2xl font-bold">Company Information</CardTitle>
-                <CardDescription>Manage your company details</CardDescription>
+                <CardTitle className="text-2xl font-bold">Personal Information</CardTitle>
+                <CardDescription>Update your personal information</CardDescription>
               </CardHeader>
               
-              <Form {...form}>
-                <form onSubmit={form.handleSubmit(handleCompanySubmit)}>
-                  <CardContent className="space-y-4">
-                    {error && (
-                      <Alert variant="destructive">
-                        <AlertCircle className="h-4 w-4" />
-                        <AlertDescription>{error}</AlertDescription>
-                      </Alert>
-                    )}
-                    
-                    {success && (
-                      <Alert className="bg-green-50 text-green-800 border-green-200">
-                        <CheckCircle className="h-4 w-4 text-green-600" />
-                        <AlertDescription>Company information updated successfully</AlertDescription>
-                      </Alert>
-                    )}
-                    
-                    <FormField
-                      control={form.control}
-                      name="company_name"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Company Name</FormLabel>
-                          <FormControl>
-                            <Input placeholder="Your Company Name" {...field} />
-                          </FormControl>
-                        </FormItem>
-                      )}
+              <form onSubmit={handleSubmit}>
+                <CardContent className="space-y-4">
+                  {error && (
+                    <Alert variant="destructive">
+                      <AlertCircle className="h-4 w-4" />
+                      <AlertDescription>{error}</AlertDescription>
+                    </Alert>
+                  )}
+                  
+                  {success && (
+                    <Alert className="bg-green-50 text-green-800 border-green-200">
+                      <CheckCircle className="h-4 w-4 text-green-600" />
+                      <AlertDescription>Profile updated successfully</AlertDescription>
+                    </Alert>
+                  )}
+                  
+                  <div className="space-y-2">
+                    <Label htmlFor="email">Email</Label>
+                    <Input 
+                      id="email" 
+                      type="email" 
+                      value={user?.email || ''}
+                      disabled
+                      className="bg-gray-50"
                     />
-                    
-                    <FormField
-                      control={form.control}
-                      name="description"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Description</FormLabel>
-                          <FormControl>
-                            <Textarea 
-                              placeholder="Tell us about your company..." 
-                              className="min-h-[100px]"
-                              {...field} 
-                            />
-                          </FormControl>
-                        </FormItem>
-                      )}
-                    />
+                    <p className="text-sm text-muted-foreground">Your email cannot be changed</p>
+                  </div>
+                  
+                  <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                    <div className="space-y-2">
+                      <Label htmlFor="firstName">First Name</Label>
+                      <Input 
+                        id="firstName" 
+                        placeholder="John" 
+                        value={firstName}
+                        onChange={(e) => setFirstName(e.target.value)}
+                        required
+                      />
+                    </div>
                     
                     <div className="space-y-2">
-                      <Label htmlFor="companyLogo">Company Logo</Label>
-                      <div className="flex items-center gap-4">
-                        {logoUrl && (
-                          <div className="h-16 w-16 overflow-hidden rounded border">
-                            <img 
-                              src={logoUrl} 
-                              alt="Company logo" 
-                              className="h-full w-full object-cover"
-                            />
-                          </div>
-                        )}
-                        <div>
-                          <Label
-                            htmlFor="logo-upload"
-                            className="flex cursor-pointer items-center gap-2 rounded-md border border-input bg-background px-3 py-2 text-sm"
-                          >
-                            <Upload className="h-4 w-4" />
-                            {logoUrl ? 'Change Logo' : 'Upload Logo'}
-                            <Input
-                              id="logo-upload"
-                              type="file"
-                              accept="image/*"
-                              onChange={handleLogoChange}
-                              className="hidden"
-                            />
-                          </Label>
-                          <p className="mt-1 text-xs text-muted-foreground">
-                            Recommended size: 400x400px (Max: 5MB)
-                          </p>
-                        </div>
-                      </div>
-                    </div>
-                    
-                    <div className="grid grid-cols-1 gap-4 pt-4">
-                      <h3 className="text-lg font-medium">Contact Information</h3>
-                      
-                      <FormField
-                        control={form.control}
-                        name="address"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>Street Address</FormLabel>
-                            <FormControl>
-                              <div className="flex items-center">
-                                <MapPin className="mr-2 h-4 w-4 text-muted-foreground" />
-                                <Input placeholder="123 Main St" {...field} />
-                              </div>
-                            </FormControl>
-                          </FormItem>
-                        )}
-                      />
-                      
-                      <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
-                        <FormField
-                          control={form.control}
-                          name="city"
-                          render={({ field }) => (
-                            <FormItem>
-                              <FormLabel>City</FormLabel>
-                              <FormControl>
-                                <Input placeholder="City" {...field} />
-                              </FormControl>
-                            </FormItem>
-                          )}
-                        />
-                        
-                        <FormField
-                          control={form.control}
-                          name="state"
-                          render={({ field }) => (
-                            <FormItem>
-                              <FormLabel>State</FormLabel>
-                              <FormControl>
-                                <Input placeholder="State" {...field} />
-                              </FormControl>
-                            </FormItem>
-                          )}
-                        />
-                        
-                        <FormField
-                          control={form.control}
-                          name="zip_code"
-                          render={({ field }) => (
-                            <FormItem>
-                              <FormLabel>ZIP Code</FormLabel>
-                              <FormControl>
-                                <Input placeholder="ZIP Code" {...field} />
-                              </FormControl>
-                            </FormItem>
-                          )}
-                        />
-                      </div>
-                      
-                      <FormField
-                        control={form.control}
-                        name="phone"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>Phone Number</FormLabel>
-                            <FormControl>
-                              <div className="flex items-center">
-                                <Phone className="mr-2 h-4 w-4 text-muted-foreground" />
-                                <Input placeholder="(555) 123-4567" {...field} />
-                              </div>
-                            </FormControl>
-                          </FormItem>
-                        )}
-                      />
-                      
-                      <FormField
-                        control={form.control}
-                        name="website"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>Website</FormLabel>
-                            <FormControl>
-                              <Input placeholder="https://www.example.com" {...field} />
-                            </FormControl>
-                          </FormItem>
-                        )}
+                      <Label htmlFor="lastName">Last Name</Label>
+                      <Input 
+                        id="lastName" 
+                        placeholder="Doe" 
+                        value={lastName}
+                        onChange={(e) => setLastName(e.target.value)}
+                        required
                       />
                     </div>
-                  </CardContent>
+                  </div>
                   
-                  <CardFooter>
-                    <Button 
-                      type="submit" 
-                      disabled={isUpdating || isUploadingLogo}
-                      className="ml-auto"
-                    >
-                      {isUpdating || isUploadingLogo ? 'Saving...' : 'Save Changes'}
-                    </Button>
-                  </CardFooter>
-                </form>
-              </Form>
+                  <div className="space-y-2">
+                    <Label htmlFor="role">Account Type</Label>
+                    <Input 
+                      id="role" 
+                      value={profile?.role || 'customer'}
+                      disabled
+                      className="bg-gray-50 capitalize"
+                    />
+                    <p className="text-sm text-muted-foreground">Your account type cannot be changed</p>
+                  </div>
+                </CardContent>
+                
+                <CardFooter>
+                  <Button 
+                    type="submit" 
+                    disabled={isUpdating}
+                    className="ml-auto"
+                  >
+                    {isUpdating ? 'Updating...' : 'Save Changes'}
+                  </Button>
+                </CardFooter>
+              </form>
             </Card>
           </TabsContent>
-        )}
-        
-        <TabsContent value="preferences">
-          <Card>
-            <CardHeader className="space-y-1">
-              <CardTitle className="text-2xl font-bold">Account Preferences</CardTitle>
-              <CardDescription>Manage your account preferences</CardDescription>
-            </CardHeader>
-            
-            <CardContent className="space-y-4">
-              <p className="text-center text-muted-foreground py-8">
-                Preference settings will be available in a future update.
-              </p>
-            </CardContent>
-          </Card>
-        </TabsContent>
-      </Tabs>
-    </div>
+          
+          {(userRole === 'builder' || userRole === 'admin') && (
+            <TabsContent value="company">
+              <Card>
+                <CardHeader className="space-y-1">
+                  <CardTitle className="text-2xl font-bold">Company Information</CardTitle>
+                  <CardDescription>Manage your company details</CardDescription>
+                </CardHeader>
+                
+                <Form {...form}>
+                  <form onSubmit={form.handleSubmit(handleCompanySubmit)}>
+                    <CardContent className="space-y-4">
+                      {error && (
+                        <Alert variant="destructive">
+                          <AlertCircle className="h-4 w-4" />
+                          <AlertDescription>{error}</AlertDescription>
+                        </Alert>
+                      )}
+                      
+                      {success && (
+                        <Alert className="bg-green-50 text-green-800 border-green-200">
+                          <CheckCircle className="h-4 w-4 text-green-600" />
+                          <AlertDescription>Company information updated successfully</AlertDescription>
+                        </Alert>
+                      )}
+                      
+                      <FormField
+                        control={form.control}
+                        name="company_name"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Company Name</FormLabel>
+                            <FormControl>
+                              <Input placeholder="Your Company Name" {...field} />
+                            </FormControl>
+                          </FormItem>
+                        )}
+                      />
+                      
+                      <FormField
+                        control={form.control}
+                        name="description"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Description</FormLabel>
+                            <FormControl>
+                              <Textarea 
+                                placeholder="Tell us about your company..." 
+                                className="min-h-[100px]"
+                                {...field} 
+                              />
+                            </FormControl>
+                          </FormItem>
+                        )}
+                      />
+                      
+                      <div className="space-y-2">
+                        <Label htmlFor="companyLogo">Company Logo</Label>
+                        <div className="flex items-center gap-4">
+                          {logoUrl && (
+                            <div className="h-16 w-16 overflow-hidden rounded border">
+                              <img 
+                                src={logoUrl} 
+                                alt="Company logo" 
+                                className="h-full w-full object-cover"
+                              />
+                            </div>
+                          )}
+                          <div>
+                            <Label
+                              htmlFor="logo-upload"
+                              className="flex cursor-pointer items-center gap-2 rounded-md border border-input bg-background px-3 py-2 text-sm"
+                            >
+                              <Upload className="h-4 w-4" />
+                              {logoUrl ? 'Change Logo' : 'Upload Logo'}
+                              <Input
+                                id="logo-upload"
+                                type="file"
+                                accept="image/*"
+                                onChange={handleLogoChange}
+                                className="hidden"
+                              />
+                            </Label>
+                            <p className="mt-1 text-xs text-muted-foreground">
+                              Recommended size: 400x400px (Max: 5MB)
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+                      
+                      <div className="grid grid-cols-1 gap-4 pt-4">
+                        <h3 className="text-lg font-medium">Contact Information</h3>
+                        
+                        <FormField
+                          control={form.control}
+                          name="address"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>Street Address</FormLabel>
+                              <FormControl>
+                                <div className="flex items-center">
+                                  <MapPin className="mr-2 h-4 w-4 text-muted-foreground" />
+                                  <Input placeholder="123 Main St" {...field} />
+                                </div>
+                              </FormControl>
+                            </FormItem>
+                          )}
+                        />
+                        
+                        <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+                          <FormField
+                            control={form.control}
+                            name="city"
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel>City</FormLabel>
+                                <FormControl>
+                                  <Input placeholder="City" {...field} />
+                                </FormControl>
+                              </FormItem>
+                            )}
+                          />
+                          
+                          <FormField
+                            control={form.control}
+                            name="state"
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel>State</FormLabel>
+                                <FormControl>
+                                  <Input placeholder="State" {...field} />
+                                </FormControl>
+                              </FormItem>
+                            )}
+                          />
+                          
+                          <FormField
+                            control={form.control}
+                            name="zip_code"
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel>ZIP Code</FormLabel>
+                                <FormControl>
+                                  <Input placeholder="ZIP Code" {...field} />
+                                </FormControl>
+                              </FormItem>
+                            )}
+                          />
+                        </div>
+                        
+                        <FormField
+                          control={form.control}
+                          name="phone"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>Phone Number</FormLabel>
+                              <FormControl>
+                                <div className="flex items-center">
+                                  <Phone className="mr-2 h-4 w-4 text-muted-foreground" />
+                                  <Input placeholder="(555) 123-4567" {...field} />
+                                </div>
+                              </FormControl>
+                            </FormItem>
+                          )}
+                        />
+                        
+                        <FormField
+                          control={form.control}
+                          name="website"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>Website</FormLabel>
+                              <FormControl>
+                                <Input placeholder="https://www.example.com" {...field} />
+                              </FormControl>
+                            </FormItem>
+                          )}
+                        />
+                      </div>
+                    </CardContent>
+                    
+                    <CardFooter>
+                      <Button 
+                        type="submit" 
+                        disabled={isUpdating || isUploadingLogo}
+                        className="ml-auto"
+                      >
+                        {isUpdating || isUploadingLogo ? 'Saving...' : 'Save Changes'}
+                      </Button>
+                    </CardFooter>
+                  </form>
+                </Form>
+              </Card>
+            </TabsContent>
+          )}
+          
+          <TabsContent value="preferences">
+            <Card>
+              <CardHeader className="space-y-1">
+                <CardTitle className="text-2xl font-bold">Account Preferences</CardTitle>
+                <CardDescription>Manage your account preferences</CardDescription>
+              </CardHeader>
+              
+              <CardContent className="space-y-4">
+                <p className="text-center text-muted-foreground py-8">
+                  Preference settings will be available in a future update.
+                </p>
+              </CardContent>
+            </Card>
+          </TabsContent>
+        </Tabs>
+      </div>
+    </DashboardLayout>
   );
 };
 
