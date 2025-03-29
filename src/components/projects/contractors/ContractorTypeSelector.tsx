@@ -19,52 +19,26 @@ export const ContractorTypeSelector: React.FC<ContractorTypeSelectorProps> = ({
 }) => {
   const [options, setOptions] = useState<SearchableSelectOption[]>([]);
   
-  // Process contractor types into options safely
+  // Process contractor types into options
   useEffect(() => {
-    try {
-      // Create default empty options array
-      const typeOptions: SearchableSelectOption[] = [];
-      
-      // Ensure we have a valid contractorTypeDescriptions object
-      if (contractorTypeDescriptions && typeof contractorTypeDescriptions === 'object') {
-        // Convert contractor types to options format with strong safeguards
-        Object.keys(contractorTypeDescriptions)
-          .filter(key => key && typeof key === 'string') // Ensure keys are valid strings
-          .forEach((type) => {
-            typeOptions.push({
-              value: type,
-              label: type,
-              description: (contractorTypeDescriptions as Record<string, string>)[type] || ''
-            });
-          });
-      }
-      
-      setOptions(typeOptions);
-    } catch (error) {
-      console.error('Error processing contractor types:', error);
-      setOptions([]);
-    }
+    const typeOptions: SearchableSelectOption[] = [];
+    
+    Object.keys(contractorTypeDescriptions).forEach((type) => {
+      typeOptions.push({
+        value: type,
+        label: type,
+        description: contractorTypeDescriptions[type as ContractorType]
+      });
+    });
+    
+    setOptions(typeOptions);
   }, []);
-  
-  // Ensure value is always valid
-  const safeValue = (value && typeof value === 'string') ? value : '';
-  
-  // Get description from the type safely
-  const getDescriptionSafely = () => {
-    try {
-      return contractorTypeDescriptions && typeof contractorTypeDescriptions === 'object' && value
-        ? (contractorTypeDescriptions as Record<string, string>)[value as string] || 'Select a contractor type'
-        : 'Select a contractor type';
-    } catch (error) {
-      return 'Select a contractor type';
-    }
-  };
   
   return (
     <div className="flex items-center gap-2">
       <SearchableSelect
         options={options}
-        value={safeValue}
+        value={value || ''}
         onChange={(newValue) => onChange(newValue as ContractorType)}
         placeholder="Select contractor type"
         searchPlaceholder="Search contractor type..."
@@ -87,7 +61,9 @@ export const ContractorTypeSelector: React.FC<ContractorTypeSelectorProps> = ({
             </Button>
           </TooltipTrigger>
           <TooltipContent>
-            <p className="max-w-xs">{getDescriptionSafely()}</p>
+            <p className="max-w-xs">
+              {value ? contractorTypeDescriptions[value] : 'Select a contractor type'}
+            </p>
           </TooltipContent>
         </Tooltip>
       </TooltipProvider>
@@ -103,40 +79,25 @@ export const ContractorTypeCell: React.FC<ContractorTypeSelectorProps> = ({
 }) => {
   const [options, setOptions] = useState<SearchableSelectOption[]>([]);
   
-  // Process contractor types into options safely
+  // Process contractor types into options
   useEffect(() => {
-    try {
-      // Create default empty options array
-      const typeOptions: SearchableSelectOption[] = [];
-      
-      // Ensure we have a valid contractorTypeDescriptions object
-      if (contractorTypeDescriptions && typeof contractorTypeDescriptions === 'object') {
-        // Convert contractor types to options format with strong safeguards
-        Object.keys(contractorTypeDescriptions)
-          .filter(key => key && typeof key === 'string') // Ensure keys are valid strings
-          .forEach((type) => {
-            typeOptions.push({
-              value: type,
-              label: type,
-              description: (contractorTypeDescriptions as Record<string, string>)[type] || ''
-            });
-          });
-      }
-      
-      setOptions(typeOptions);
-    } catch (error) {
-      console.error('Error processing contractor types:', error);
-      setOptions([]);
-    }
+    const typeOptions: SearchableSelectOption[] = [];
+    
+    Object.keys(contractorTypeDescriptions).forEach((type) => {
+      typeOptions.push({
+        value: type,
+        label: type,
+        description: contractorTypeDescriptions[type as ContractorType]
+      });
+    });
+    
+    setOptions(typeOptions);
   }, []);
-  
-  // Ensure value is always valid
-  const safeValue = (value && typeof value === 'string') ? value : '';
   
   return (
     <SearchableSelect
       options={options}
-      value={safeValue}
+      value={value || ''}
       onChange={(newValue) => onChange(newValue as ContractorType)}
       placeholder="Select type"
       searchPlaceholder="Search..."

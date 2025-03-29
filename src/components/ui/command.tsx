@@ -10,35 +10,26 @@ import { Dialog, DialogContent } from "@/components/ui/dialog"
 const Command = React.forwardRef<
   React.ElementRef<typeof CommandPrimitive>,
   React.ComponentPropsWithoutRef<typeof CommandPrimitive>
->(({ className, ...props }, ref) => {
-  // Ensure children is always an array and filter out falsy values
-  const safeChildren = React.Children.toArray(props.children).filter(Boolean);
-  
-  return (
-    <CommandPrimitive
-      ref={ref}
-      className={cn(
-        "flex h-full w-full flex-col overflow-hidden rounded-md bg-popover text-popover-foreground",
-        className
-      )}
-      {...props}
-      children={safeChildren.length > 0 ? safeChildren : null}
-    />
-  )
-})
+>(({ className, ...props }, ref) => (
+  <CommandPrimitive
+    ref={ref}
+    className={cn(
+      "flex h-full w-full flex-col overflow-hidden rounded-md bg-popover text-popover-foreground",
+      className
+    )}
+    {...props}
+  />
+))
 Command.displayName = CommandPrimitive.displayName
 
 interface CommandDialogProps extends DialogProps {}
 
 const CommandDialog = ({ children, ...props }: CommandDialogProps) => {
-  // Ensure children is always an array and filter out falsy values
-  const safeChildren = React.Children.toArray(children).filter(Boolean);
-  
   return (
     <Dialog {...props}>
       <DialogContent className="overflow-hidden p-0 shadow-lg">
         <Command className="[&_[cmdk-group-heading]]:px-2 [&_[cmdk-group-heading]]:font-medium [&_[cmdk-group-heading]]:text-muted-foreground [&_[cmdk-group]:not([hidden])_~[cmdk-group]]:pt-0 [&_[cmdk-group]]:px-2 [&_[cmdk-input-wrapper]_svg]:h-5 [&_[cmdk-input-wrapper]_svg]:w-5 [&_[cmdk-input]]:h-12 [&_[cmdk-item]]:px-2 [&_[cmdk-item]]:py-3 [&_[cmdk-item]_svg]:h-5 [&_[cmdk-item]_svg]:w-5">
-          {safeChildren.length > 0 ? safeChildren : null}
+          {children}
         </Command>
       </DialogContent>
     </Dialog>
@@ -67,19 +58,13 @@ CommandInput.displayName = CommandPrimitive.Input.displayName
 const CommandList = React.forwardRef<
   React.ElementRef<typeof CommandPrimitive.List>,
   React.ComponentPropsWithoutRef<typeof CommandPrimitive.List>
->(({ className, ...props }, ref) => {
-  // Ensure children is always an array and filter out falsy values
-  const safeChildren = React.Children.toArray(props.children).filter(Boolean);
-  
-  return (
-    <CommandPrimitive.List
-      ref={ref}
-      className={cn("max-h-[300px] overflow-y-auto overflow-x-hidden", className)}
-      {...props}
-      children={safeChildren.length > 0 ? safeChildren : null}
-    />
-  )
-})
+>(({ className, ...props }, ref) => (
+  <CommandPrimitive.List
+    ref={ref}
+    className={cn("max-h-[300px] overflow-y-auto overflow-x-hidden", className)}
+    {...props}
+  />
+))
 
 CommandList.displayName = CommandPrimitive.List.displayName
 
@@ -99,22 +84,16 @@ CommandEmpty.displayName = CommandPrimitive.Empty.displayName
 const CommandGroup = React.forwardRef<
   React.ElementRef<typeof CommandPrimitive.Group>,
   React.ComponentPropsWithoutRef<typeof CommandPrimitive.Group>
->(({ className, ...props }, ref) => {
-  // Ensure children is always an array and filter out falsy values
-  const safeChildren = React.Children.toArray(props.children).filter(Boolean);
-  
-  return (
-    <CommandPrimitive.Group
-      ref={ref}
-      className={cn(
-        "overflow-hidden p-1 text-foreground [&_[cmdk-group-heading]]:px-2 [&_[cmdk-group-heading]]:py-1.5 [&_[cmdk-group-heading]]:text-xs [&_[cmdk-group-heading]]:font-medium [&_[cmdk-group-heading]]:text-muted-foreground",
-        className
-      )}
-      {...props}
-      children={safeChildren.length > 0 ? safeChildren : null}
-    />
-  )
-})
+>(({ className, ...props }, ref) => (
+  <CommandPrimitive.Group
+    ref={ref}
+    className={cn(
+      "overflow-hidden p-1 text-foreground [&_[cmdk-group-heading]]:px-2 [&_[cmdk-group-heading]]:py-1.5 [&_[cmdk-group-heading]]:text-xs [&_[cmdk-group-heading]]:font-medium [&_[cmdk-group-heading]]:text-muted-foreground",
+      className
+    )}
+    {...props}
+  />
+))
 
 CommandGroup.displayName = CommandPrimitive.Group.displayName
 

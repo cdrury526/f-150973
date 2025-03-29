@@ -16,70 +16,52 @@ const ContractorSelector: React.FC<ContractorSelectorProps> = ({
   contractors,
   isLoading 
 }) => {
-  // Pre-process contractor options safely
+  // Process contractor options
   const contractorOptions = useMemo(() => {
     // Initialize with the "None" option
     const options: SearchableSelectOption[] = [
       { value: "", label: "None" }
     ];
     
-    try {
-      // Ensure contractors is always a valid array
-      const safeContractors = Array.isArray(contractors) 
-        ? contractors.filter(c => c && typeof c === 'object') 
-        : [];
-      
-      // Add strong safeguards for each contractor object and its properties
-      safeContractors
-        .filter(contractor => 
-          contractor && 
-          typeof contractor === 'object' && 
-          'id' in contractor &&
-          'companyName' in contractor
-        )
-        .forEach((contractor) => {
+    // Add contractor options if available
+    if (Array.isArray(contractors)) {
+      contractors.forEach((contractor) => {
+        if (contractor && contractor.id) {
           options.push({
-            value: contractor.id || '',
+            value: contractor.id,
             label: `${contractor.companyName || 'Unknown'} - ${contractor.contractorType || 'Unknown'}`
           });
-        });
-        
-      return options;
-    } catch (error) {
-      console.error('Error processing contractor options:', error);
-      return options; // Return just the "None" option if there's an error
+        }
+      });
     }
+    
+    return options;
   }, [contractors]);
 
   return (
     <FormField
       control={control}
       name="contractor_id"
-      render={({ field }) => {
-        // Ensure field.value is always a string
-        const safeValue = typeof field.value === 'string' ? field.value : '';
-          
-        return (
-          <FormItem>
-            <FormLabel>Contractor</FormLabel>
-            <FormControl>
-              <SearchableSelect
-                options={contractorOptions}
-                value={safeValue}
-                onChange={field.onChange}
-                placeholder="Select a contractor"
-                searchPlaceholder="Search contractors..."
-                emptyMessage="No contractors found."
-                disabled={isLoading}
-                width="100%"
-              />
-            </FormControl>
-            <FormDescription>
-              The contractor assigned to this work
-            </FormDescription>
-          </FormItem>
-        )
-      }}
+      render={({ field }) => (
+        <FormItem>
+          <FormLabel>Contractor</FormLabel>
+          <FormControl>
+            <SearchableSelect
+              options={contractorOptions}
+              value={field.value || ''}
+              onChange={field.onChange}
+              placeholder="Select a contractor"
+              searchPlaceholder="Search contractors..."
+              emptyMessage="No contractors found."
+              disabled={isLoading}
+              width="100%"
+            />
+          </FormControl>
+          <FormDescription>
+            The contractor assigned to this work
+          </FormDescription>
+        </FormItem>
+      )}
     />
   );
 };
