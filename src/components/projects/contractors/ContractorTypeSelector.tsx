@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 import { 
   Select, 
   SelectContent, 
@@ -14,9 +14,21 @@ import {
   DropdownMenuTrigger 
 } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
-import { ChevronDown, Info } from "lucide-react";
+import { ChevronDown, Info, Search } from "lucide-react";
 import { ContractorType, contractorTypeDescriptions } from './types';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import {
+  Command,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+} from "@/components/ui/command";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
 
 interface ContractorTypeSelectorProps {
   value: ContractorType;
@@ -29,24 +41,46 @@ export const ContractorTypeSelector: React.FC<ContractorTypeSelectorProps> = ({
   onChange, 
   disabled = false 
 }) => {
-  // For regular form use, Select component is better
+  const [open, setOpen] = useState(false);
+  
   return (
     <div className="flex items-center gap-2">
-      <Select value={value} onValueChange={onChange as any} disabled={disabled}>
-        <SelectTrigger className="w-full">
-          <SelectValue placeholder="Select contractor type" />
-        </SelectTrigger>
-        <SelectContent className="max-h-[400px] overflow-y-auto">
-          {Object.entries(contractorTypeDescriptions).map(([type, description]) => (
-            <SelectItem key={type} value={type}>
-              <div className="flex flex-col">
-                <span>{type}</span>
-                <span className="text-xs text-muted-foreground">{description}</span>
-              </div>
-            </SelectItem>
-          ))}
-        </SelectContent>
-      </Select>
+      <Popover open={open} onOpenChange={setOpen}>
+        <PopoverTrigger asChild>
+          <Button
+            variant="outline"
+            role="combobox"
+            aria-expanded={open}
+            className="w-full justify-between"
+            disabled={disabled}
+          >
+            {value || "Select contractor type"}
+            <ChevronDown className="ml-2 h-4 w-4 shrink-0 opacity-70" />
+          </Button>
+        </PopoverTrigger>
+        <PopoverContent className="w-[300px] p-0" align="start">
+          <Command>
+            <CommandInput placeholder="Search contractor type..." className="h-9" />
+            <CommandEmpty>No contractor type found.</CommandEmpty>
+            <CommandGroup className="max-h-[300px] overflow-y-auto">
+              {Object.entries(contractorTypeDescriptions).map(([type, description]) => (
+                <CommandItem
+                  key={type}
+                  value={type}
+                  onSelect={() => {
+                    onChange(type as ContractorType);
+                    setOpen(false);
+                  }}
+                  className="flex flex-col items-start py-2"
+                >
+                  <span className="font-medium">{type}</span>
+                  <span className="text-xs text-muted-foreground">{description}</span>
+                </CommandItem>
+              ))}
+            </CommandGroup>
+          </Command>
+        </PopoverContent>
+      </Popover>
 
       <TooltipProvider>
         <Tooltip>
@@ -70,26 +104,38 @@ export const ContractorTypeCell: React.FC<ContractorTypeSelectorProps> = ({
   onChange,
   disabled = false
 }) => {
+  const [open, setOpen] = useState(false);
+  
   return (
-    <DropdownMenu>
-      <DropdownMenuTrigger asChild disabled={disabled}>
+    <Popover open={open} onOpenChange={setOpen}>
+      <PopoverTrigger asChild disabled={disabled}>
         <Button variant="ghost" className="h-8 justify-start p-2 w-full">
           <span className="truncate flex-1 text-left">{value}</span>
           <ChevronDown className="h-4 w-4 opacity-50" />
         </Button>
-      </DropdownMenuTrigger>
-      <DropdownMenuContent className="w-[250px] max-h-[400px] overflow-y-auto">
-        {Object.entries(contractorTypeDescriptions).map(([type, description]) => (
-          <DropdownMenuItem 
-            key={type} 
-            onClick={() => onChange(type as ContractorType)}
-            className="flex flex-col items-start"
-          >
-            <span className="font-medium">{type}</span>
-            <span className="text-xs text-muted-foreground">{description}</span>
-          </DropdownMenuItem>
-        ))}
-      </DropdownMenuContent>
-    </DropdownMenu>
+      </PopoverTrigger>
+      <PopoverContent className="w-[250px] p-0" align="start">
+        <Command>
+          <CommandInput placeholder="Search..." className="h-9" />
+          <CommandEmpty>No contractor type found.</CommandEmpty>
+          <CommandGroup className="max-h-[300px] overflow-y-auto">
+            {Object.entries(contractorTypeDescriptions).map(([type, description]) => (
+              <CommandItem
+                key={type}
+                value={type}
+                onSelect={() => {
+                  onChange(type as ContractorType);
+                  setOpen(false);
+                }}
+                className="flex flex-col items-start py-2"
+              >
+                <span className="font-medium">{type}</span>
+                <span className="text-xs text-muted-foreground">{description}</span>
+              </CommandItem>
+            ))}
+          </CommandGroup>
+        </Command>
+      </PopoverContent>
+    </Popover>
   );
 };
