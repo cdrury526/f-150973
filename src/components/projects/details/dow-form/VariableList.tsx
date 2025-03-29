@@ -1,9 +1,7 @@
-
 import React from 'react';
 import { ScrollArea } from "@/components/ui/scroll-area";
 import VariableItem from './VariableItem';
 import { DOWVariable } from '../types';
-
 interface VariableListProps {
   variables: DOWVariable[];
   activeVariableName: string | null;
@@ -11,7 +9,6 @@ interface VariableListProps {
   onRemoveVariable: (id: string) => void;
   onSaveRequested?: () => boolean; // Updated to return boolean success status
 }
-
 const VariableList: React.FC<VariableListProps> = ({
   variables,
   activeVariableName,
@@ -21,29 +18,14 @@ const VariableList: React.FC<VariableListProps> = ({
 }) => {
   // If no variables, show a message
   if (variables.length === 0) {
-    return (
-      <div className="text-center p-4 text-muted-foreground">
+    return <div className="text-center p-4 text-muted-foreground">
         No variables found. Add a variable to get started.
-      </div>
-    );
+      </div>;
   }
-
-  return (
-    <ScrollArea className="h-[calc(100vh-320px)]">
-      <div className="space-y-3 pr-4">
-        {variables.map((variable) => (
-          <VariableItem
-            key={variable.id}
-            variable={variable}
-            activeVariableName={activeVariableName}
-            onUpdate={onUpdateVariable}
-            onRemove={onRemoveVariable}
-            onSaveRequested={onSaveRequested}
-          />
-        ))}
+  return <ScrollArea className="h-[calc(100vh-320px)]">
+      <div className="space-y-3 pr-4 px-[12px]">
+        {variables.map(variable => <VariableItem key={variable.id} variable={variable} activeVariableName={activeVariableName} onUpdate={onUpdateVariable} onRemove={onRemoveVariable} onSaveRequested={onSaveRequested} />)}
       </div>
-    </ScrollArea>
-  );
+    </ScrollArea>;
 };
-
 export default VariableList;
