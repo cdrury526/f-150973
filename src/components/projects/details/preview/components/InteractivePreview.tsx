@@ -1,4 +1,3 @@
-
 import React, { useCallback, useRef } from 'react';
 import { DOWVariable } from '../../types';
 import { findVariablesInDocument } from '../utils/variableUtils';
@@ -45,8 +44,6 @@ const InteractivePreview: React.FC<InteractivePreviewProps> = ({
   const previewContainerRef = useRef<HTMLDivElement>(null);
   
   const handleVariableClick = useCallback((e: React.MouseEvent, varName: string) => {
-    // The event handling is delegated to VariableSpan
-    
     // Call the provided click handler
     onVariableClick(varName);
   }, [onVariableClick]);
