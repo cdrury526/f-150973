@@ -25,6 +25,38 @@ export const useCostEditing = (projectId: string, refetchData: () => void) => {
     if (!editingCost) return;
 
     try {
+      // Track changes between original and updated values
+      const changes: Record<string, any> = {};
+      
+      // Only include fields that have changed in the details
+      if (editingCost.quote_price !== values.quote_price) {
+        changes.quote_price = {
+          from: editingCost.quote_price,
+          to: values.quote_price
+        };
+      }
+      
+      if ((editingCost.actual_price || 0) !== values.actual_price) {
+        changes.actual_price = {
+          from: editingCost.actual_price || 0,
+          to: values.actual_price
+        };
+      }
+      
+      if (editingCost.notes !== values.notes) {
+        changes.notes = {
+          from: editingCost.notes || 'None',
+          to: values.notes || 'None'
+        };
+      }
+      
+      if (editingCost.contractor_id !== values.contractor_id) {
+        changes.contractor = {
+          from: editingCost.contractor_id || 'None',
+          to: values.contractor_id || 'None'
+        };
+      }
+
       if (editingCost.id) {
         // Update existing cost
         const { error } = await supabase
@@ -40,10 +72,22 @@ export const useCostEditing = (projectId: string, refetchData: () => void) => {
 
         if (error) throw error;
 
-        // Log the update
+        // Create update details object with formatted changes
+        const updateDetails: Record<string, any> = {};
+        
+        if (changes.quote_price) {
+          updateDetails.quotePrice = `${formatCurrency(changes.quote_price.from)} → ${formatCurrency(changes.quote_price.to)}`;
+        }
+        
+        if (changes.actual_price) {
+          updateDetails.actualPrice = `${formatCurrency(changes.actual_price.from)} → ${formatCurrency(changes.actual_price.to)}`;
+        }
+        
+        // Log the update with details
         await addUpdate(
           `Updated ${editingCost.category_name} costs`, 
-          "cost_update"
+          "cost_update",
+          updateDetails
         );
       } else {
         // Insert new cost
@@ -60,10 +104,14 @@ export const useCostEditing = (projectId: string, refetchData: () => void) => {
 
         if (error) throw error;
 
-        // Log the addition
+        // Log the addition with details
         await addUpdate(
           `Added costs for ${editingCost.category_name}`,
-          "cost_update"
+          "cost_update",
+          {
+            quotePrice: formatCurrency(values.quote_price),
+            actualPrice: values.actual_price ? formatCurrency(values.actual_price) : 'Not set'
+          }
         );
       }
 
@@ -82,6 +130,16 @@ export const useCostEditing = (projectId: string, refetchData: () => void) => {
         variant: 'destructive',
       });
     }
+  };
+
+  // Helper function to format currency
+  const formatCurrency = (value: number): string => {
+    return new Intl.NumberFormat('en-US', {
+      style: 'currency',
+      currency: 'USD',
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 0
+    }).format(value);
   };
 
   return {
