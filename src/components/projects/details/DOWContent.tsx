@@ -15,6 +15,42 @@ interface DOWContentProps {
   projectId: string;
 }
 
+// Utility function to extract variables from template content
+const extractVariablesFromTemplate = (content: string): string[] => {
+  const regex = /{{([A-Z0-9_]+)}}/g;
+  const matches = content.match(regex) || [];
+  
+  // Extract variable names and remove duplicates
+  return [...new Set(matches.map(match => match.replace(/{{|}}/g, '')))];
+};
+
+// Function to merge existing variables with extracted ones
+const mergeVariables = (
+  existingVariables: DOWVariable[], 
+  extractedVarNames: string[]
+): DOWVariable[] => {
+  // Create a map of existing variables for quick lookup
+  const existingVarMap = new Map(
+    existingVariables.map(v => [v.name, v])
+  );
+  
+  // Start with existing variables
+  const result = [...existingVariables];
+  
+  // Add any extracted variables that don't exist yet
+  extractedVarNames.forEach(name => {
+    if (!existingVarMap.has(name)) {
+      result.push({
+        id: `var-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+        name,
+        value: ''
+      });
+    }
+  });
+  
+  return result;
+};
+
 // Function to fetch the template content from Supabase storage
 const fetchTemplateContent = async (): Promise<string> => {
   try {
@@ -131,6 +167,7 @@ const DOWContent: React.FC<DOWContentProps> = ({ projectId }) => {
   const [uploadError, setUploadError] = useState<string | null>(null);
   const [isUploading, setIsUploading] = useState(false);
   const [authError, setAuthError] = useState<string | null>(null);
+  const [autoPopulated, setAutoPopulated] = useState(false);
 
   // Check authentication status
   useEffect(() => {
@@ -192,6 +229,49 @@ const DOWContent: React.FC<DOWContentProps> = ({ projectId }) => {
     }
   });
 
+  // Effect to auto-extract and update variables when template and project variables are loaded
+  useEffect(() => {
+    // Only proceed if we have the template content, variables are loaded, and we haven't auto-populated yet
+    if (
+      templateQuery.data && 
+      variablesQuery.data && 
+      !autoPopulated && 
+      !templateQuery.isLoading && 
+      !variablesQuery.isLoading
+    ) {
+      const extractedVarNames = extractVariablesFromTemplate(templateQuery.data);
+      
+      // Skip if no variables to extract
+      if (extractedVarNames.length === 0) return;
+      
+      // Check if we need to add new variables
+      const existingVarMap = new Map(variablesQuery.data.map(v => [v.name, true]));
+      const newVarsNeeded = extractedVarNames.some(name => !existingVarMap.has(name));
+      
+      if (newVarsNeeded) {
+        // Add extracted variables to existing ones
+        const mergedVariables = mergeVariables(variablesQuery.data, extractedVarNames);
+        
+        // Save the merged variables back to the database
+        saveVariablesMutation.mutate(mergedVariables);
+        toast({
+          title: "Variables extracted",
+          description: `${extractedVarNames.length - existingVarMap.size} new variables were automatically extracted from the template`,
+        });
+      }
+      
+      // Mark as auto-populated to prevent repeated processing
+      setAutoPopulated(true);
+    }
+  }, [templateQuery.data, variablesQuery.data, templateQuery.isLoading, variablesQuery.isLoading, autoPopulated]);
+
+  // Reset auto-populated flag if template changes
+  useEffect(() => {
+    if (templateQuery.isFetching) {
+      setAutoPopulated(false);
+    }
+  }, [templateQuery.isFetching]);
+
   const handleSave = (variables: DOWVariable[]) => {
     saveVariablesMutation.mutate(variables);
   };
@@ -224,6 +304,9 @@ const DOWContent: React.FC<DOWContentProps> = ({ projectId }) => {
         description: "Document template has been uploaded successfully",
       });
       queryClient.invalidateQueries({ queryKey: ['dowTemplate'] });
+      
+      // Reset auto-populated to allow new variables extraction
+      setAutoPopulated(false);
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : "Unknown error during upload";
       setUploadError(errorMessage);

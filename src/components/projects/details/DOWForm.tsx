@@ -5,7 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Card, CardContent } from "@/components/ui/card";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Switch } from "@/components/ui/switch";
-import { PlusCircle, Trash2, Save, AlertTriangle } from "lucide-react";
+import { PlusCircle, Trash2, Save, AlertTriangle, RefreshCw } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
 export interface DOWVariable {
@@ -25,6 +25,11 @@ const DOWForm: React.FC<DOWFormProps> = ({ projectId, variables: initialVariable
   const [autoSave, setAutoSave] = useState(false);
   const [errors, setErrors] = useState<string[]>([]);
   const { toast } = useToast();
+
+  // Update local state when the initial variables change (like after auto-extraction)
+  useEffect(() => {
+    setVariables(initialVariables);
+  }, [initialVariables]);
 
   useEffect(() => {
     if (autoSave && variables.length > 0) {
@@ -93,6 +98,11 @@ const DOWForm: React.FC<DOWFormProps> = ({ projectId, variables: initialVariable
     }
   };
 
+  // Sort variables alphabetically by name for better organization
+  const sortedVariables = [...variables].sort((a, b) => 
+    a.name.localeCompare(b.name)
+  );
+
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
@@ -135,7 +145,7 @@ const DOWForm: React.FC<DOWFormProps> = ({ projectId, variables: initialVariable
             </div>
           ) : (
             <div className="space-y-4">
-              {variables.map((variable) => (
+              {sortedVariables.map((variable) => (
                 <div key={variable.id} className="flex items-center gap-4">
                   <div className="w-1/3">
                     <Input

@@ -17,6 +17,7 @@ interface DOWPreviewProps {
 const DOWPreview: React.FC<DOWPreviewProps> = ({ variables, templateContent }) => {
   const [generatedDocument, setGeneratedDocument] = useState<string>('');
   const [error, setError] = useState<string | null>(null);
+  const [missingVariables, setMissingVariables] = useState<string[]>([]);
   const { toast } = useToast();
 
   useEffect(() => {
@@ -33,22 +34,33 @@ const DOWPreview: React.FC<DOWPreviewProps> = ({ variables, templateContent }) =
 
       let result = templateContent;
       
+      // Find all variable placeholders in the template
+      const allPlaceholders = result.match(/{{([A-Z0-9_]+)}}/g) || [];
+      const allVarNames = allPlaceholders.map(p => p.replace(/{{|}}/g, ''));
+      const uniqueVarNames = [...new Set(allVarNames)];
+      
+      // Create a map of variable names to values for quick lookup
+      const varMap = new Map(variables.map(v => [v.name, v.value || `[${v.name}]`]));
+      
+      // Track missing variables
+      const missing: string[] = [];
+      
       // Replace all variable placeholders
-      variables.forEach(variable => {
-        if (variable.name) {
-          const regex = new RegExp(`{{${variable.name}}}`, 'g');
-          result = result.replace(regex, variable.value || `[${variable.name}]`);
+      uniqueVarNames.forEach(varName => {
+        const regex = new RegExp(`{{${varName}}}`, 'g');
+        const value = varMap.get(varName);
+        
+        if (value) {
+          result = result.replace(regex, value);
+        } else {
+          // This is a missing variable
+          missing.push(varName);
+          result = result.replace(regex, `[${varName}]`);
         }
       });
       
-      // Find any remaining unmatched variables
-      const remainingVars = result.match(/{{[A-Z0-9_]+}}/g);
-      if (remainingVars && remainingVars.length > 0) {
-        // Just highlight them in the output, don't set an error
-        remainingVars.forEach(match => {
-          result = result.replace(match, `[${match}]`);
-        });
-      }
+      // Update missing variables state
+      setMissingVariables(missing);
       
       // Remove markdown formatting symbols (# and **)
       result = result.replace(/#+\s*/g, ''); // Remove headings (# followed by space)
@@ -113,6 +125,20 @@ const DOWPreview: React.FC<DOWPreviewProps> = ({ variables, templateContent }) =
         <Alert variant="destructive">
           <AlertTriangle className="h-4 w-4" />
           <AlertDescription>{error}</AlertDescription>
+        </Alert>
+      )}
+      
+      {missingVariables.length > 0 && (
+        <Alert variant="default" className="border-amber-200 bg-amber-50 text-amber-800">
+          <AlertTriangle className="h-4 w-4" />
+          <AlertDescription>
+            <p className="font-medium">The following variables are missing values:</p>
+            <ul className="list-disc pl-5 mt-2">
+              {missingVariables.map((varName) => (
+                <li key={varName}>{varName}</li>
+              ))}
+            </ul>
+          </AlertDescription>
         </Alert>
       )}
 
