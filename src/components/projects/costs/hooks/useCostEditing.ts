@@ -50,10 +50,42 @@ export const useCostEditing = (projectId: string, refetchData: () => void) => {
         };
       }
       
+      // Get contractor names for better readability in update messages
+      let fromContractorName = 'None';
+      let toContractorName = 'None';
+      
       if (editingCost.contractor_id !== values.contractor_id) {
+        // Get current contractor name if one exists
+        if (editingCost.contractor_id) {
+          const { data: fromContractor } = await supabase
+            .from('contractors')
+            .select('companyname')
+            .eq('id', editingCost.contractor_id)
+            .single();
+          
+          if (fromContractor) {
+            fromContractorName = fromContractor.companyname;
+          }
+        }
+        
+        // Get new contractor name if one is selected
+        if (values.contractor_id) {
+          const { data: toContractor } = await supabase
+            .from('contractors')
+            .select('companyname')
+            .eq('id', values.contractor_id)
+            .single();
+          
+          if (toContractor) {
+            toContractorName = toContractor.companyname;
+          }
+        }
+        
         changes.contractor = {
           from: editingCost.contractor_id || 'None',
-          to: values.contractor_id || 'None'
+          to: values.contractor_id || 'None',
+          fromName: fromContractorName,
+          toName: toContractorName
         };
       }
 
@@ -91,7 +123,8 @@ export const useCostEditing = (projectId: string, refetchData: () => void) => {
         }
         
         if (changes.contractor) {
-          updateDetails.contractor = `${changes.contractor.from} → ${changes.contractor.to}`;
+          // Use the contractor names instead of IDs
+          updateDetails.contractor = `${changes.contractor.fromName} → ${changes.contractor.toName}`;
         }
         
         // Create a clear update message with the category highlighted
@@ -118,6 +151,20 @@ export const useCostEditing = (projectId: string, refetchData: () => void) => {
 
         if (error) throw error;
 
+        // Get contractor name for new cost if one is selected
+        let contractorName = 'Not set';
+        if (values.contractor_id) {
+          const { data: contractor } = await supabase
+            .from('contractors')
+            .select('companyname')
+            .eq('id', values.contractor_id)
+            .single();
+          
+          if (contractor) {
+            contractorName = contractor.companyname;
+          }
+        }
+
         // Log the addition with details
         await addUpdate(
           `Added costs for ${editingCost.category_name}`,
@@ -125,7 +172,8 @@ export const useCostEditing = (projectId: string, refetchData: () => void) => {
           {
             category: editingCost.category_name,
             quotePrice: formatCurrency(values.quote_price),
-            actualPrice: values.actual_price ? formatCurrency(values.actual_price) : 'Not set'
+            actualPrice: values.actual_price ? formatCurrency(values.actual_price) : 'Not set',
+            contractor: contractorName
           }
         );
       }
