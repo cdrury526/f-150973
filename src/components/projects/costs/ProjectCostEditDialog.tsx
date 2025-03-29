@@ -6,6 +6,7 @@ import { Form, FormField, FormItem, FormLabel, FormControl, FormDescription } fr
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
+import { DollarSign } from "lucide-react";
 import { ProjectCost } from './types';
 
 interface ProjectCostEditDialogProps {
@@ -56,17 +57,23 @@ const ProjectCostEditDialog: React.FC<ProjectCostEditDialogProps> = ({
               name="quote_price"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Quote Price ($)</FormLabel>
+                  <FormLabel>Quote Price</FormLabel>
                   <FormControl>
-                    <Input 
-                      type="number" 
-                      step="0.01" 
-                      min="0" 
-                      {...field} 
-                      onChange={e => field.onChange(parseFloat(e.target.value) || 0)}
-                      className="text-right font-medium"
-                      placeholder="0.00"
-                    />
+                    <div className="relative">
+                      <div className="absolute left-0 flex h-10 items-center pl-3 text-muted-foreground">
+                        <DollarSign className="h-4 w-4" />
+                      </div>
+                      <Input 
+                        type="number" 
+                        step="0.01" 
+                        min="0" 
+                        {...field} 
+                        onChange={e => field.onChange(parseFloat(e.target.value) || 0)}
+                        className="pl-8 text-right font-medium"
+                        placeholder="0.00"
+                        inputMode="decimal"
+                      />
+                    </div>
                   </FormControl>
                   <FormDescription>
                     The estimated price quoted to the client
@@ -79,17 +86,23 @@ const ProjectCostEditDialog: React.FC<ProjectCostEditDialogProps> = ({
               name="actual_price"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Actual Price ($)</FormLabel>
+                  <FormLabel>Actual Price</FormLabel>
                   <FormControl>
-                    <Input 
-                      type="number" 
-                      step="0.01" 
-                      min="0" 
-                      {...field} 
-                      onChange={e => field.onChange(parseFloat(e.target.value) || 0)}
-                      className="text-right font-medium"
-                      placeholder="0.00"
-                    />
+                    <div className="relative">
+                      <div className="absolute left-0 flex h-10 items-center pl-3 text-muted-foreground">
+                        <DollarSign className="h-4 w-4" />
+                      </div>
+                      <Input 
+                        type="number" 
+                        step="0.01" 
+                        min="0" 
+                        {...field} 
+                        onChange={e => field.onChange(parseFloat(e.target.value) || 0)}
+                        className="pl-8 text-right font-medium"
+                        placeholder="0.00"
+                        inputMode="decimal"
+                      />
+                    </div>
                   </FormControl>
                   <FormDescription>
                     The actual amount paid
