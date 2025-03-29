@@ -8,8 +8,6 @@ import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { AlertCircle } from 'lucide-react';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { UserRole } from '@/types/auth';
 
 const Register = () => {
   const [firstName, setFirstName] = useState('');
@@ -17,7 +15,6 @@ const Register = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
-  const [role, setRole] = useState<UserRole>('customer');
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const { signUp, user } = useAuth();
@@ -39,7 +36,8 @@ const Register = () => {
     }
     
     try {
-      await signUp(email, password, firstName, lastName, role);
+      // Default role is now 'customer' and not selectable by the user
+      await signUp(email, password, firstName, lastName);
     } catch (err: any) {
       setError(err.message || 'Failed to create account');
     } finally {
@@ -99,23 +97,6 @@ const Register = () => {
                 required
                 autoComplete="email"
               />
-            </div>
-            
-            <div className="space-y-2">
-              <Label htmlFor="role">Account Type</Label>
-              <Select 
-                value={role} 
-                onValueChange={(value) => setRole(value as UserRole)}
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder="Select account type" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="customer">Customer</SelectItem>
-                  <SelectItem value="builder">Builder</SelectItem>
-                  <SelectItem value="admin">Admin</SelectItem>
-                </SelectContent>
-              </Select>
             </div>
             
             <div className="space-y-2">
