@@ -86,9 +86,20 @@ export const useCostEditing = (projectId: string, refetchData: () => void) => {
           updateDetails.actualPrice = `${formatCurrency(changes.actual_price.from)} → ${formatCurrency(changes.actual_price.to)}`;
         }
         
+        if (changes.notes) {
+          updateDetails.notes = `${changes.notes.from} → ${changes.notes.to}`;
+        }
+        
+        if (changes.contractor) {
+          updateDetails.contractor = `${changes.contractor.from} → ${changes.contractor.to}`;
+        }
+        
+        // Create a clear update message with the category highlighted
+        const updateMessage = `Updated ${editingCost.category_name} costs`;
+        
         // Log the update with details
         await addUpdate(
-          `Updated ${editingCost.category_name} costs`, 
+          updateMessage, 
           "cost_update",
           updateDetails
         );

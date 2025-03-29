@@ -73,6 +73,8 @@ export const logProjectUpdate = async (
       }
     }
     
+    console.log("Saving update to database:", enhancedUpdateText);
+    
     const { data, error } = await supabase
       .from('project_updates')
       .insert({
