@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Button } from "@/components/ui/button";
 import { ChevronDown } from "lucide-react";
 import {
@@ -50,13 +50,23 @@ export const SearchableSelect: React.FC<SearchableSelectProps> = ({
 }) => {
   const [open, setOpen] = useState(false);
   
-  // Ensure options is always a valid array
-  const safeOptions = Array.isArray(options) ? options : [];
+  // Ensure options is always a valid array with valid objects
+  const safeOptions = Array.isArray(options) 
+    ? options.filter(opt => opt && typeof opt === 'object' && 'value' in opt && 'label' in opt)
+    : [];
   
-  // Find the selected option to display
+  // Find the selected option to display with additional safety checks
   const selectedOption = value && safeOptions.length > 0
-    ? safeOptions.find(option => option?.value === value)
+    ? safeOptions.find(option => option && option.value === value)
     : null;
+
+  // Prevent rendering if we don't have valid options
+  useEffect(() => {
+    if (open && !Array.isArray(options)) {
+      console.warn('SearchableSelect: options is not an array', options);
+      setOpen(false);
+    }
+  }, [open, options]);
 
   return (
     <Popover open={open} onOpenChange={setOpen}>
@@ -86,7 +96,7 @@ export const SearchableSelect: React.FC<SearchableSelectProps> = ({
           <CommandGroup className="overflow-y-auto" style={{ maxHeight: `${maxHeight}px` }}>
             {safeOptions.map((option, index) => (
               <CommandItem
-                key={option.value || `option-${index}`}
+                key={`option-${option.value || index}`}
                 value={option.value}
                 onSelect={(currentValue) => {
                   onChange(currentValue);

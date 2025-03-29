@@ -21,12 +21,19 @@ const ContractorSelector: React.FC<ContractorSelectorProps> = ({
       control={control}
       name="contractor_id"
       render={({ field }) => {
-        // Ensure contractors is always an array
-        const safeContractors = Array.isArray(contractors) ? contractors : [];
+        // Ensure contractors is always a valid array of objects
+        const safeContractors = Array.isArray(contractors) 
+          ? contractors.filter(c => c && typeof c === 'object') 
+          : [];
         
-        // Add safeguards for each contractor object
+        // Add strong safeguards for each contractor object and its properties
         const contractorOptions: SearchableSelectOption[] = safeContractors
-          .filter(contractor => contractor && typeof contractor === 'object')
+          .filter(contractor => 
+            contractor && 
+            typeof contractor === 'object' && 
+            'id' in contractor &&
+            'companyName' in contractor
+          )
           .map((contractor) => ({
             value: contractor.id || '',
             label: `${contractor.companyName || 'Unknown'} - ${contractor.contractorType || 'Unknown'}`
@@ -39,7 +46,7 @@ const ContractorSelector: React.FC<ContractorSelectorProps> = ({
         ];
         
         // Ensure field.value is always a string
-        const safeValue = field.value || '';
+        const safeValue = typeof field.value === 'string' ? field.value : '';
           
         return (
           <FormItem>

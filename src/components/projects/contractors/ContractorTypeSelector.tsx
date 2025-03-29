@@ -20,13 +20,15 @@ export const ContractorTypeSelector: React.FC<ContractorTypeSelectorProps> = ({
   // Ensure we have a valid contractorTypeDescriptions object
   const typeDescriptions = contractorTypeDescriptions || {};
   
-  // Convert contractor types to options format with safeguards
+  // Convert contractor types to options format with strong safeguards
   const contractorTypeOptions: SearchableSelectOption[] = 
-    Object.keys(typeDescriptions).map((type) => ({
-      value: type,
-      label: type,
-      description: typeDescriptions[type as ContractorType] || ''
-    }));
+    Object.keys(typeDescriptions)
+      .filter(key => key && typeof key === 'string') // Ensure keys are valid strings
+      .map((type) => ({
+        value: type,
+        label: type,
+        description: typeDescriptions[type as ContractorType] || ''
+      }));
   
   // Ensure value is always valid
   const safeValue = (value && typeof value === 'string') ? value : '';
@@ -75,13 +77,15 @@ export const ContractorTypeCell: React.FC<ContractorTypeSelectorProps> = ({
   // Ensure we have a valid contractorTypeDescriptions object
   const typeDescriptions = contractorTypeDescriptions || {};
   
-  // Convert contractor types to options format with safeguards
+  // Convert contractor types to options format with strong safeguards
   const contractorTypeOptions: SearchableSelectOption[] = 
-    Object.keys(typeDescriptions).map((type) => ({
-      value: type,
-      label: type,
-      description: typeDescriptions[type as ContractorType] || ''
-    }));
+    Object.keys(typeDescriptions)
+      .filter(key => key && typeof key === 'string') // Ensure keys are valid strings
+      .map((type) => ({
+        value: type,
+        label: type,
+        description: typeDescriptions[type as ContractorType] || ''
+      }));
   
   // Ensure value is always valid
   const safeValue = (value && typeof value === 'string') ? value : '';
