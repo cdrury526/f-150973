@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -26,15 +25,13 @@ const ProjectCostsHeader: React.FC<ProjectCostsHeaderProps> = ({ onAddCategoryCl
     // Calculate total for summary row
     const quoteTotal = costs.reduce((sum, cost) => sum + (cost.quote_price || 0), 0) || 0;
     const actualTotal = costs.reduce((sum, cost) => sum + (cost.actual_price || 0), 0) || 0;
-    const differenceTotal = quoteTotal - actualTotal; // Fixed: Quote minus Actual
+    const differenceTotal = actualTotal - quoteTotal;
 
     // Create CSV content
     const headers = ['Category', 'Quote Price ($)', 'Actual Price ($)', 'Difference ($)', 'Contractor'];
     
     const rows = costs.map(cost => {
-      // Fixed: Difference calculation is now quote minus actual
-      // Negative difference means over budget (actual > quote)
-      const difference = cost.quote_price - (cost.actual_price ?? 0);
+      const difference = (cost.actual_price ?? 0) - cost.quote_price;
       const contractorName = cost.contractor_id ? contractorsMap[cost.contractor_id] || 'Unknown' : 'Not assigned';
       
       return [
