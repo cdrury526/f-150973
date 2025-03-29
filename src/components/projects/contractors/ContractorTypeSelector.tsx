@@ -23,13 +23,16 @@ export const ContractorTypeSelector: React.FC<ContractorTypeSelectorProps> = ({
   useEffect(() => {
     const typeOptions: SearchableSelectOption[] = [];
     
-    Object.keys(contractorTypeDescriptions).forEach((type) => {
-      typeOptions.push({
-        value: type,
-        label: type,
-        description: contractorTypeDescriptions[type as ContractorType]
+    // Ensure we have valid keys before iterating
+    if (contractorTypeDescriptions) {
+      Object.keys(contractorTypeDescriptions).forEach((type) => {
+        typeOptions.push({
+          value: type,
+          label: type,
+          description: contractorTypeDescriptions[type as ContractorType]
+        });
       });
-    });
+    }
     
     setOptions(typeOptions);
   }, []);
@@ -83,13 +86,15 @@ export const ContractorTypeCell: React.FC<ContractorTypeSelectorProps> = ({
   useEffect(() => {
     const typeOptions: SearchableSelectOption[] = [];
     
-    Object.keys(contractorTypeDescriptions).forEach((type) => {
-      typeOptions.push({
-        value: type,
-        label: type,
-        description: contractorTypeDescriptions[type as ContractorType]
+    if (contractorTypeDescriptions) {
+      Object.keys(contractorTypeDescriptions).forEach((type) => {
+        typeOptions.push({
+          value: type,
+          label: type,
+          description: contractorTypeDescriptions[type as ContractorType]
+        });
       });
-    });
+    }
     
     setOptions(typeOptions);
   }, []);

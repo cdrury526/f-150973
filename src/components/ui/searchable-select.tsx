@@ -50,7 +50,7 @@ export const SearchableSelect: React.FC<SearchableSelectProps> = ({
 }) => {
   const [open, setOpen] = useState(false);
   
-  // Always ensure options is an array
+  // Always ensure options is an array and never undefined
   const safeOptions = Array.isArray(options) ? options : [];
   
   // Find the selected option
@@ -78,30 +78,44 @@ export const SearchableSelect: React.FC<SearchableSelectProps> = ({
         style={{ width: typeof width === 'number' ? `${width}px` : width }}
         align="start"
       >
-        <Command>
-          <CommandInput placeholder={searchPlaceholder} className="h-9" />
-          <CommandEmpty>{emptyMessage}</CommandEmpty>
-          <CommandGroup className="overflow-y-auto" style={{ maxHeight: `${maxHeight}px` }}>
-            {safeOptions.map((option) => (
-              <CommandItem
-                key={`option-${option.value}`}
-                value={option.value}
-                onSelect={(currentValue) => {
-                  onChange(currentValue);
-                  setOpen(false);
-                }}
-                className={option.description ? 'flex flex-col items-start' : ''}
-              >
-                <span className={option.description ? 'font-medium' : ''}>{option.label}</span>
-                {option.description && (
-                  <span className="text-xs text-muted-foreground">
-                    {option.description}
-                  </span>
-                )}
-              </CommandItem>
-            ))}
-          </CommandGroup>
-        </Command>
+        <div className="overflow-hidden rounded-md border border-input bg-popover text-popover-foreground">
+          <div className="flex items-center border-b px-3">
+            <input 
+              className="flex h-11 w-full rounded-md bg-transparent py-3 text-sm outline-none placeholder:text-muted-foreground disabled:cursor-not-allowed disabled:opacity-50"
+              placeholder={searchPlaceholder}
+              onChange={(e) => {
+                // Only filtering happens here, no command functionality used
+              }}
+            />
+          </div>
+          <div className="overflow-y-auto" style={{ maxHeight: `${maxHeight}px` }}>
+            {safeOptions.length === 0 ? (
+              <div className="py-6 text-center text-sm">{emptyMessage}</div>
+            ) : (
+              <div className="p-1">
+                {safeOptions.map((option) => (
+                  <div
+                    key={`option-${option.value}`}
+                    className={`relative flex cursor-default select-none items-center rounded-sm px-2 py-1.5 text-sm outline-none hover:bg-accent hover:text-accent-foreground ${value === option.value ? 'bg-accent text-accent-foreground' : ''}`}
+                    onClick={() => {
+                      onChange(option.value);
+                      setOpen(false);
+                    }}
+                  >
+                    <div className={option.description ? 'flex flex-col items-start' : ''}>
+                      <span className={option.description ? 'font-medium' : ''}>{option.label}</span>
+                      {option.description && (
+                        <span className="text-xs text-muted-foreground">
+                          {option.description}
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        </div>
       </PopoverContent>
     </Popover>
   );

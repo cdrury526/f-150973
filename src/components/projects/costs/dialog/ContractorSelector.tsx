@@ -16,7 +16,7 @@ const ContractorSelector: React.FC<ContractorSelectorProps> = ({
   contractors,
   isLoading 
 }) => {
-  // Process contractor options
+  // Process contractor options with safety checks
   const contractorOptions = useMemo(() => {
     // Initialize with the "None" option
     const options: SearchableSelectOption[] = [
@@ -24,7 +24,7 @@ const ContractorSelector: React.FC<ContractorSelectorProps> = ({
     ];
     
     // Add contractor options if available
-    if (Array.isArray(contractors)) {
+    if (Array.isArray(contractors) && contractors.length > 0) {
       contractors.forEach((contractor) => {
         if (contractor && contractor.id) {
           options.push({
