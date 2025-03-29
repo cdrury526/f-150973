@@ -62,4 +62,5 @@ export interface Contractor {
   contactName: string;
   status: 'Active' | 'Inactive' | 'On Hold';
   contractorType: ContractorType;
+  archived?: boolean;
 }

@@ -20,7 +20,8 @@ export const fetchContractors = async () => {
     companyEmail: contractor.companyemail,
     contactName: contractor.contactname,
     status: contractor.status,
-    contractorType: contractor.contractortype
+    contractorType: contractor.contractortype,
+    archived: contractor.archived || false
   } as Contractor));
 
   return contractors;
@@ -35,7 +36,8 @@ export const createContractor = async (contractor: Omit<Contractor, 'id'>) => {
       companyemail: contractor.companyEmail,
       contactname: contractor.contactName, 
       status: contractor.status,
-      contractortype: contractor.contractorType
+      contractortype: contractor.contractorType,
+      archived: false
     })
     .select()
     .single();
@@ -51,22 +53,29 @@ export const createContractor = async (contractor: Omit<Contractor, 'id'>) => {
     companyEmail: data.companyemail,
     contactName: data.contactname,
     status: data.status,
-    contractorType: data.contractortype
+    contractorType: data.contractortype,
+    archived: data.archived || false
   } as Contractor;
 };
 
 export const updateContractor = async (id: string, updates: Partial<Contractor>) => {
+  // Map the client-side property names to database column names
+  const dbUpdates: Record<string, any> = {};
+  
+  if (updates.companyName !== undefined) dbUpdates.companyname = updates.companyName;
+  if (updates.companyPhone !== undefined) dbUpdates.companyphone = updates.companyPhone;
+  if (updates.companyEmail !== undefined) dbUpdates.companyemail = updates.companyEmail;
+  if (updates.contactName !== undefined) dbUpdates.contactname = updates.contactName;
+  if (updates.status !== undefined) dbUpdates.status = updates.status;
+  if (updates.contractorType !== undefined) dbUpdates.contractortype = updates.contractorType;
+  if (updates.archived !== undefined) dbUpdates.archived = updates.archived;
+  
+  // Add updated_at timestamp
+  dbUpdates.updated_at = new Date().toISOString();
+
   const { data, error } = await supabase
     .from('contractors')
-    .update({
-      companyname: updates.companyName,
-      companyphone: updates.companyPhone,
-      companyemail: updates.companyEmail,
-      contactname: updates.contactName,
-      status: updates.status,
-      contractortype: updates.contractorType,
-      updated_at: new Date().toISOString()
-    })
+    .update(dbUpdates)
     .eq('id', id)
     .select()
     .single();
@@ -82,7 +91,8 @@ export const updateContractor = async (id: string, updates: Partial<Contractor>)
     companyEmail: data.companyemail,
     contactName: data.contactname,
     status: data.status,
-    contractorType: data.contractortype
+    contractorType: data.contractortype,
+    archived: data.archived || false
   } as Contractor;
 };
 
