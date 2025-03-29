@@ -1,3 +1,4 @@
+
 import React, { useEffect } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
@@ -10,6 +11,7 @@ import { ArrowLeft, Calendar, CheckSquare, Clock, MapPin, User, AlertTriangle } 
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { Project } from '@/components/projects/ProjectCard';
+import ProjectCostsTable from '@/components/projects/ProjectCostsTable';
 
 const statusIcons = {
   'In Progress': <Clock className="h-4 w-4 mr-1" />,
@@ -183,7 +185,7 @@ const ProjectDetails = () => {
                 <TabsTrigger value="documents">Documents</TabsTrigger>
               </TabsList>
               <TabsContent value="tasks">
-                <p className="text-muted-foreground py-4">Task management will be implemented in the next iteration.</p>
+                <ProjectCostsTable projectId={project.id} />
               </TabsContent>
               <TabsContent value="timeline">
                 <p className="text-muted-foreground py-4">Project timeline will be implemented in the next iteration.</p>
