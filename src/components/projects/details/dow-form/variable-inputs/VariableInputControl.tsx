@@ -29,6 +29,7 @@ const VariableInputControl: React.FC<VariableInputControlProps> = ({
         value={variable.value}
         onChange={onValueChange}
         onKeyDown={onKeyDown}
+        variableName={variable.name}
       />
       {validationError && (
         <ValidationError errorMessage={validationError} />

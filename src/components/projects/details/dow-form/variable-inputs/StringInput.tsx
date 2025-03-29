@@ -6,12 +6,14 @@ interface StringInputProps {
   value: string;
   onChange: (value: string) => void;
   onKeyDown: (e: React.KeyboardEvent) => void;
+  variableName?: string;
 }
 
 const StringInput: React.FC<StringInputProps> = ({
   value,
   onChange,
-  onKeyDown
+  onKeyDown,
+  variableName
 }) => {
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
@@ -24,6 +26,7 @@ const StringInput: React.FC<StringInputProps> = ({
       className="min-h-[32px] h-auto resize-y"
       placeholder="Enter a text value"
       rows={1}
+      data-variable-name={variableName}
     />
   );
 };

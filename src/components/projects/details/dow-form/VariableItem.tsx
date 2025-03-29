@@ -58,7 +58,10 @@ const VariableItem: React.FC<VariableItemProps> = ({
   };
 
   return (
-    <Card className={`overflow-hidden ${isActive ? 'ring-2 ring-primary' : ''}`}>
+    <Card 
+      className={`variable-item overflow-hidden ${isActive ? 'ring-2 ring-primary' : ''}`}
+      data-variable-name={variable.name}
+    >
       <CardContent className="p-3">
         <div className="flex flex-col space-y-1">
           <div className="flex justify-between items-center">

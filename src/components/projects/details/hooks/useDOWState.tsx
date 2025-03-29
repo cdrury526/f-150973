@@ -52,20 +52,28 @@ export function useDOWState(projectId: string) {
     
     // Find and scroll to the variable input
     if (formRef.current) {
-      // Look for an input with the variable name
-      const input = formRef.current.querySelector(`[data-variable-name="${variableName}"]`);
-      if (input) {
-        // Scroll the input into view with smooth behavior
-        input.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      // Look for the card with the variable name
+      const variableCard = Array.from(formRef.current.querySelectorAll('.variable-item'))
+        .find(card => {
+          const nameElement = card.querySelector('.variable-name');
+          return nameElement && nameElement.textContent?.includes(variableName);
+        });
+      
+      if (variableCard) {
+        // Scroll the card into view with smooth behavior
+        variableCard.scrollIntoView({ behavior: 'smooth', block: 'center' });
         
         // Add a visual highlight effect that fades out
-        (input as HTMLElement).classList.add('variable-highlight-pulse');
+        variableCard.classList.add('variable-highlight-pulse');
         setTimeout(() => {
-          (input as HTMLElement).classList.remove('variable-highlight-pulse');
+          variableCard.classList.remove('variable-highlight-pulse');
         }, 1500);
         
-        // Focus the input
-        (input as HTMLElement).focus();
+        // Find and focus the input within this card
+        const input = variableCard.querySelector('textarea');
+        if (input) {
+          input.focus();
+        }
       }
     }
   };
