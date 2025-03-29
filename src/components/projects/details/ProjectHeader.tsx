@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { ArrowLeft, Clock, CheckSquare, AlertTriangle } from 'lucide-react';
+import { ArrowLeft, Clock, CheckSquare, AlertTriangle, Briefcase } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Project } from '@/components/projects/ProjectCard';
@@ -31,7 +31,10 @@ const ProjectHeader: React.FC<ProjectHeaderProps> = ({ project }) => {
           Back
         </Link>
       </Button>
-      <h1 className="text-2xl font-bold">{project.title}</h1>
+      <div className="flex items-center">
+        <Briefcase className="h-5 w-5 mr-2 text-muted-foreground" />
+        <h1 className="text-2xl font-bold">{project.title}</h1>
+      </div>
       <Badge className="ml-2 flex items-center">
         {statusIcons[project.status] || <Clock className="h-4 w-4 mr-1" />}
         {project.status}
