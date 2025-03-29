@@ -5,7 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Card, CardContent } from "@/components/ui/card";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Switch } from "@/components/ui/switch";
-import { PlusCircle, Trash2, Save, AlertTriangle, RefreshCw } from "lucide-react";
+import { PlusCircle, Trash2, Save, AlertTriangle } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
 export interface DOWVariable {
@@ -108,16 +108,17 @@ const DOWForm: React.FC<DOWFormProps> = ({
   const displayVariables = getSortedVariables ? getSortedVariables() : variables;
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4">
       <div className="flex justify-between items-center">
-        <h3 className="text-lg font-medium">Document Variables</h3>
         <div className="flex items-center space-x-2">
           <span className="text-sm text-muted-foreground">Autosave</span>
           <Switch
             checked={autoSave}
             onCheckedChange={setAutoSave}
           />
-          <Button variant="outline" onClick={addVariable} className="ml-4">
+        </div>
+        <div className="flex space-x-2">
+          <Button variant="outline" onClick={addVariable}>
             <PlusCircle className="h-4 w-4 mr-2" />
             Add Variable
           </Button>
@@ -141,16 +142,16 @@ const DOWForm: React.FC<DOWFormProps> = ({
         </Alert>
       )}
 
-      <Card>
-        <CardContent className="p-6">
+      <Card className="overflow-hidden">
+        <CardContent className="p-0">
           {variables.length === 0 ? (
             <div className="text-center py-6 text-muted-foreground">
               No variables added yet. Click "Add Variable" to start customizing your document.
             </div>
           ) : (
-            <div className="space-y-4">
+            <div className="space-y-0 divide-y">
               {displayVariables.map((variable) => (
-                <div key={variable.id} className="flex items-center gap-4">
+                <div key={variable.id} className="flex items-center gap-4 p-3 hover:bg-muted/50">
                   <div className="w-1/3">
                     <Input
                       placeholder="VARIABLE_NAME"

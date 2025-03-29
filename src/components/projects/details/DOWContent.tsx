@@ -7,6 +7,7 @@ import React, { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { Separator } from '@/components/ui/separator';
 import { Skeleton } from '@/components/ui/skeleton';
+import { ResizablePanelGroup, ResizablePanel, ResizableHandle } from "@/components/ui/resizable";
 
 // Components
 import DOWForm from './DOWForm';
@@ -152,19 +153,36 @@ const DOWContent: React.FC<DOWContentProps> = ({ projectId }) => {
         />
       </div>
       
-      <DOWForm 
-        projectId={projectId} 
-        variables={variablesQuery.data || []}
-        onSave={handleSave}
-        getSortedVariables={getSortedVariables}
-      />
-      
-      <Separator />
-      
-      <DOWPreview 
-        variables={getSortedVariables()}
-        templateContent={templateQuery.data || ''}
-      />
+      <ResizablePanelGroup 
+        direction="horizontal" 
+        className="min-h-[600px] rounded-lg border"
+      >
+        {/* Left panel for the variables form */}
+        <ResizablePanel defaultSize={40} minSize={30}>
+          <div className="p-6 h-full overflow-auto">
+            <h3 className="text-lg font-medium mb-4">Document Variables</h3>
+            <DOWForm 
+              projectId={projectId} 
+              variables={variablesQuery.data || []}
+              onSave={handleSave}
+              getSortedVariables={getSortedVariables}
+            />
+          </div>
+        </ResizablePanel>
+        
+        <ResizableHandle withHandle />
+        
+        {/* Right panel for the document preview */}
+        <ResizablePanel defaultSize={60} minSize={30}>
+          <div className="p-6 h-full overflow-auto">
+            <h3 className="text-lg font-medium mb-4">Document Preview</h3>
+            <DOWPreview 
+              variables={getSortedVariables()}
+              templateContent={templateQuery.data || ''}
+            />
+          </div>
+        </ResizablePanel>
+      </ResizablePanelGroup>
     </div>
   );
 };

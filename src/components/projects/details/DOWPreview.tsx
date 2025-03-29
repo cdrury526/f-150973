@@ -113,19 +113,16 @@ const DOWPreview: React.FC<DOWPreviewProps> = ({ variables, templateContent }) =
   };
 
   return (
-    <div className="space-y-6">
-      <div className="flex justify-between items-center">
-        <h3 className="text-lg font-medium">Document Preview</h3>
-        <div className="space-x-2">
-          <Button variant="outline" onClick={handleCopyToClipboard}>
-            <Copy className="h-4 w-4 mr-2" />
-            Copy
-          </Button>
-          <Button onClick={handleDownload}>
-            <Download className="h-4 w-4 mr-2" />
-            Download
-          </Button>
-        </div>
+    <div className="space-y-4">
+      <div className="flex justify-end items-center space-x-2">
+        <Button variant="outline" onClick={handleCopyToClipboard}>
+          <Copy className="h-4 w-4 mr-2" />
+          Copy
+        </Button>
+        <Button onClick={handleDownload}>
+          <Download className="h-4 w-4 mr-2" />
+          Download
+        </Button>
       </div>
 
       {error && (
@@ -149,14 +146,14 @@ const DOWPreview: React.FC<DOWPreviewProps> = ({ variables, templateContent }) =
         </Alert>
       )}
 
-      <Tabs defaultValue="preview">
-        <TabsList>
+      <Tabs defaultValue="preview" className="w-full">
+        <TabsList className="w-full grid grid-cols-2">
           <TabsTrigger value="preview">Preview</TabsTrigger>
           <TabsTrigger value="raw">Raw</TabsTrigger>
         </TabsList>
         <TabsContent value="preview">
           <Card>
-            <CardContent className="p-6 max-h-[600px] overflow-y-auto">
+            <CardContent className="p-4 max-h-[500px] overflow-y-auto">
               <div className="prose max-w-none break-words whitespace-pre-wrap">
                 {generatedDocument.split('\n').map((line, idx) => (
                   <React.Fragment key={idx}>
@@ -170,7 +167,7 @@ const DOWPreview: React.FC<DOWPreviewProps> = ({ variables, templateContent }) =
         </TabsContent>
         <TabsContent value="raw">
           <Card>
-            <CardContent className="p-6">
+            <CardContent className="p-4">
               <Textarea
                 value={generatedDocument}
                 readOnly
