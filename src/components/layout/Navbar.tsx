@@ -18,7 +18,7 @@ import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 const Navbar = () => {
   const { user, profile, signOut, userRole } = useAuth();
   const navigate = useNavigate();
-  const { setOpen } = useSidebar();
+  const { open, setOpen } = useSidebar();
   
   // Generate initials from user's name if available
   const getInitials = () => {
@@ -50,7 +50,7 @@ const Navbar = () => {
             variant="outline" 
             size="icon" 
             className="md:flex"
-            onClick={() => setOpen(prev => !prev)}
+            onClick={() => setOpen(!open)}
           >
             <Menu className="h-5 w-5" />
           </Button>
