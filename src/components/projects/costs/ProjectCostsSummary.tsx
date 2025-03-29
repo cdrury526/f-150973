@@ -3,7 +3,7 @@ import React, { useMemo, useState } from 'react';
 import { Card, CardContent } from "@/components/ui/card";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { ProjectCost } from './types';
-import { CircleDollarSign, TrendingDown, TrendingUp, Calculator } from 'lucide-react';
+import { CircleDollarSign, TrendingDown, TrendingUp, Calculator, ChevronDown, ChevronUp } from 'lucide-react';
 
 interface ProjectCostsSummaryProps {
   costs: ProjectCost[];
@@ -31,10 +31,17 @@ const ProjectCostsSummary: React.FC<ProjectCostsSummaryProps> = ({ costs }) => {
 
   return (
     <Collapsible open={isOpen} onOpenChange={setIsOpen} className="mb-4">
-      <CollapsibleTrigger className="flex items-center justify-between w-full p-2 rounded-md hover:bg-muted">
+      <CollapsibleTrigger className="flex items-center justify-between w-full p-3 rounded-md hover:bg-accent hover:text-accent-foreground transition-colors bg-muted/50 border border-border shadow-sm">
         <div className="flex items-center space-x-2">
           <Calculator className="h-5 w-5 text-primary" />
           <span className="font-medium">Cost Summary</span>
+        </div>
+        <div className="flex items-center">
+          {isOpen ? (
+            <ChevronUp className="h-4 w-4 opacity-70" />
+          ) : (
+            <ChevronDown className="h-4 w-4 opacity-70" />
+          )}
         </div>
       </CollapsibleTrigger>
       
