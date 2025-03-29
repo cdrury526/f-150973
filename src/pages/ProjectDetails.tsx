@@ -1,24 +1,16 @@
+
 import React, { useEffect } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
-import DashboardLayout from '@/components/layout/DashboardLayout';
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
+import { ArrowLeft } from 'lucide-react';
 import { Button } from "@/components/ui/button";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { ArrowLeft, Calendar, CheckSquare, Clock, MapPin, User, AlertTriangle } from "lucide-react";
-import { supabase } from '@/integrations/supabase/client';
+import DashboardLayout from '@/components/layout/DashboardLayout';
 import { useToast } from '@/hooks/use-toast';
+import { supabase } from '@/integrations/supabase/client';
 import { Project } from '@/components/projects/ProjectCard';
-import ProjectCostsTable from '@/components/projects/ProjectCostsTable';
-
-const statusIcons = {
-  'In Progress': <Clock className="h-4 w-4 mr-1" />,
-  'Completed': <CheckSquare className="h-4 w-4 mr-1" />,
-  'Delayed': <AlertTriangle className="h-4 w-4 mr-1" />,
-  'On Hold': <AlertTriangle className="h-4 w-4 mr-1" />,
-  'Not Started': <Clock className="h-4 w-4 mr-1" />
-};
+import ProjectHeader from '@/components/projects/details/ProjectHeader';
+import ProjectDetailsCard from '@/components/projects/details/ProjectDetailsCard';
+import ProjectTabs from '@/components/projects/details/ProjectTabs';
 
 const fetchProject = async (id: string) => {
   const { data, error } = await supabase
@@ -103,120 +95,13 @@ const ProjectDetails = () => {
   return (
     <DashboardLayout>
       <div className="py-6 space-y-6">
-        <div className="flex items-center space-x-2">
-          <Button variant="outline" size="sm" asChild>
-            <Link to="/projects">
-              <ArrowLeft className="h-4 w-4 mr-2" />
-              Back
-            </Link>
-          </Button>
-          <h1 className="text-2xl font-bold">{project.title}</h1>
-          <Badge className="ml-2 flex items-center">
-            {statusIcons[project.status as keyof typeof statusIcons]}
-            {project.status}
-          </Badge>
-        </div>
-
-        {project.thumbnail && (
-          <div className="w-full h-64 overflow-hidden rounded-lg">
-            <img 
-              src={project.thumbnail} 
-              alt={project.title} 
-              className="w-full h-full object-cover"
-            />
-          </div>
-        )}
+        <ProjectHeader project={project} />
 
         <div className="grid gap-6 md:grid-cols-3">
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-lg">Project Details</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="space-y-2">
-                <div className="flex items-center text-sm">
-                  <User className="h-4 w-4 mr-2 text-muted-foreground" />
-                  <span className="text-muted-foreground">Client:</span> 
-                  <span className="ml-1 font-medium">{project.client}</span>
-                </div>
-                <div className="flex items-center text-sm">
-                  <MapPin className="h-4 w-4 mr-2 text-muted-foreground" />
-                  <span className="text-muted-foreground">Location:</span> 
-                  <span className="ml-1 font-medium">{project.location}</span>
-                </div>
-                <div className="flex items-center text-sm">
-                  <Calendar className="h-4 w-4 mr-2 text-muted-foreground" />
-                  <span className="text-muted-foreground">Due Date:</span> 
-                  <span className="ml-1 font-medium">{project.dueDate}</span>
-                </div>
-                <div className="flex items-center text-sm">
-                  <CheckSquare className="h-4 w-4 mr-2 text-muted-foreground" />
-                  <span className="text-muted-foreground">Type:</span> 
-                  <span className="ml-1 font-medium">{project.projectType}</span>
-                </div>
-              </div>
-              
-              <div className="space-y-2">
-                <div className="flex justify-between text-sm">
-                  <span>Progress</span>
-                  <span>{project.progress}%</span>
-                </div>
-                <div className="h-2 bg-gray-100 rounded-full overflow-hidden">
-                  <div 
-                    className="h-full bg-primary rounded-full" 
-                    style={{ width: `${project.progress}%` }}
-                  />
-                </div>
-              </div>
-
-              <div className="pt-4 space-y-2">
-                <Button className="w-full">Edit Project</Button>
-                <Button variant="outline" className="w-full">Download Details</Button>
-              </div>
-            </CardContent>
-          </Card>
+          <ProjectDetailsCard project={project} />
           
-          <div className="md:col-span-2 space-y-6">
-            <Tabs defaultValue="build">
-              <TabsList className="grid w-full grid-cols-4">
-                <TabsTrigger value="build">Build</TabsTrigger>
-                <TabsTrigger value="tasks">Tasks</TabsTrigger>
-                <TabsTrigger value="timeline">Timeline</TabsTrigger>
-                <TabsTrigger value="documents">Documents</TabsTrigger>
-              </TabsList>
-              <TabsContent value="build">
-                <ProjectCostsTable projectId={project.id} />
-              </TabsContent>
-              <TabsContent value="tasks">
-                <p className="text-muted-foreground py-4">Task management will be implemented in the next iteration.</p>
-              </TabsContent>
-              <TabsContent value="timeline">
-                <p className="text-muted-foreground py-4">Project timeline will be implemented in the next iteration.</p>
-              </TabsContent>
-              <TabsContent value="documents">
-                <p className="text-muted-foreground py-4">Document management will be implemented in the next iteration.</p>
-              </TabsContent>
-            </Tabs>
-            
-            <Card>
-              <CardHeader>
-                <CardTitle className="text-lg">Recent Updates</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-4">
-                  {[
-                    { update: "Milestone 3 completed", date: "Oct 15, 2023" },
-                    { update: "Updated project timeline", date: "Oct 10, 2023" },
-                    { update: "Added new material specifications", date: "Oct 5, 2023" },
-                  ].map((item, i) => (
-                    <div key={i} className="pb-4 border-b last:border-0 last:pb-0">
-                      <div className="font-medium">{item.update}</div>
-                      <div className="text-sm text-muted-foreground">{item.date}</div>
-                    </div>
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
+          <div className="md:col-span-2">
+            <ProjectTabs projectId={project.id} />
           </div>
         </div>
       </div>
