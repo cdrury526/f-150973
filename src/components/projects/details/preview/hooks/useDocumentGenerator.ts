@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { DOWVariable } from '../../types';
 import { generateDocument } from '../utils/documentGenerator';
@@ -44,9 +43,6 @@ export const useDocumentGenerator = ({
       setGeneratedDocument(result.document);
       setMissingVariables(result.missingVariables);
       setError(null);
-      
-      // Log for debugging
-      console.log("Document generated with variables:", variables);
     } catch (err) {
       console.error('Document generation error:', err);
       setError('Failed to generate document. Please check your variables and try again.');

@@ -1,4 +1,3 @@
-
 /**
  * DOW (Description of Work) Content component
  */
@@ -10,11 +9,15 @@ import DOWLoadingState from './components/DOWLoadingState';
 import DocumentEditor from './components/DocumentEditor';
 import VariableHighlightStyles from './components/VariableHighlightStyles';
 import { useDOWState } from './hooks/useDOWState';
+import { DOWVariable } from './types';
 
 interface DOWContentProps {
   projectId: string;
 }
 
+/**
+ * Main component for the Description of Work (DOW) functionality
+ */
 const DOWContent: React.FC<DOWContentProps> = ({ projectId }) => {
   const {
     uploadError,
@@ -22,54 +25,64 @@ const DOWContent: React.FC<DOWContentProps> = ({ projectId }) => {
     isUploading,
     setIsUploading,
     authError,
-    activeVariableName,
-    formRef,
     templateQuery,
     variablesQuery,
     handleSave,
     setAutoPopulated,
-    getSortedVariables,
-    handleVariableClick,
     handleUploadClick
   } = useDOWState(projectId);
+
+  // Handle saving a single variable
+  const handleSaveVariable = (updatedVariable: DOWVariable) => {
+    // Find the variable in the existing array
+    const updatedVariables = (variablesQuery.data || []).map(v => 
+      v.id === updatedVariable.id ? updatedVariable : v
+    );
+    
+    // Save the updated variables
+    handleSave(updatedVariables);
+  };
 
   // Loading state
   if (templateQuery.isLoading || variablesQuery.isLoading) {
     return <DOWLoadingState />;
   }
 
-  // Template not found error state (specific case for first-time setup)
-  if (templateQuery.error && templateQuery.error instanceof Error && 
-      templateQuery.error.message.includes('Template not found')) {
+  // Error states
+  if (authError) {
+    return <AuthError error={new Error(authError)} />;
+  }
+
+  if (templateQuery.error) {
+    return <TemplateNotFound 
+      authError={authError}
+      uploadError={uploadError}
+      isUploading={isUploading}
+      onUploadClick={handleUploadClick}
+    />;
+  }
+
+  if (variablesQuery.error) {
+    return <GeneralError 
+      error={variablesQuery.error}
+      onRetry={() => variablesQuery.refetch()}
+      onUploadClick={handleUploadClick}
+      authError={authError}
+    />;
+  }
+
+  // Empty template state (user hasn't uploaded yet)
+  if (!templateQuery.data) {
     return (
-      <TemplateNotFound 
+      <TemplateUploadSection 
+        projectId={projectId}
         authError={authError}
         uploadError={uploadError}
         isUploading={isUploading}
+        setIsUploading={setIsUploading}
+        setUploadError={setUploadError}
+        setAutoPopulated={setAutoPopulated}
         onUploadClick={handleUploadClick}
-      />
-    );
-  }
-
-  // Authentication specific error state
-  if (templateQuery.error && templateQuery.error instanceof Error && 
-      (templateQuery.error.message.includes('Permission denied') || 
-       templateQuery.error.message.includes('not authorized') ||
-       templateQuery.error.message.includes('authentication'))) {
-    return <AuthError error={templateQuery.error} />;
-  }
-
-  // General error state
-  if (templateQuery.error || variablesQuery.error) {
-    return (
-      <GeneralError 
-        error={templateQuery.error || variablesQuery.error}
-        onRetry={() => {
-          templateQuery.refetch();
-          variablesQuery.refetch();
-        }}
-        onUploadClick={handleUploadClick}
-        authError={authError}
       />
     );
   }
@@ -94,11 +107,7 @@ const DOWContent: React.FC<DOWContentProps> = ({ projectId }) => {
         projectId={projectId}
         variables={variablesQuery.data || []}
         templateContent={templateQuery.data || ''}
-        activeVariableName={activeVariableName}
-        formRef={formRef}
-        onVariableClick={handleVariableClick}
-        onSave={handleSave}
-        getSortedVariables={getSortedVariables}
+        onSaveVariable={handleSaveVariable}
       />
     </div>
   );

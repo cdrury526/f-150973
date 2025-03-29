@@ -1,5 +1,4 @@
-
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Card, CardContent } from "@/components/ui/card";
 import { DOWVariable } from '../types';
 import VariableNameInput from './variable-inputs/VariableNameInput';
@@ -12,7 +11,7 @@ interface VariableItemProps {
   activeVariableName: string | null;
   onUpdate: (id: string, field: 'name' | 'value' | 'type', newValue: string) => void;
   onRemove: (id: string) => void;
-  onSaveRequested?: () => boolean; // Updated to return boolean success status
+  onSaveRequested?: () => boolean;
 }
 
 const VariableItem: React.FC<VariableItemProps> = ({
@@ -25,12 +24,19 @@ const VariableItem: React.FC<VariableItemProps> = ({
   const [validationError, setValidationError] = useState<string | null>(null);
   const isActive = activeVariableName === variable.name;
   const [isEditing, setIsEditing] = useState(false);
+  
+  // Debug logs
+  useEffect(() => {
+    console.log('VariableItem rendered:', variable.name, 'isActive:', isActive);
+  }, [variable.name, isActive]);
 
   const handleValueChange = (newValue: string) => {
+    console.log('handleValueChange called:', variable.name, newValue);
     onUpdate(variable.id, 'value', newValue);
   };
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
+    console.log('handleKeyDown called:', variable.name, e.key);
     if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) {
       e.preventDefault();
       
@@ -49,40 +55,42 @@ const VariableItem: React.FC<VariableItemProps> = ({
   };
 
   const handleBlur = () => {
+    console.log('handleBlur called:', variable.name);
     validateAndSave();
     setIsEditing(false);
   };
 
   const handleFocus = () => {
+    console.log('handleFocus called:', variable.name);
     setIsEditing(true);
   };
 
   return (
     <Card 
-      className={`variable-item overflow-hidden ${isActive ? 'ring-2 ring-primary' : ''}`}
+      className={`variable-item ${isActive ? 'border-primary' : ''} ${isEditing ? 'ring-2 ring-primary' : ''}`}
       data-variable-name={variable.name}
     >
-      <CardContent className="p-3">
-        <div className="flex flex-col space-y-1">
-          <div className="flex justify-between items-center">
-            {isEditing ? (
-              <VariableNameInput
-                value={variable.name}
-                onChange={(newValue) => onUpdate(variable.id, 'name', newValue)}
-              />
-            ) : (
-              <VariableLabel name={variable.name} />
-            )}
-            <RemoveButton onClick={() => onRemove(variable.id)} />
+      <CardContent className="p-4 space-y-4">
+        <div className="flex items-start justify-between gap-4">
+          <div className="flex-1 space-y-2">
+            <VariableLabel name={variable.name} displayName="Variable Name" />
+            <VariableNameInput
+              value={variable.name}
+              onChange={(newValue) => onUpdate(variable.id, 'name', newValue)}
+            />
           </div>
-          
-          <VariableInputControl 
+          <RemoveButton onClick={() => onRemove(variable.id)} />
+        </div>
+        
+        <div className="space-y-2">
+          <VariableLabel name={variable.name} displayName="Value" />
+          <VariableInputControl
             variable={variable}
             validationError={validationError}
             onValueChange={handleValueChange}
+            onKeyDown={handleKeyDown}
             onBlur={handleBlur}
             onFocus={handleFocus}
-            onKeyDown={handleKeyDown}
             validateAndSave={validateAndSave}
           />
         </div>

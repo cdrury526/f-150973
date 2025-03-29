@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { DOWVariable } from '../../types';
 import StringInput from './StringInput';
@@ -23,12 +22,33 @@ const VariableInputControl: React.FC<VariableInputControlProps> = ({
   onKeyDown,
   validateAndSave
 }) => {
+  const handleChange = (newValue: string) => {
+    console.log('VariableInputControl handleChange:', variable.name, newValue);
+    onValueChange(newValue);
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    onKeyDown(e);
+  };
+
+  const handleBlur = () => {
+    validateAndSave();
+    onBlur();
+  };
+
+  const handleFocus = () => {
+    console.log('VariableInputControl handleFocus:', variable.name);
+    onFocus();
+  };
+
   return (
     <div className="w-full">
       <StringInput
-        value={variable.value}
-        onChange={onValueChange}
-        onKeyDown={onKeyDown}
+        value={variable.value || ''}
+        onChange={handleChange}
+        onKeyDown={handleKeyDown}
+        onBlur={handleBlur}
+        onFocus={handleFocus}
         variableName={variable.name}
       />
       {validationError && (

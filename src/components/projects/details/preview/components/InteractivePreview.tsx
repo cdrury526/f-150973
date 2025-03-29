@@ -1,4 +1,4 @@
-import React, { useCallback, useRef } from 'react';
+import React, { useCallback, useRef, useEffect } from 'react';
 import { DOWVariable } from '../../types';
 import { findVariablesInDocument } from '../utils/variableUtils';
 import DocumentLine from './DocumentLine';
@@ -40,7 +40,6 @@ const InteractivePreview: React.FC<InteractivePreviewProps> = ({
   highlightedVariables,
   onVariableClick,
 }) => {
-  // Keep track of the preview container to prevent scrolling
   const previewContainerRef = useRef<HTMLDivElement>(null);
   
   const handleVariableClick = useCallback((e: React.MouseEvent, varName: string) => {
@@ -74,10 +73,7 @@ const InteractivePreview: React.FC<InteractivePreviewProps> = ({
     const linePositions = calculateLinePositions(lines);
     
     return (
-      <div 
-        className="space-y-1 preview-container overflow-auto"
-        ref={previewContainerRef}
-      >
+      <div>
         {/* Add the style element with our CSS animation */}
         <style dangerouslySetInnerHTML={{ __html: pulseAnimationStyle }} />
         

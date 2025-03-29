@@ -1,5 +1,4 @@
-
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import ProjectCostsTable from '@/components/projects/ProjectCostsTable';
 import RecentUpdatesCard from './RecentUpdatesCard';
@@ -14,6 +13,7 @@ interface ProjectTabsProps {
 const ProjectTabs: React.FC<ProjectTabsProps> = ({ projectId }) => {
   const queryClient = useQueryClient();
   const { setOpen } = useSidebar();
+  const [activeTab, setActiveTab] = useState('build');
 
   // Invalidate updates query when the component mounts
   useEffect(() => {
@@ -21,6 +21,9 @@ const ProjectTabs: React.FC<ProjectTabsProps> = ({ projectId }) => {
   }, [projectId, queryClient]);
 
   const handleTabChange = (value: string) => {
+    // Set active tab
+    setActiveTab(value);
+    
     // Refresh data when switching tabs
     if (value === 'build') {
       queryClient.invalidateQueries({ queryKey: ['projectCosts', projectId] });
@@ -56,7 +59,7 @@ const ProjectTabs: React.FC<ProjectTabsProps> = ({ projectId }) => {
         </TabsContent>
       </Tabs>
       
-      <RecentUpdatesCard projectId={projectId} />
+      {activeTab === 'build' && <RecentUpdatesCard projectId={projectId} />}
     </div>
   );
 };

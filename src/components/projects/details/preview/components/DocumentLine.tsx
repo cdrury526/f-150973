@@ -1,4 +1,3 @@
-
 import React from 'react';
 import VariableSpan from './VariableSpan';
 import { useVariableOccurrences } from '../hooks/useVariableOccurrences';
@@ -54,13 +53,14 @@ const DocumentLine: React.FC<DocumentLineProps> = ({
       );
     }
     
-    // Add the clickable variable span
+    // Add the clickable variable span - now with isMissing flag
     segments.push(
       <VariableSpan
         key={`var-${occ.varName}-${idx}`}
         varName={occ.varName}
         value={occ.value}
         isHighlighted={occ.isHighlighted}
+        isMissing={occ.isMissing}
         onClick={onVariableClick}
       />
     );

@@ -1,6 +1,5 @@
-
 import { useState, useEffect } from 'react';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useQuery, useMutation, useQueryClient, UseQueryOptions } from '@tanstack/react-query';
 import { useToast } from '@/hooks/use-toast';
 import { DOWVariable } from '../types';
 import { 
@@ -22,6 +21,7 @@ export function useTemplateVariables(projectId: string) {
   const queryClient = useQueryClient();
   const [autoPopulated, setAutoPopulated] = useState(false);
   const [originalOrder, setOriginalOrder] = useState<string[]>([]);
+  const [localVariables, setLocalVariables] = useState<DOWVariable[]>([]);
 
   // Query to fetch the template content
   const templateQuery = useQuery({
@@ -36,7 +36,14 @@ export function useTemplateVariables(projectId: string) {
     queryKey: ['projectVariables', projectId],
     queryFn: () => fetchProjectVariables(projectId),
     enabled: !!projectId
-  });
+  } as UseQueryOptions<DOWVariable[], Error>);
+
+  // Update local variables when query data changes
+  useEffect(() => {
+    if (variablesQuery.data) {
+      setLocalVariables(variablesQuery.data);
+    }
+  }, [variablesQuery.data]);
 
   // Save the original order of variables from the template when it loads
   useEffect(() => {
@@ -52,10 +59,6 @@ export function useTemplateVariables(projectId: string) {
     mutationFn: (variables: DOWVariable[]) => saveProjectVariables(projectId, variables),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['projectVariables', projectId] });
-      toast({
-        title: "Variables saved",
-        description: "Project variables have been updated successfully",
-      });
     },
     onError: (error) => {
       toast({
@@ -91,6 +94,7 @@ export function useTemplateVariables(projectId: string) {
         
         // Save the merged variables back to the database
         saveVariablesMutation.mutate(mergedVariables);
+        setLocalVariables(mergedVariables);
         toast({
           title: "Variables extracted",
           description: `${extractedVarNames.length - existingVarMap.size} new variables were automatically extracted from the template`,
@@ -100,7 +104,7 @@ export function useTemplateVariables(projectId: string) {
       // Mark as auto-populated to prevent repeated processing
       setAutoPopulated(true);
     }
-  }, [templateQuery.data, variablesQuery.data, templateQuery.isLoading, variablesQuery.isLoading, autoPopulated]);
+  }, [templateQuery.data, variablesQuery.data, autoPopulated, templateQuery.isLoading, variablesQuery.isLoading]);
 
   // Reset auto-populated flag if template changes
   useEffect(() => {
@@ -110,16 +114,17 @@ export function useTemplateVariables(projectId: string) {
   }, [templateQuery.isFetching]);
 
   const handleSave = (variables: DOWVariable[]) => {
+    setLocalVariables(variables);
     saveVariablesMutation.mutate(variables);
   };
 
   // Sort variables according to their appearance in the template
   const getSortedVariables = (): DOWVariable[] => {
-    if (!variablesQuery.data) {
-      return [];
+    if (!localVariables.length) {
+      return variablesQuery.data || [];
     }
     
-    return getVariablesInTemplateOrder(variablesQuery.data, originalOrder);
+    return getVariablesInTemplateOrder(localVariables, originalOrder);
   };
 
   return {

@@ -1,4 +1,3 @@
-
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 
@@ -11,8 +10,6 @@ export interface ProjectUpdate {
 }
 
 export const fetchProjectUpdates = async (projectId: string): Promise<ProjectUpdate[]> => {
-  console.log('Fetching project updates for project:', projectId);
-  
   const { data, error } = await supabase
     .from('project_updates')
     .select('*')
@@ -25,7 +22,6 @@ export const fetchProjectUpdates = async (projectId: string): Promise<ProjectUpd
     throw new Error(error.message);
   }
   
-  console.log('Project updates fetched:', data);
   return data || [];
 };
 
@@ -37,8 +33,6 @@ export const logProjectUpdate = async (
   details?: Record<string, any> // Optional parameter for additional details
 ) => {
   try {
-    console.log("Logging project update:", { projectId, updateText, updateType, details });
-    
     // Create update text with details if provided
     let enhancedUpdateText = updateText;
     
@@ -73,8 +67,6 @@ export const logProjectUpdate = async (
       }
     }
     
-    console.log("Saving update to database:", enhancedUpdateText);
-    
     const { data, error } = await supabase
       .from('project_updates')
       .insert({
@@ -88,7 +80,6 @@ export const logProjectUpdate = async (
       throw new Error(error.message);
     }
     
-    console.log("Project update logged successfully:", data);
     return data;
   } catch (error) {
     console.error("Error logging project update:", error);

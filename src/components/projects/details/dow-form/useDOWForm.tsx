@@ -1,5 +1,4 @@
-
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useToast } from "@/hooks/use-toast";
 import { DOWVariable } from '../types';
 
@@ -17,6 +16,7 @@ export const useDOWForm = ({ initialVariables, onSave }: UseDOWFormProps) => {
 
   // Update local state when the initial variables change (like after auto-extraction)
   useEffect(() => {
+    console.log('useDOWForm initialVariables updated:', initialVariables);
     setVariables(initialVariables);
   }, [initialVariables]);
 
@@ -31,27 +31,33 @@ export const useDOWForm = ({ initialVariables, onSave }: UseDOWFormProps) => {
     }
   }, [variables, autoSave]);
 
-  const addVariable = () => {
+  const addVariable = useCallback(() => {
     const newId = `var-${Date.now()}`;
-    setVariables([...variables, { id: newId, name: '', value: '', type: 'string' }]);
-  };
+    const newVariable: DOWVariable = { id: newId, name: '', value: '', type: 'string' };
+    console.log('Adding new variable:', newVariable);
+    setVariables(prev => [...prev, newVariable]);
+  }, []);
 
-  const removeVariable = (id: string) => {
-    setVariables(variables.filter(v => v.id !== id));
-  };
+  const removeVariable = useCallback((id: string) => {
+    console.log('Removing variable:', id);
+    setVariables(prev => prev.filter(v => v.id !== id));
+  }, []);
 
-  const updateVariable = (id: string, field: 'name' | 'value' | 'type', newValue: string) => {
+  const updateVariable = useCallback((id: string, field: 'name' | 'value' | 'type', newValue: string) => {
+    console.log(`Updating variable ${id}, field: ${field}, value: ${newValue}`);
     setVariables(prevVariables => 
       prevVariables.map(v => {
         if (v.id === id) {
-          return { ...v, [field]: newValue };
+          const updated = { ...v, [field]: newValue };
+          console.log('Variable updated:', updated);
+          return updated;
         }
         return v;
       })
     );
-  };
+  }, []);
 
-  const validateVariables = (): boolean => {
+  const validateVariables = useCallback((): boolean => {
     const newErrors: string[] = [];
     
     // Check for empty names
@@ -75,10 +81,11 @@ export const useDOWForm = ({ initialVariables, onSave }: UseDOWFormProps) => {
 
     setErrors(newErrors);
     return newErrors.length === 0;
-  };
+  }, [variables]);
 
-  const saveVariables = (showNotification = true) => {
+  const saveVariables = useCallback((showNotification = true) => {
     if (validateVariables()) {
+      console.log('Saving variables:', variables);
       onSave(variables);
       
       // Only show notification for manual saves, not auto-saves
@@ -104,12 +111,12 @@ export const useDOWForm = ({ initialVariables, onSave }: UseDOWFormProps) => {
       }
       return false;
     }
-  };
+  }, [variables, validateVariables, onSave, toast, lastManualSave]);
 
   // For backward compatibility
-  const handleSave = () => {
+  const handleSave = useCallback(() => {
     return saveVariables(true);
-  };
+  }, [saveVariables]);
 
   return {
     variables,
