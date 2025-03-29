@@ -60,8 +60,8 @@ const DOWForm: React.FC<DOWFormProps> = ({
   };
 
   const updateVariable = (id: string, field: 'name' | 'value', newValue: string) => {
-    setVariables(
-      variables.map(v => (v.id === id ? { ...v, [field]: newValue } : v))
+    setVariables(prevVariables => 
+      prevVariables.map(v => (v.id === id ? { ...v, [field]: newValue } : v))
     );
   };
 
@@ -173,7 +173,7 @@ const DOWForm: React.FC<DOWFormProps> = ({
                     {variable.value && variable.value.length > 50 ? (
                       <Textarea
                         placeholder="Variable value"
-                        value={variable.value}
+                        value={variable.value || ''}
                         onChange={(e) => updateVariable(variable.id, 'value', e.target.value)}
                         className={`text-sm min-h-[60px] w-full ${activeVariableName === variable.name ? 'ring-2 ring-primary' : ''}`}
                         data-variable-name={variable.name}
@@ -181,7 +181,7 @@ const DOWForm: React.FC<DOWFormProps> = ({
                     ) : (
                       <Input
                         placeholder="Variable value"
-                        value={variable.value}
+                        value={variable.value || ''}
                         onChange={(e) => updateVariable(variable.id, 'value', e.target.value)}
                         className={`text-sm h-8 w-full ${activeVariableName === variable.name ? 'ring-2 ring-primary' : ''}`}
                         data-variable-name={variable.name}
