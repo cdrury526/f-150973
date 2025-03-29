@@ -50,8 +50,9 @@ export function useDOWState(projectId: string) {
   const handleVariableClick = (variableName: string) => {
     console.log(`Variable clicked: ${variableName}`);
     
-    // Save the current scroll position of the preview before we focus on the input
-    if (document.querySelector('.preview-container')) {
+    // Save the current scroll position of the preview
+    const previewContainer = document.querySelector('.preview-container');
+    if (previewContainer) {
       previewPosition.current = window.scrollY;
     }
     
@@ -90,10 +91,12 @@ export function useDOWState(projectId: string) {
               input.focus();
               
               // Restore the preview's scroll position
-              window.scrollTo({
-                top: previewPosition.current,
-                behavior: 'auto'
-              });
+              if (previewContainer) {
+                window.scrollTo({
+                  top: previewPosition.current,
+                  behavior: 'instant' // Changed to instant to avoid animation
+                });
+              }
             }, 200);
           } else {
             console.log("Could not find textarea to focus");

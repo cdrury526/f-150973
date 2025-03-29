@@ -1,3 +1,4 @@
+
 import React, { useCallback, useRef } from 'react';
 import { DOWVariable } from '../../types';
 import { findVariablesInDocument } from '../utils/variableUtils';
@@ -77,7 +78,7 @@ const InteractivePreview: React.FC<InteractivePreviewProps> = ({
     
     return (
       <div 
-        className="space-y-1"
+        className="space-y-1 preview-container"
         ref={previewContainerRef}
       >
         {/* Add the style element with our CSS animation */}
