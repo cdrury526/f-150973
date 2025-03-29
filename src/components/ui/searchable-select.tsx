@@ -1,5 +1,5 @@
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Button } from "@/components/ui/button";
 import { ChevronDown } from "lucide-react";
 import {
@@ -49,6 +49,7 @@ export const SearchableSelect: React.FC<SearchableSelectProps> = ({
   showSelectedLabel = true,
 }) => {
   const [open, setOpen] = useState(false);
+  const popoverRef = useRef<HTMLDivElement>(null);
   
   // Ensure options is always a valid array with valid objects
   const safeOptions = Array.isArray(options) 
@@ -60,6 +61,16 @@ export const SearchableSelect: React.FC<SearchableSelectProps> = ({
     ? safeOptions.find(option => option && option.value === value)
     : null;
 
+  // Close dropdown if we encounter errors
+  useEffect(() => {
+    const handleError = () => {
+      if (open) setOpen(false);
+    };
+
+    window.addEventListener('error', handleError);
+    return () => window.removeEventListener('error', handleError);
+  }, [open]);
+
   // Prevent rendering if we don't have valid options
   useEffect(() => {
     if (open && !Array.isArray(options)) {
@@ -68,8 +79,17 @@ export const SearchableSelect: React.FC<SearchableSelectProps> = ({
     }
   }, [open, options]);
 
+  // Ensure we always have a valid array before opening the popover
+  const handleOpenChange = (newOpen: boolean) => {
+    if (newOpen && (!Array.isArray(options) || options.length === 0)) {
+      console.warn('SearchableSelect: Cannot open with invalid options', options);
+      return;
+    }
+    setOpen(newOpen);
+  };
+
   return (
-    <Popover open={open} onOpenChange={setOpen}>
+    <Popover open={open} onOpenChange={handleOpenChange}>
       <PopoverTrigger asChild>
         <Button
           variant="outline"
@@ -86,34 +106,39 @@ export const SearchableSelect: React.FC<SearchableSelectProps> = ({
         </Button>
       </PopoverTrigger>
       <PopoverContent 
+        ref={popoverRef}
         className="p-0" 
         style={{ width: typeof width === 'number' ? `${width}px` : width }}
         align="start"
       >
-        <Command>
-          <CommandInput placeholder={searchPlaceholder} className="h-9" />
-          <CommandEmpty>{emptyMessage}</CommandEmpty>
-          <CommandGroup className="overflow-y-auto" style={{ maxHeight: `${maxHeight}px` }}>
-            {safeOptions.map((option, index) => (
-              <CommandItem
-                key={`option-${option.value || index}`}
-                value={option.value}
-                onSelect={(currentValue) => {
-                  onChange(currentValue);
-                  setOpen(false);
-                }}
-                className={`py-2 ${option.description ? 'flex flex-col items-start' : ''}`}
-              >
-                <span className={option.description ? 'font-medium' : ''}>{option.label}</span>
-                {option.description && (
-                  <span className="text-xs text-muted-foreground">
-                    {option.description}
-                  </span>
-                )}
-              </CommandItem>
-            ))}
-          </CommandGroup>
-        </Command>
+        {Array.isArray(safeOptions) && safeOptions.length > 0 ? (
+          <Command>
+            <CommandInput placeholder={searchPlaceholder} className="h-9" />
+            <CommandEmpty>{emptyMessage}</CommandEmpty>
+            <CommandGroup className="overflow-y-auto" style={{ maxHeight: `${maxHeight}px` }}>
+              {safeOptions.map((option, index) => (
+                <CommandItem
+                  key={`option-${option.value || index}`}
+                  value={option.value}
+                  onSelect={(currentValue) => {
+                    onChange(currentValue);
+                    setOpen(false);
+                  }}
+                  className={`py-2 ${option.description ? 'flex flex-col items-start' : ''}`}
+                >
+                  <span className={option.description ? 'font-medium' : ''}>{option.label}</span>
+                  {option.description && (
+                    <span className="text-xs text-muted-foreground">
+                      {option.description}
+                    </span>
+                  )}
+                </CommandItem>
+              ))}
+            </CommandGroup>
+          </Command>
+        ) : (
+          <div className="p-2 text-sm text-muted-foreground">No options available</div>
+        )}
       </PopoverContent>
     </Popover>
   );

@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { useMemo } from 'react';
 import { FormField, FormItem, FormLabel, FormControl, FormDescription } from "@/components/ui/form";
 import { Contractor } from '@/components/projects/contractors/types';
 import { Control } from 'react-hook-form';
@@ -16,35 +16,38 @@ const ContractorSelector: React.FC<ContractorSelectorProps> = ({
   contractors,
   isLoading 
 }) => {
+  // Pre-process contractor options safely
+  const contractorOptions = useMemo(() => {
+    // Ensure contractors is always a valid array
+    const safeContractors = Array.isArray(contractors) 
+      ? contractors.filter(c => c && typeof c === 'object') 
+      : [];
+    
+    // Add strong safeguards for each contractor object and its properties
+    const options: SearchableSelectOption[] = safeContractors
+      .filter(contractor => 
+        contractor && 
+        typeof contractor === 'object' && 
+        'id' in contractor &&
+        'companyName' in contractor
+      )
+      .map((contractor) => ({
+        value: contractor.id || '',
+        label: `${contractor.companyName || 'Unknown'} - ${contractor.contractorType || 'Unknown'}`
+      }));
+
+    // Add a "None" option
+    return [
+      { value: "", label: "None" },
+      ...options
+    ];
+  }, [contractors]);
+
   return (
     <FormField
       control={control}
       name="contractor_id"
       render={({ field }) => {
-        // Ensure contractors is always a valid array of objects
-        const safeContractors = Array.isArray(contractors) 
-          ? contractors.filter(c => c && typeof c === 'object') 
-          : [];
-        
-        // Add strong safeguards for each contractor object and its properties
-        const contractorOptions: SearchableSelectOption[] = safeContractors
-          .filter(contractor => 
-            contractor && 
-            typeof contractor === 'object' && 
-            'id' in contractor &&
-            'companyName' in contractor
-          )
-          .map((contractor) => ({
-            value: contractor.id || '',
-            label: `${contractor.companyName || 'Unknown'} - ${contractor.contractorType || 'Unknown'}`
-          }));
-
-        // Add a "None" option
-        const options = [
-          { value: "", label: "None" },
-          ...contractorOptions
-        ];
-        
         // Ensure field.value is always a string
         const safeValue = typeof field.value === 'string' ? field.value : '';
           
@@ -53,7 +56,7 @@ const ContractorSelector: React.FC<ContractorSelectorProps> = ({
             <FormLabel>Contractor</FormLabel>
             <FormControl>
               <SearchableSelect
-                options={options}
+                options={contractorOptions}
                 value={safeValue}
                 onChange={field.onChange}
                 placeholder="Select a contractor"
