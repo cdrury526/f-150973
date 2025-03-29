@@ -81,7 +81,7 @@ const ProjectDetailsSidebar: React.FC<ProjectDetailsSidebarProps> = ({ projectId
         Current Project
       </SidebarGroupLabel>
       <SidebarGroupContent className="space-y-3 px-1">
-        <div className="bg-sidebar-accent/50 rounded-md p-2 border border-sidebar-border shadow-sm">
+        <div className="bg-sidebar-accent/50 rounded-md p-2 border border-white/30 shadow-sm">
           <h3 className="font-medium text-sm text-white truncate">{project.title}</h3>
           
           <div className="space-y-2 mt-2">
@@ -111,7 +111,7 @@ const ProjectDetailsSidebar: React.FC<ProjectDetailsSidebarProps> = ({ projectId
             </div>
           </div>
           
-          <div className="pt-2 mt-1 border-t border-sidebar-border/30">
+          <div className="pt-2 mt-1 border-t border-white/20">
             <div className="flex justify-between text-xs mb-1">
               <span className="text-sidebar-foreground/70">Progress</span>
               <span className="text-sidebar-foreground/70 font-medium">{project.progress}%</span>
