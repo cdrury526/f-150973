@@ -1,4 +1,3 @@
-
 import React, { useCallback } from 'react';
 import { DOWVariable } from '../../types';
 import { findVariablesInDocument } from '../utils/variableUtils';
@@ -42,8 +41,7 @@ const InteractivePreview: React.FC<InteractivePreviewProps> = ({
   onVariableClick,
 }) => {
   const handleVariableClick = useCallback((e: React.MouseEvent, varName: string) => {
-    // We don't need to prevent default at all here
-    // Let the event propagate naturally to allow focus
+    // e.preventDefault() is now handled in the VariableSpan component
     
     // Call the provided click handler
     onVariableClick(varName);

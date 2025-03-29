@@ -15,8 +15,13 @@ const VariableSpan: React.FC<VariableSpanProps> = ({
   onClick
 }) => {
   const handleClick = (e: React.MouseEvent) => {
+    // Prevent default to stop scrolling but allow propagation
+    e.preventDefault();
+    
     // Stop propagation within preview but don't prevent default
     e.stopPropagation();
+    
+    // Call the onClick handler with the variable name
     onClick(e, varName);
   };
 

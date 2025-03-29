@@ -52,9 +52,8 @@ export function useDOWState(projectId: string) {
     // Set the active variable name for highlighting
     setActiveVariableName(variableName);
     
-    // Use setTimeout to ensure state has updated before trying to find the element
+    // Find and scroll to the variable input after a short delay to ensure DOM is updated
     setTimeout(() => {
-      // Find and scroll to the variable input
       if (formRef.current) {
         console.log("formRef is available, looking for variable item");
         
@@ -64,8 +63,11 @@ export function useDOWState(projectId: string) {
         if (variableCard) {
           console.log(`Found variable card for ${variableName}, scrolling into view`);
           
-          // Scroll the card into view with smooth behavior
-          variableCard.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          // Use scrollIntoView with behavior: 'smooth' to avoid jumpy scrolling
+          variableCard.scrollIntoView({ 
+            behavior: 'smooth', 
+            block: 'center' 
+          });
           
           // Add a visual highlight effect that fades out
           variableCard.classList.add('variable-highlight-pulse');
@@ -77,9 +79,10 @@ export function useDOWState(projectId: string) {
           const input = variableCard.querySelector('textarea');
           if (input) {
             console.log("Found textarea, focusing");
+            // Delay focus slightly to ensure scroll completes first
             setTimeout(() => {
               input.focus();
-            }, 100); // Small delay to ensure scrolling completes first
+            }, 200);
           } else {
             console.log("Could not find textarea to focus");
           }
