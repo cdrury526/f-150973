@@ -1,51 +1,32 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Table, TableHeader, TableBody, TableHead, TableRow, TableCell } from "@/components/ui/table";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Contractor, ContractorType } from './types';
 import { ContractorTypeCell } from './ContractorTypeSelector';
-
-// Mock data for demonstration
-const mockContractors: Contractor[] = [
-  { 
-    id: '1', 
-    companyName: 'ABC Construction', 
-    companyPhone: '(555) 123-4567',
-    companyEmail: 'info@abcconstruction.com',
-    contactName: 'John Smith',
-    status: 'Active',
-    contractorType: 'General Contractor'
-  },
-  { 
-    id: '2', 
-    companyName: 'XYZ Builders', 
-    companyPhone: '(555) 987-6543',
-    companyEmail: 'contact@xyzbuilders.com',
-    contactName: 'Jane Doe',
-    status: 'Active',
-    contractorType: 'Electrical Contractor'
-  },
-  { 
-    id: '3', 
-    companyName: 'Smith & Sons Contracting', 
-    companyPhone: '(555) 456-7890',
-    companyEmail: 'info@smithandsons.com',
-    contactName: 'Robert Smith',
-    status: 'On Hold',
-    contractorType: 'Plumbing Contractor'
-  },
-];
+import { useQuery } from '@tanstack/react-query';
+import { fetchContractors } from './api/contractorsApi';
 
 interface ContractorsTableProps {
   projectId?: string;
 }
 
 const ContractorsTable: React.FC<ContractorsTableProps> = ({ projectId }) => {
-  // In a real implementation, we would fetch contractors for the given project ID
-  const [contractors, setContractors] = useState<Contractor[]>(mockContractors);
+  const { data: contractors = [], isLoading, error } = useQuery({
+    queryKey: ['contractors'],
+    queryFn: fetchContractors,
+  });
+  
+  const [localContractors, setLocalContractors] = useState<Contractor[]>(contractors);
+  
+  useEffect(() => {
+    if (contractors.length) {
+      setLocalContractors(contractors);
+    }
+  }, [contractors]);
   
   const handleContractorTypeChange = (contractorId: string, newType: ContractorType) => {
-    setContractors(prevContractors => 
+    setLocalContractors(prevContractors => 
       prevContractors.map(contractor => 
         contractor.id === contractorId 
           ? { ...contractor, contractorType: newType } 
@@ -69,53 +50,54 @@ const ContractorsTable: React.FC<ContractorsTableProps> = ({ projectId }) => {
     }
   };
 
+  if (isLoading) {
+    return <p className="text-muted-foreground">Loading contractors...</p>;
+  }
+
+  if (error) {
+    return <p className="text-destructive">Error loading contractors. Please try again.</p>;
+  }
+
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle>Contractors</CardTitle>
-      </CardHeader>
-      <CardContent>
-        <div className="overflow-x-auto">
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead className="w-[200px]">Company Name</TableHead>
-                <TableHead>Contact Name</TableHead>
-                <TableHead>Company Phone</TableHead>
-                <TableHead>Company Email</TableHead>
-                <TableHead>Status</TableHead>
-                <TableHead className="w-[220px]">Contractor Type</TableHead>
+    <div className="overflow-x-auto">
+      <Table>
+        <TableHeader>
+          <TableRow>
+            <TableHead className="w-[200px]">Company Name</TableHead>
+            <TableHead>Contact Name</TableHead>
+            <TableHead>Company Phone</TableHead>
+            <TableHead>Company Email</TableHead>
+            <TableHead>Status</TableHead>
+            <TableHead className="w-[220px]">Contractor Type</TableHead>
+          </TableRow>
+        </TableHeader>
+        <TableBody>
+          {localContractors.length > 0 ? (
+            localContractors.map((contractor) => (
+              <TableRow key={contractor.id}>
+                <TableCell className="font-medium">{contractor.companyName}</TableCell>
+                <TableCell>{contractor.contactName}</TableCell>
+                <TableCell>{contractor.companyPhone}</TableCell>
+                <TableCell>{contractor.companyEmail}</TableCell>
+                <TableCell>{renderStatusBadge(contractor.status)}</TableCell>
+                <TableCell>
+                  <ContractorTypeCell 
+                    value={contractor.contractorType as ContractorType}
+                    onChange={(value) => handleContractorTypeChange(contractor.id, value)}
+                  />
+                </TableCell>
               </TableRow>
-            </TableHeader>
-            <TableBody>
-              {contractors.length > 0 ? (
-                contractors.map((contractor) => (
-                  <TableRow key={contractor.id}>
-                    <TableCell className="font-medium">{contractor.companyName}</TableCell>
-                    <TableCell>{contractor.contactName}</TableCell>
-                    <TableCell>{contractor.companyPhone}</TableCell>
-                    <TableCell>{contractor.companyEmail}</TableCell>
-                    <TableCell>{renderStatusBadge(contractor.status)}</TableCell>
-                    <TableCell>
-                      <ContractorTypeCell 
-                        value={contractor.contractorType as ContractorType}
-                        onChange={(value) => handleContractorTypeChange(contractor.id, value)}
-                      />
-                    </TableCell>
-                  </TableRow>
-                ))
-              ) : (
-                <TableRow>
-                  <TableCell colSpan={6} className="h-24 text-center">
-                    No contractors found.
-                  </TableCell>
-                </TableRow>
-              )}
-            </TableBody>
-          </Table>
-        </div>
-      </CardContent>
-    </Card>
+            ))
+          ) : (
+            <TableRow>
+              <TableCell colSpan={6} className="h-24 text-center">
+                No contractors found.
+              </TableCell>
+            </TableRow>
+          )}
+        </TableBody>
+      </Table>
+    </div>
   );
 };
 

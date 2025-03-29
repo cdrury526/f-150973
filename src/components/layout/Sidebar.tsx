@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { useLocation, Link } from 'react-router-dom';
-import { Home, Building, Calendar, List, Settings, ChevronLeft } from "lucide-react";
+import { Home, Building, Calendar, List, Settings, ChevronLeft, Users } from "lucide-react";
 import {
   Sidebar,
   SidebarContent,
@@ -31,6 +31,11 @@ const menuItems = [
     title: "Projects",
     icon: Building,
     path: "/projects",
+  },
+  {
+    title: "Contractors",
+    icon: Users,
+    path: "/contractors",
   },
   {
     title: "Calendar",

@@ -2,7 +2,6 @@
 import React from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import ProjectCostsTable from '@/components/projects/ProjectCostsTable';
-import ContractorsTable from '@/components/projects/contractors/ContractorsTable';
 import RecentUpdatesCard from './RecentUpdatesCard';
 
 interface ProjectTabsProps {
@@ -13,18 +12,14 @@ const ProjectTabs: React.FC<ProjectTabsProps> = ({ projectId }) => {
   return (
     <div className="space-y-6">
       <Tabs defaultValue="build">
-        <TabsList className="grid w-full grid-cols-5">
+        <TabsList className="grid w-full grid-cols-4">
           <TabsTrigger value="build">Build</TabsTrigger>
-          <TabsTrigger value="contractors">Contractors</TabsTrigger>
           <TabsTrigger value="tasks">Tasks</TabsTrigger>
           <TabsTrigger value="timeline">Timeline</TabsTrigger>
           <TabsTrigger value="documents">Documents</TabsTrigger>
         </TabsList>
         <TabsContent value="build">
           <ProjectCostsTable projectId={projectId} />
-        </TabsContent>
-        <TabsContent value="contractors">
-          <ContractorsTable projectId={projectId} />
         </TabsContent>
         <TabsContent value="tasks">
           <p className="text-muted-foreground py-4">Task management will be implemented in the next iteration.</p>
