@@ -2,6 +2,8 @@
 import React from 'react';
 import { Card } from "@/components/ui/card";
 import { useProjectCosts } from '@/hooks/useProjectCosts';
+import { useQuery } from '@tanstack/react-query';
+import { supabase } from '@/integrations/supabase/client';
 import ProjectCostsHeader from './ProjectCostsHeader';
 import ProjectCostsContent from './ProjectCostsContent';
 import ProjectCostsDialogs from './ProjectCostsDialogs';
@@ -9,6 +11,21 @@ import ProjectCostsDialogs from './ProjectCostsDialogs';
 interface ProjectCostsContainerProps {
   projectId: string;
 }
+
+const fetchProjectName = async (projectId: string) => {
+  const { data, error } = await supabase
+    .from('projects')
+    .select('project_name')
+    .eq('id', projectId)
+    .single();
+  
+  if (error) {
+    console.error("Error fetching project name:", error);
+    return null;
+  }
+  
+  return data?.project_name;
+};
 
 const ProjectCostsContainer: React.FC<ProjectCostsContainerProps> = ({ projectId }) => {
   const {
@@ -30,6 +47,12 @@ const ProjectCostsContainer: React.FC<ProjectCostsContainerProps> = ({ projectId
     handleDeleteCategory
   } = useProjectCosts(projectId);
 
+  const { data: projectName } = useQuery({
+    queryKey: ['projectName', projectId],
+    queryFn: () => fetchProjectName(projectId),
+    enabled: !!projectId,
+  });
+
   if (error) {
     return <div className="text-red-500">Error loading project costs: {error.message}</div>;
   }
@@ -39,6 +62,7 @@ const ProjectCostsContainer: React.FC<ProjectCostsContainerProps> = ({ projectId
       <ProjectCostsHeader 
         onAddCategoryClick={() => setAddCategoryDialogOpen(true)} 
         costs={data?.costs || []}
+        projectName={projectName || undefined}
       />
       
       <ProjectCostsContent 

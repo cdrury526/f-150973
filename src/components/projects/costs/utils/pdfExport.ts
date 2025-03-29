@@ -4,7 +4,7 @@ import html2canvas from 'html2canvas';
 import { ProjectCost } from '../types';
 import { fetchContractors } from '../../contractors/api/contractorsApi';
 
-export const exportToPDF = async (costs: ProjectCost[]) => {
+export const exportToPDF = async (costs: ProjectCost[], projectName?: string) => {
   try {
     // Create a container to render the content
     const container = document.createElement('div');
@@ -26,6 +26,30 @@ export const exportToPDF = async (costs: ProjectCost[]) => {
     const quoteTotal = costs.reduce((sum, cost) => sum + (cost.quote_price || 0), 0) || 0;
     const actualTotal = costs.reduce((sum, cost) => sum + (cost.actual_price || 0), 0) || 0;
     const differenceTotal = actualTotal - quoteTotal;
+    
+    // Format current date
+    const currentDate = new Date().toLocaleDateString('en-US', {
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric'
+    });
+
+    // Create header with project name and date
+    const headerSection = document.createElement('div');
+    headerSection.style.marginBottom = '25px';
+    headerSection.style.borderBottom = '1px solid #e2e8f0';
+    headerSection.style.paddingBottom = '15px';
+    headerSection.innerHTML = `
+      <div style="display: flex; justify-content: space-between; align-items: center;">
+        <h1 style="font-size: 24px; margin: 0; color: #1e293b; font-weight: bold;">
+          ${projectName || 'Project Costs Report'}
+        </h1>
+        <div style="font-size: 14px; color: #64748b;">
+          Generated on ${currentDate}
+        </div>
+      </div>
+    `;
+    container.appendChild(headerSection);
     
     // Create summary section
     const summarySection = document.createElement('div');

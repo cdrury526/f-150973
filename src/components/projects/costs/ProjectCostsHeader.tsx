@@ -11,9 +11,14 @@ import { exportToPDF } from './utils/pdfExport';
 interface ProjectCostsHeaderProps {
   onAddCategoryClick: () => void;
   costs: ProjectCost[];
+  projectName?: string;
 }
 
-const ProjectCostsHeader: React.FC<ProjectCostsHeaderProps> = ({ onAddCategoryClick, costs }) => {
+const ProjectCostsHeader: React.FC<ProjectCostsHeaderProps> = ({ 
+  onAddCategoryClick, 
+  costs,
+  projectName 
+}) => {
   const { toast } = useToast();
 
   const exportToCSV = async () => {
@@ -88,7 +93,7 @@ const ProjectCostsHeader: React.FC<ProjectCostsHeaderProps> = ({ onAddCategoryCl
   };
 
   const handleExportToPDF = async () => {
-    const success = await exportToPDF(costs);
+    const success = await exportToPDF(costs, projectName);
     
     if (success) {
       toast({
