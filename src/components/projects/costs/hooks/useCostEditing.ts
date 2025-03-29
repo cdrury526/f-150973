@@ -18,6 +18,7 @@ export const useCostEditing = (projectId: string, refetchData: () => void) => {
     quote_price: number;
     actual_price: number;
     notes: string;
+    contractor_id?: string;
   }) => {
     if (!editingCost) return;
 
@@ -30,6 +31,7 @@ export const useCostEditing = (projectId: string, refetchData: () => void) => {
             quote_price: values.quote_price,
             actual_price: values.actual_price || null,
             notes: values.notes || null,
+            contractor_id: values.contractor_id || null,
             updated_at: new Date().toISOString()
           })
           .eq('id', editingCost.id);
@@ -44,7 +46,8 @@ export const useCostEditing = (projectId: string, refetchData: () => void) => {
             category_id: editingCost.category_id,
             quote_price: values.quote_price,
             actual_price: values.actual_price || null,
-            notes: values.notes || null
+            notes: values.notes || null,
+            contractor_id: values.contractor_id || null
           });
 
         if (error) throw error;

@@ -61,6 +61,7 @@ export type Database = {
         Row: {
           actual_price: number | null
           category_id: string
+          contractor_id: string | null
           created_at: string
           id: string
           notes: string | null
@@ -71,6 +72,7 @@ export type Database = {
         Insert: {
           actual_price?: number | null
           category_id: string
+          contractor_id?: string | null
           created_at?: string
           id?: string
           notes?: string | null
@@ -81,6 +83,7 @@ export type Database = {
         Update: {
           actual_price?: number | null
           category_id?: string
+          contractor_id?: string | null
           created_at?: string
           id?: string
           notes?: string | null
@@ -94,6 +97,13 @@ export type Database = {
             columns: ["category_id"]
             isOneToOne: false
             referencedRelation: "cost_categories"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "project_costs_contractor_id_fkey"
+            columns: ["contractor_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
             referencedColumns: ["id"]
           },
           {

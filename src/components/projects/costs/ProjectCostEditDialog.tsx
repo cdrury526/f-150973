@@ -1,12 +1,16 @@
-import React from 'react';
+
+import React, { useEffect, useState } from 'react';
 import { useForm } from "react-hook-form";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Form, FormField, FormItem, FormLabel, FormControl, FormDescription } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { DollarSign } from "lucide-react";
 import { ProjectCost } from './types';
+import { Contractor } from '@/components/projects/contractors/types';
+import { supabase } from '@/integrations/supabase/client';
 
 interface ProjectCostEditDialogProps {
   open: boolean;
@@ -16,6 +20,7 @@ interface ProjectCostEditDialogProps {
     quote_price: number;
     actual_price: number;
     notes: string;
+    contractor_id?: string;
   }) => Promise<void>;
 }
 
@@ -25,13 +30,41 @@ const ProjectCostEditDialog: React.FC<ProjectCostEditDialogProps> = ({
   editingCost, 
   onSave 
 }) => {
+  const [contractors, setContractors] = useState<Contractor[]>([]);
+  const [isLoadingContractors, setIsLoadingContractors] = useState(false);
+
   const costForm = useForm({
     defaultValues: {
       quote_price: editingCost?.quote_price || 0,
       actual_price: editingCost?.actual_price || 0,
-      notes: editingCost?.notes || ''
+      notes: editingCost?.notes || '',
+      contractor_id: editingCost?.contractor_id || ''
     }
   });
+
+  // Fetch contractors when the dialog opens
+  useEffect(() => {
+    const fetchContractors = async () => {
+      setIsLoadingContractors(true);
+      try {
+        const { data, error } = await supabase
+          .from('contractors')
+          .select('*')
+          .eq('status', 'Active');
+          
+        if (error) throw error;
+        setContractors(data || []);
+      } catch (error) {
+        console.error('Error fetching contractors:', error);
+      } finally {
+        setIsLoadingContractors(false);
+      }
+    };
+
+    if (open) {
+      fetchContractors();
+    }
+  }, [open]);
 
   const formatNumberWithCommas = (value: number): string => {
     return value.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
@@ -46,7 +79,8 @@ const ProjectCostEditDialog: React.FC<ProjectCostEditDialogProps> = ({
       costForm.reset({
         quote_price: editingCost.quote_price,
         actual_price: editingCost.actual_price || 0,
-        notes: editingCost.notes || ''
+        notes: editingCost.notes || '',
+        contractor_id: editingCost.contractor_id || ''
       });
     }
   }, [editingCost, costForm]);
@@ -115,6 +149,37 @@ const ProjectCostEditDialog: React.FC<ProjectCostEditDialogProps> = ({
                   </FormControl>
                   <FormDescription>
                     The actual amount paid
+                  </FormDescription>
+                </FormItem>
+              )}
+            />
+            {/* Add Contractor selection */}
+            <FormField
+              control={costForm.control}
+              name="contractor_id"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Contractor</FormLabel>
+                  <FormControl>
+                    <Select 
+                      value={field.value} 
+                      onValueChange={field.onChange}
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select a contractor" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="">None</SelectItem>
+                        {contractors.map((contractor) => (
+                          <SelectItem key={contractor.id} value={contractor.id}>
+                            {contractor.companyName} - {contractor.contractorType}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </FormControl>
+                  <FormDescription>
+                    The contractor assigned to this work
                   </FormDescription>
                 </FormItem>
               )}

@@ -22,6 +22,7 @@ export const fetchProjectCosts = async (projectId: string) => {
       quote_price, 
       actual_price, 
       notes,
+      contractor_id,
       cost_categories (name)
     `)
     .eq('project_id', projectId);
@@ -37,7 +38,8 @@ export const fetchProjectCosts = async (projectId: string) => {
     category_name: cost.cost_categories?.name || '',
     quote_price: cost.quote_price,
     actual_price: cost.actual_price,
-    notes: cost.notes
+    notes: cost.notes,
+    contractor_id: cost.contractor_id
   })) || [];
 
   // For categories that don't have costs yet, create empty entries
@@ -52,7 +54,8 @@ export const fetchProjectCosts = async (projectId: string) => {
       category_name: category.name,
       quote_price: 0,
       actual_price: null,
-      notes: null
+      notes: null,
+      contractor_id: null
     };
   });
 
