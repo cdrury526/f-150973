@@ -3,6 +3,7 @@ import { useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { ProjectCost } from '@/components/projects/costs/types';
+import { logProjectUpdate } from '@/hooks/useProjectUpdates';
 
 export const useCostEditing = (projectId: string, refetchData: () => void) => {
   const { toast } = useToast();
@@ -37,6 +38,13 @@ export const useCostEditing = (projectId: string, refetchData: () => void) => {
           .eq('id', editingCost.id);
 
         if (error) throw error;
+
+        // Log the update
+        await logProjectUpdate(
+          projectId,
+          `Updated ${editingCost.category_name} costs`, 
+          "cost_update"
+        );
       } else {
         // Insert new cost
         const { error } = await supabase
@@ -51,6 +59,13 @@ export const useCostEditing = (projectId: string, refetchData: () => void) => {
           });
 
         if (error) throw error;
+
+        // Log the addition
+        await logProjectUpdate(
+          projectId,
+          `Added costs for ${editingCost.category_name}`,
+          "cost_update"
+        );
       }
 
       toast({

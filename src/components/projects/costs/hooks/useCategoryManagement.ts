@@ -3,6 +3,7 @@ import { useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { CostCategory } from '@/components/projects/costs/types';
+import { logProjectUpdate } from '@/hooks/useProjectUpdates';
 
 export const useCategoryManagement = (projectId: string, refetchData: () => void) => {
   const { toast } = useToast();
@@ -23,6 +24,13 @@ export const useCategoryManagement = (projectId: string, refetchData: () => void
         .single();
 
       if (categoryError) throw categoryError;
+
+      // Log the category addition
+      await logProjectUpdate(
+        projectId,
+        `Added new category: ${values.category_name}`,
+        "category_add"
+      );
 
       toast({
         title: 'Success',
@@ -65,6 +73,13 @@ export const useCategoryManagement = (projectId: string, refetchData: () => void
           if (costError) throw costError;
         }
       }
+
+      // Log the category deletion
+      await logProjectUpdate(
+        projectId,
+        `Removed category: ${categoryToDelete.name}`,
+        "category_delete"
+      );
 
       toast({
         title: 'Success',

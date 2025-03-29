@@ -26,6 +26,26 @@ export const fetchProjectUpdates = async (projectId: string): Promise<ProjectUpd
   return data || [];
 };
 
+// Helper function to log project updates - exported so it can be used by other hooks
+export const logProjectUpdate = async (projectId: string, updateText: string, updateType: string) => {
+  try {
+    const { error } = await supabase
+      .from('project_updates')
+      .insert({
+        project_id: projectId,
+        update_text: updateText,
+        update_type: updateType
+      });
+    
+    if (error) {
+      console.error("Error logging project update:", error);
+      throw new Error(error.message);
+    }
+  } catch (error) {
+    console.error("Error logging project update:", error);
+  }
+};
+
 export const useProjectUpdates = (projectId: string) => {
   return useQuery({
     queryKey: ['projectUpdates', projectId],
