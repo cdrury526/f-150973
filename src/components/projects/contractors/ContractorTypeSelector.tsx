@@ -1,4 +1,3 @@
-
 import React, { useState, useMemo } from 'react';
 import { Check, ChevronsUpDown, Search } from 'lucide-react';
 import { Button } from "@/components/ui/button";
@@ -57,8 +56,7 @@ export const ContractorTypeSelector: React.FC<ContractorTypeSelectorProps> = ({
         <PopoverContent 
           className="w-[300px] p-0" 
           align="start" 
-          sideOffset={4} 
-          style={{ zIndex: 9999 }}
+          sideOffset={4}
         >
           <div className="flex items-center border-b px-3">
             <Search className="mr-2 h-4 w-4 shrink-0 opacity-50" />
@@ -78,7 +76,11 @@ export const ContractorTypeSelector: React.FC<ContractorTypeSelectorProps> = ({
                 {filteredTypes.map((type) => (
                   <div
                     key={type}
-                    onClick={() => handleOptionClick(type)}
+                    onClick={(e) => {
+                      e.preventDefault();
+                      e.stopPropagation();
+                      handleOptionClick(type);
+                    }}
                     className={cn(
                       "relative flex cursor-pointer select-none items-center rounded-sm px-2 py-1.5 text-sm outline-none hover:bg-accent hover:text-accent-foreground",
                       type === value ? "bg-accent text-accent-foreground" : ""
@@ -128,7 +130,11 @@ export const ContractorTypeSelector: React.FC<ContractorTypeSelectorProps> = ({
   );
 };
 
-export const ContractorTypeCell = ({ value, onChange, disabled = false }: ContractorTypeSelectorProps) => {
+export const ContractorTypeCell: React.FC<ContractorTypeSelectorProps> = ({ 
+  value, 
+  onChange, 
+  disabled = false 
+}) => {
   const [open, setOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const contractorTypes = Object.keys(contractorTypeDescriptions) as ContractorType[];
@@ -140,6 +146,12 @@ export const ContractorTypeCell = ({ value, onChange, disabled = false }: Contra
     );
   }, [contractorTypes, searchQuery]);
   
+  const handleSelect = (type: ContractorType) => {
+    onChange(type);
+    setOpen(false);
+    setSearchQuery("");
+  };
+
   return (
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild>
@@ -158,8 +170,7 @@ export const ContractorTypeCell = ({ value, onChange, disabled = false }: Contra
       <PopoverContent 
         className="w-[250px] p-0" 
         align="start" 
-        sideOffset={4} 
-        style={{ zIndex: 9999 }}
+        sideOffset={4}
       >
         <div className="flex items-center border-b px-3">
           <Search className="mr-2 h-4 w-4 shrink-0 opacity-50" />
@@ -179,10 +190,10 @@ export const ContractorTypeCell = ({ value, onChange, disabled = false }: Contra
               {filteredTypes.map((type) => (
                 <div
                   key={type}
-                  onClick={() => {
-                    onChange(type);
-                    setOpen(false);
-                    setSearchQuery("");
+                  onClick={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    handleSelect(type);
                   }}
                   className={cn(
                     "relative flex cursor-pointer select-none items-center rounded-sm px-2 py-1.5 text-sm outline-none hover:bg-accent hover:text-accent-foreground",
