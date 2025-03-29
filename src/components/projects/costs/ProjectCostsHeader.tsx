@@ -1,10 +1,12 @@
+
 import React from 'react';
 import { CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Plus, FileSpreadsheet } from 'lucide-react';
+import { Plus, FileSpreadsheet, FilePdf } from 'lucide-react';
 import { ProjectCost } from './types';
 import { useToast } from "@/hooks/use-toast";
 import { fetchContractors } from '../contractors/api/contractorsApi';
+import { exportToPDF } from './utils/pdfExport';
 
 interface ProjectCostsHeaderProps {
   onAddCategoryClick: () => void;
@@ -85,10 +87,34 @@ const ProjectCostsHeader: React.FC<ProjectCostsHeaderProps> = ({ onAddCategoryCl
     });
   };
 
+  const handleExportToPDF = async () => {
+    const success = await exportToPDF(costs);
+    
+    if (success) {
+      toast({
+        title: "Export successful",
+        description: "Project costs have been exported to PDF",
+      });
+    } else {
+      toast({
+        title: "Export failed",
+        description: "There was an error exporting to PDF",
+        variant: "destructive",
+      });
+    }
+  };
+
   return (
     <CardHeader className="flex flex-row items-center justify-between">
       <CardTitle className="text-lg">Project Costs</CardTitle>
       <div className="flex space-x-2">
+        <Button 
+          variant="outline" 
+          size="sm"
+          onClick={handleExportToPDF}
+        >
+          <FilePdf className="h-4 w-4 mr-2" /> Export to PDF
+        </Button>
         <Button 
           variant="outline" 
           size="sm"
