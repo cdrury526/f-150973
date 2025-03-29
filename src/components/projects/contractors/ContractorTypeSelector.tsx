@@ -189,41 +189,41 @@ export const ContractorTypeCell: React.FC<ContractorTypeSelectorProps> = ({
   }, [isOpen]);
 
   return (
-    <div className="relative w-[250px]" ref={dropdownRef}>
+    <div className="relative w-[180px]" ref={dropdownRef}>
       <Button
         variant="outline"
         role="combobox"
-        className="w-full justify-between h-8 px-3 py-1"
+        className="w-full justify-between h-8 px-3 py-1 text-xs"
         disabled={disabled}
         type="button"
         onClick={() => setIsOpen(!isOpen)}
       >
-        {value || "Select type"}
-        <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+        <span className="truncate">{value || "Select type"}</span>
+        <ChevronsUpDown className="ml-1 h-3 w-3 shrink-0 opacity-50" />
       </Button>
       
       {isOpen && (
-        <div className="absolute mt-1 w-full rounded-md border border-gray-200 bg-white shadow-lg z-50">
-          <div className="flex items-center border-b px-3">
-            <Search className="mr-2 h-4 w-4 shrink-0 opacity-50" />
+        <div className="absolute mt-1 w-[220px] rounded-md border border-gray-200 bg-white shadow-lg z-50">
+          <div className="flex items-center border-b px-2">
+            <Search className="mr-1 h-3 w-3 shrink-0 opacity-50" />
             <input 
               id="contractor-cell-search-input"
-              className="flex h-8 w-full bg-transparent py-2 text-sm outline-none"
+              className="flex h-7 w-full bg-transparent py-1 text-xs outline-none"
               placeholder="Search type..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
             />
           </div>
-          <div className="max-h-[300px] overflow-y-auto">
+          <div className="max-h-[250px] overflow-y-auto">
             {filteredTypes.length === 0 ? (
-              <div className="py-6 text-center text-sm">No type found.</div>
+              <div className="py-4 text-center text-xs">No type found.</div>
             ) : (
               <div className="p-1">
                 {filteredTypes.map((type) => (
                   <div
                     key={type}
                     className={cn(
-                      "flex items-center cursor-pointer px-3 py-2 text-sm hover:bg-gray-100 rounded-sm",
+                      "flex items-center cursor-pointer px-2 py-1.5 text-xs hover:bg-gray-100 rounded-sm",
                       type === value ? "bg-gray-100" : ""
                     )}
                     onClick={() => {
@@ -234,11 +234,11 @@ export const ContractorTypeCell: React.FC<ContractorTypeSelectorProps> = ({
                   >
                     <Check
                       className={cn(
-                        "mr-2 h-4 w-4",
+                        "mr-1 h-3 w-3",
                         type === value ? "opacity-100" : "opacity-0"
                       )}
                     />
-                    {type}
+                    <span className="truncate">{type}</span>
                   </div>
                 ))}
               </div>

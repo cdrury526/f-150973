@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Table, TableHeader, TableBody, TableHead, TableRow, TableCell } from "@/components/ui/table";
 import { Contractor, ContractorType } from './types';
@@ -73,7 +72,6 @@ const ContractorsTable: React.FC<ContractorsTableProps> = ({ projectId, showArch
     return <p className="text-destructive">Error loading contractors. Please try again.</p>;
   }
 
-  // Filter contractors based on archived status
   const filteredContractors = localContractors.filter(
     contractor => (showArchived ? contractor.archived : !contractor.archived)
   );
@@ -85,9 +83,9 @@ const ContractorsTable: React.FC<ContractorsTableProps> = ({ projectId, showArch
           <TableRow>
             <TableHead className="w-[200px]">Company Name</TableHead>
             <TableHead>Contact Name</TableHead>
-            <TableHead>Company Phone</TableHead>
+            <TableHead className="w-[150px]">Company Phone</TableHead>
             <TableHead>Company Email</TableHead>
-            <TableHead className="w-[220px]">Contractor Type</TableHead>
+            <TableHead className="w-[180px]">Contractor Type</TableHead>
             <TableHead className="w-[100px]">Actions</TableHead>
           </TableRow>
         </TableHeader>
