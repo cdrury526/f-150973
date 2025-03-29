@@ -1,4 +1,3 @@
-
 import React, { useMemo } from 'react';
 import { FormField, FormItem, FormLabel, FormControl, FormDescription } from "@/components/ui/form";
 import { Contractor } from '@/components/projects/contractors/types';
@@ -35,6 +34,7 @@ const ContractorSelector: React.FC<ContractorSelectorProps> = ({
       });
     }
     
+    console.log("Contractor options:", options);
     return options;
   }, [contractors]);
 
@@ -42,25 +42,31 @@ const ContractorSelector: React.FC<ContractorSelectorProps> = ({
     <FormField
       control={control}
       name="contractor_id"
-      render={({ field }) => (
-        <FormItem className="flex flex-col">
-          <FormLabel>Contractor</FormLabel>
-          <FormControl>
-            <SearchableDropdown
-              options={contractorOptions}
-              value={field.value}
-              onChange={field.onChange}
-              placeholder="Search contractor..."
-              triggerPlaceholder="Select a contractor"
-              emptyStateText="No contractor found."
-              disabled={isLoading}
-            />
-          </FormControl>
-          <FormDescription>
-            The contractor assigned to this work
-          </FormDescription>
-        </FormItem>
-      )}
+      render={({ field }) => {
+        console.log("Form field value:", field.value);
+        return (
+          <FormItem className="flex flex-col">
+            <FormLabel>Contractor</FormLabel>
+            <FormControl>
+              <SearchableDropdown
+                options={contractorOptions}
+                value={field.value}
+                onChange={(value) => {
+                  console.log("Contractor selected:", value);
+                  field.onChange(value);
+                }}
+                placeholder="Search contractor..."
+                triggerPlaceholder="Select a contractor"
+                emptyStateText="No contractor found."
+                disabled={isLoading}
+              />
+            </FormControl>
+            <FormDescription>
+              The contractor assigned to this work
+            </FormDescription>
+          </FormItem>
+        );
+      }}
     />
   );
 };

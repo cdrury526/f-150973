@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { useForm } from "react-hook-form";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
@@ -42,6 +41,7 @@ const ProjectCostEditDialog: React.FC<ProjectCostEditDialogProps> = ({
   // Reset form when editing cost changes
   React.useEffect(() => {
     if (editingCost) {
+      console.log("Resetting form with editing cost:", editingCost);
       costForm.reset({
         quote_price: editingCost.quote_price,
         actual_price: editingCost.actual_price || 0,
@@ -51,6 +51,15 @@ const ProjectCostEditDialog: React.FC<ProjectCostEditDialogProps> = ({
     }
   }, [editingCost, costForm]);
 
+  const handleSubmit = async (values: any) => {
+    console.log("Form submitted with values:", values);
+    try {
+      await onSave(values);
+    } catch (error) {
+      console.error("Error saving cost:", error);
+    }
+  };
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-[425px]">
@@ -58,7 +67,7 @@ const ProjectCostEditDialog: React.FC<ProjectCostEditDialogProps> = ({
           <DialogTitle>Edit {editingCost?.category_name} Costs</DialogTitle>
         </DialogHeader>
         <Form {...costForm}>
-          <form onSubmit={costForm.handleSubmit(onSave)} className="space-y-4">
+          <form onSubmit={costForm.handleSubmit(handleSubmit)} className="space-y-4">
             <PriceInput
               control={costForm.control}
               name="quote_price"
