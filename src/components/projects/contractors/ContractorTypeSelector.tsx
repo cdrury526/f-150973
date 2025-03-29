@@ -1,21 +1,10 @@
 
-import React, { useState } from 'react';
-import { ChevronDown, Info } from 'lucide-react';
+import React from 'react';
+import { Info } from 'lucide-react';
 import { Button } from "@/components/ui/button";
 import { ContractorType, contractorTypeDescriptions } from './types';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
-import {
-  Command,
-  CommandEmpty,
-  CommandGroup,
-  CommandInput,
-  CommandItem,
-} from "@/components/ui/command";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
+import { SearchableSelect, SearchableSelectOption } from "@/components/ui/searchable-select";
 
 interface ContractorTypeSelectorProps {
   value: ContractorType;
@@ -28,49 +17,25 @@ export const ContractorTypeSelector: React.FC<ContractorTypeSelectorProps> = ({
   onChange, 
   disabled = false 
 }) => {
-  const [open, setOpen] = useState(false);
+  // Convert contractor types to options format
+  const contractorTypeOptions: SearchableSelectOption[] = Object.keys(contractorTypeDescriptions).map((type) => ({
+    value: type,
+    label: type,
+    description: contractorTypeDescriptions[type as ContractorType]
+  }));
   
   return (
     <div className="flex items-center gap-2">
-      <Popover open={open} onOpenChange={setOpen}>
-        <PopoverTrigger asChild>
-          <Button
-            variant="outline"
-            role="combobox"
-            aria-expanded={open}
-            className="w-full justify-between"
-            disabled={disabled}
-            type="button"
-          >
-            {value || "Select contractor type"}
-            <ChevronDown className="ml-2 h-4 w-4 shrink-0 opacity-70" />
-          </Button>
-        </PopoverTrigger>
-        <PopoverContent className="w-[300px] p-0" align="start">
-          <Command>
-            <CommandInput placeholder="Search contractor type..." className="h-9" />
-            <CommandEmpty>No contractor type found.</CommandEmpty>
-            <CommandGroup className="max-h-[300px] overflow-y-auto">
-              {Object.keys(contractorTypeDescriptions).map((type) => (
-                <CommandItem
-                  key={type}
-                  value={type}
-                  onSelect={(currentValue) => {
-                    onChange(currentValue as ContractorType);
-                    setOpen(false);
-                  }}
-                  className="flex flex-col items-start py-2"
-                >
-                  <span className="font-medium">{type}</span>
-                  <span className="text-xs text-muted-foreground">
-                    {contractorTypeDescriptions[type as ContractorType]}
-                  </span>
-                </CommandItem>
-              ))}
-            </CommandGroup>
-          </Command>
-        </PopoverContent>
-      </Popover>
+      <SearchableSelect
+        options={contractorTypeOptions}
+        value={value || ""}
+        onChange={(newValue) => onChange(newValue as ContractorType)}
+        placeholder="Select contractor type"
+        searchPlaceholder="Search contractor type..."
+        emptyMessage="No contractor type found."
+        disabled={disabled}
+        width="300px"
+      />
 
       <TooltipProvider>
         <Tooltip>
@@ -100,44 +65,24 @@ export const ContractorTypeCell: React.FC<ContractorTypeSelectorProps> = ({
   onChange,
   disabled = false
 }) => {
-  const [open, setOpen] = useState(false);
+  // Convert contractor types to options format
+  const contractorTypeOptions: SearchableSelectOption[] = Object.keys(contractorTypeDescriptions).map((type) => ({
+    value: type,
+    label: type,
+    description: contractorTypeDescriptions[type as ContractorType]
+  }));
   
   return (
-    <Popover open={open} onOpenChange={setOpen}>
-      <PopoverTrigger asChild disabled={disabled}>
-        <Button 
-          variant="ghost" 
-          className="h-8 justify-start p-2 w-full"
-          type="button"
-        >
-          <span className="truncate flex-1 text-left">{value}</span>
-          <ChevronDown className="h-4 w-4 opacity-50" />
-        </Button>
-      </PopoverTrigger>
-      <PopoverContent className="w-[250px] p-0" align="start">
-        <Command>
-          <CommandInput placeholder="Search..." className="h-9" />
-          <CommandEmpty>No contractor type found.</CommandEmpty>
-          <CommandGroup className="max-h-[300px] overflow-y-auto">
-            {Object.keys(contractorTypeDescriptions).map((type) => (
-              <CommandItem
-                key={type}
-                value={type}
-                onSelect={(currentValue) => {
-                  onChange(currentValue as ContractorType);
-                  setOpen(false);
-                }}
-                className="flex flex-col items-start py-2"
-              >
-                <span className="font-medium">{type}</span>
-                <span className="text-xs text-muted-foreground">
-                  {contractorTypeDescriptions[type as ContractorType]}
-                </span>
-              </CommandItem>
-            ))}
-          </CommandGroup>
-        </Command>
-      </PopoverContent>
-    </Popover>
+    <SearchableSelect
+      options={contractorTypeOptions}
+      value={value || ""}
+      onChange={(newValue) => onChange(newValue as ContractorType)}
+      placeholder="Select type"
+      searchPlaceholder="Search..."
+      emptyMessage="No contractor type found."
+      disabled={disabled}
+      className="h-8 p-2"
+      width="250px"
+    />
   );
 };
