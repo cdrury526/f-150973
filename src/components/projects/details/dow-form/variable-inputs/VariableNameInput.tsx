@@ -16,7 +16,7 @@ const VariableNameInput: React.FC<VariableNameInputProps> = ({
       value={value}
       onChange={(e) => onChange(e.target.value.toUpperCase())}
       placeholder="VARIABLE_NAME"
-      className="font-mono uppercase"
+      className="font-mono uppercase w-full"
     />
   );
 };

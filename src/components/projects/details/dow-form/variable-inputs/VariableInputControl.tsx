@@ -22,13 +22,15 @@ const VariableInputControl: React.FC<VariableInputControlProps> = ({
   validateAndSave
 }) => {
   return (
-    <div>
+    <div className="w-full">
       <StringInput
         value={variable.value}
         onChange={onValueChange}
         onKeyDown={onKeyDown}
       />
-      <ValidationError errorMessage={validationError} />
+      {validationError && (
+        <ValidationError errorMessage={validationError} />
+      )}
     </div>
   );
 };

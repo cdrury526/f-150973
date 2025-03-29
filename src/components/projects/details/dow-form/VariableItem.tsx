@@ -54,28 +54,23 @@ const VariableItem: React.FC<VariableItemProps> = ({
   return (
     <Card className={`overflow-hidden ${isActive ? 'ring-2 ring-primary' : ''}`}>
       <CardContent className="p-4">
-        <div className="grid grid-cols-12 gap-3 items-start">
-          <div className="col-span-4">
+        <div className="flex flex-col space-y-2">
+          <div className="flex justify-between items-center">
             <VariableNameInput
               value={variable.name}
               onChange={(newValue) => onUpdate(variable.id, 'name', newValue)}
             />
-          </div>
-          
-          <div className="col-span-7">
-            <VariableInputControl 
-              variable={variable}
-              validationError={validationError}
-              onValueChange={handleValueChange}
-              onBlur={handleBlur}
-              onKeyDown={handleKeyDown}
-              validateAndSave={validateAndSave}
-            />
-          </div>
-          
-          <div className="col-span-1 flex justify-end">
             <RemoveButton onClick={() => onRemove(variable.id)} />
           </div>
+          
+          <VariableInputControl 
+            variable={variable}
+            validationError={validationError}
+            onValueChange={handleValueChange}
+            onBlur={handleBlur}
+            onKeyDown={handleKeyDown}
+            validateAndSave={validateAndSave}
+          />
         </div>
       </CardContent>
     </Card>
