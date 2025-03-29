@@ -5,31 +5,53 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
-import { AlertCircle, CheckCircle, Upload } from 'lucide-react';
+import { AlertCircle, CheckCircle, Upload, Phone, MapPin } from 'lucide-react';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { Navigate } from 'react-router-dom';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Textarea } from '@/components/ui/textarea';
+import { Form, FormField, FormItem, FormLabel, FormControl, FormDescription } from '@/components/ui/form';
+import { z } from 'zod';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
 
-// Define type for builder profile
+// Define type for builder profile with extended fields
 interface BuilderProfile {
   id: string;
   user_id: string;
   company_name: string | null;
   description: string | null;
   logo_url: string | null;
+  address: string | null;
+  city: string | null;
+  state: string | null;
+  zip_code: string | null;
+  phone: string | null;
+  website: string | null;
   created_at: string;
   updated_at: string;
 }
+
+// Define the form schema
+const builderProfileSchema = z.object({
+  company_name: z.string().min(1, "Company name is required"),
+  description: z.string().optional(),
+  address: z.string().optional(),
+  city: z.string().optional(),
+  state: z.string().optional(),
+  zip_code: z.string().optional(),
+  phone: z.string().optional(),
+  website: z.string().optional()
+});
+
+type BuilderProfileFormValues = z.infer<typeof builderProfileSchema>;
 
 const AccountSettings = () => {
   const { user, profile, loading, userRole } = useAuth();
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName] = useState('');
-  const [companyName, setCompanyName] = useState('');
-  const [companyDescription, setCompanyDescription] = useState('');
   const [logoUrl, setLogoUrl] = useState<string | null>(null);
   const [logoFile, setLogoFile] = useState<File | null>(null);
   const [isUpdating, setIsUpdating] = useState(false);
@@ -38,6 +60,21 @@ const AccountSettings = () => {
   const [success, setSuccess] = useState(false);
   const [builderProfile, setBuilderProfile] = useState<BuilderProfile | null>(null);
   const { toast } = useToast();
+
+  // Setup form with react-hook-form and zod validation
+  const form = useForm<BuilderProfileFormValues>({
+    resolver: zodResolver(builderProfileSchema),
+    defaultValues: {
+      company_name: '',
+      description: '',
+      address: '',
+      city: '',
+      state: '',
+      zip_code: '',
+      phone: '',
+      website: ''
+    }
+  });
 
   // Redirect if user is not logged in
   if (!loading && !user) {
@@ -69,8 +106,19 @@ const AccountSettings = () => {
       
       if (data) {
         setBuilderProfile(data);
-        setCompanyName(data.company_name || '');
-        setCompanyDescription(data.description || '');
+        
+        // Set form values
+        form.reset({
+          company_name: data.company_name || '',
+          description: data.description || '',
+          address: data.address || '',
+          city: data.city || '',
+          state: data.state || '',
+          zip_code: data.zip_code || '',
+          phone: data.phone || '',
+          website: data.website || ''
+        });
+        
         setLogoUrl(data.logo_url);
       }
     } catch (err) {
@@ -104,61 +152,6 @@ const AccountSettings = () => {
 
       if (profileError) throw profileError;
       
-      // If builder or admin, update builder profile too
-      if (userRole === 'builder' || userRole === 'admin') {
-        // Upload logo if a new one is selected
-        let logoUrlToUpdate = logoUrl;
-        
-        if (logoFile) {
-          setIsUploadingLogo(true);
-          const fileExt = logoFile.name.split('.').pop();
-          const filePath = `${user?.id}/${Date.now()}.${fileExt}`;
-          
-          const { error: uploadError, data: uploadData } = await supabase.storage
-            .from('company-logos')
-            .upload(filePath, logoFile);
-          
-          if (uploadError) throw uploadError;
-          
-          // Get public URL
-          const { data: publicUrlData } = supabase.storage
-            .from('company-logos')
-            .getPublicUrl(filePath);
-          
-          logoUrlToUpdate = publicUrlData.publicUrl;
-          setLogoUrl(logoUrlToUpdate);
-          setIsUploadingLogo(false);
-        }
-        
-        // Check if builder profile exists
-        if (builderProfile) {
-          // Update existing profile
-          const { error: builderError } = await supabase
-            .from('builder_profiles')
-            .update({
-              company_name: companyName,
-              description: companyDescription,
-              logo_url: logoUrlToUpdate,
-              updated_at: new Date().toISOString(),
-            })
-            .eq('user_id', user?.id);
-            
-          if (builderError) throw builderError;
-        } else {
-          // Create new profile
-          const { error: builderError } = await supabase
-            .from('builder_profiles')
-            .insert({
-              user_id: user?.id,
-              company_name: companyName, 
-              description: companyDescription,
-              logo_url: logoUrlToUpdate,
-            });
-            
-          if (builderError) throw builderError;
-        }
-      }
-      
       setSuccess(true);
       toast({
         title: "Profile updated",
@@ -169,6 +162,86 @@ const AccountSettings = () => {
       toast({
         title: "Update failed",
         description: err.message || 'Failed to update profile',
+        variant: "destructive",
+      });
+    } finally {
+      setIsUpdating(false);
+    }
+  };
+
+  const handleCompanySubmit = async (formData: BuilderProfileFormValues) => {
+    setIsUpdating(true);
+    setError(null);
+    setSuccess(false);
+    
+    try {
+      // Upload logo if a new one is selected
+      let logoUrlToUpdate = logoUrl;
+      
+      if (logoFile) {
+        setIsUploadingLogo(true);
+        const fileExt = logoFile.name.split('.').pop();
+        const filePath = `${user?.id}/${Date.now()}.${fileExt}`;
+        
+        const { error: uploadError, data: uploadData } = await supabase.storage
+          .from('company-logos')
+          .upload(filePath, logoFile);
+        
+        if (uploadError) throw uploadError;
+        
+        // Get public URL
+        const { data: publicUrlData } = supabase.storage
+          .from('company-logos')
+          .getPublicUrl(filePath);
+        
+        logoUrlToUpdate = publicUrlData.publicUrl;
+        setLogoUrl(logoUrlToUpdate);
+        setIsUploadingLogo(false);
+      }
+      
+      // Prepare the data to update or insert
+      const builderData = {
+        user_id: user?.id,
+        company_name: formData.company_name,
+        description: formData.description || null,
+        logo_url: logoUrlToUpdate,
+        address: formData.address || null,
+        city: formData.city || null,
+        state: formData.state || null,
+        zip_code: formData.zip_code || null,
+        phone: formData.phone || null,
+        website: formData.website || null,
+        updated_at: new Date().toISOString()
+      };
+      
+      // Check if builder profile exists
+      if (builderProfile) {
+        // Update existing profile
+        const { error: builderError } = await supabase
+          .from('builder_profiles')
+          .update(builderData)
+          .eq('user_id', user?.id);
+          
+        if (builderError) throw builderError;
+      } else {
+        // Create new profile
+        const { error: builderError } = await supabase
+          .from('builder_profiles')
+          .insert(builderData);
+          
+        if (builderError) throw builderError;
+      }
+      
+      setSuccess(true);
+      toast({
+        title: "Company profile updated",
+        description: "Your company information has been updated successfully",
+      });
+    } catch (err: any) {
+      setError(err.message || 'Failed to update company profile');
+      toast({
+        title: "Update failed",
+        description: err.message || 'Failed to update company profile',
         variant: "destructive",
       });
     } finally {
@@ -322,74 +395,189 @@ const AccountSettings = () => {
                 <CardDescription>Manage your company details</CardDescription>
               </CardHeader>
               
-              <form onSubmit={handleSubmit}>
-                <CardContent className="space-y-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="companyName">Company Name</Label>
-                    <Input 
-                      id="companyName" 
-                      placeholder="Your Company Name" 
-                      value={companyName}
-                      onChange={(e) => setCompanyName(e.target.value)}
-                    />
-                  </div>
-                  
-                  <div className="space-y-2">
-                    <Label htmlFor="companyDescription">Description</Label>
-                    <Textarea 
-                      id="companyDescription" 
-                      placeholder="Tell us about your company..." 
-                      value={companyDescription}
-                      onChange={(e) => setCompanyDescription(e.target.value)}
-                      className="min-h-[100px]"
-                    />
-                  </div>
-                  
-                  <div className="space-y-2">
-                    <Label htmlFor="companyLogo">Company Logo</Label>
-                    <div className="flex items-center gap-4">
-                      {logoUrl && (
-                        <div className="h-16 w-16 overflow-hidden rounded border">
-                          <img 
-                            src={logoUrl} 
-                            alt="Company logo" 
-                            className="h-full w-full object-cover"
-                          />
-                        </div>
+              <Form {...form}>
+                <form onSubmit={form.handleSubmit(handleCompanySubmit)}>
+                  <CardContent className="space-y-4">
+                    {error && (
+                      <Alert variant="destructive">
+                        <AlertCircle className="h-4 w-4" />
+                        <AlertDescription>{error}</AlertDescription>
+                      </Alert>
+                    )}
+                    
+                    {success && (
+                      <Alert className="bg-green-50 text-green-800 border-green-200">
+                        <CheckCircle className="h-4 w-4 text-green-600" />
+                        <AlertDescription>Company information updated successfully</AlertDescription>
+                      </Alert>
+                    )}
+                    
+                    <FormField
+                      control={form.control}
+                      name="company_name"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Company Name</FormLabel>
+                          <FormControl>
+                            <Input placeholder="Your Company Name" {...field} />
+                          </FormControl>
+                        </FormItem>
                       )}
-                      <div>
-                        <Label
-                          htmlFor="logo-upload"
-                          className="flex cursor-pointer items-center gap-2 rounded-md border border-input bg-background px-3 py-2 text-sm"
-                        >
-                          <Upload className="h-4 w-4" />
-                          {logoUrl ? 'Change Logo' : 'Upload Logo'}
-                          <Input
-                            id="logo-upload"
-                            type="file"
-                            accept="image/*"
-                            onChange={handleLogoChange}
-                            className="hidden"
-                          />
-                        </Label>
-                        <p className="mt-1 text-xs text-muted-foreground">
-                          Recommended size: 400x400px (Max: 5MB)
-                        </p>
+                    />
+                    
+                    <FormField
+                      control={form.control}
+                      name="description"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Description</FormLabel>
+                          <FormControl>
+                            <Textarea 
+                              placeholder="Tell us about your company..." 
+                              className="min-h-[100px]"
+                              {...field} 
+                            />
+                          </FormControl>
+                        </FormItem>
+                      )}
+                    />
+                    
+                    <div className="space-y-2">
+                      <Label htmlFor="companyLogo">Company Logo</Label>
+                      <div className="flex items-center gap-4">
+                        {logoUrl && (
+                          <div className="h-16 w-16 overflow-hidden rounded border">
+                            <img 
+                              src={logoUrl} 
+                              alt="Company logo" 
+                              className="h-full w-full object-cover"
+                            />
+                          </div>
+                        )}
+                        <div>
+                          <Label
+                            htmlFor="logo-upload"
+                            className="flex cursor-pointer items-center gap-2 rounded-md border border-input bg-background px-3 py-2 text-sm"
+                          >
+                            <Upload className="h-4 w-4" />
+                            {logoUrl ? 'Change Logo' : 'Upload Logo'}
+                            <Input
+                              id="logo-upload"
+                              type="file"
+                              accept="image/*"
+                              onChange={handleLogoChange}
+                              className="hidden"
+                            />
+                          </Label>
+                          <p className="mt-1 text-xs text-muted-foreground">
+                            Recommended size: 400x400px (Max: 5MB)
+                          </p>
+                        </div>
                       </div>
                     </div>
-                  </div>
-                </CardContent>
-                
-                <CardFooter>
-                  <Button 
-                    type="submit" 
-                    disabled={isUpdating || isUploadingLogo}
-                    className="ml-auto"
-                  >
-                    {isUpdating || isUploadingLogo ? 'Saving...' : 'Save Changes'}
-                  </Button>
-                </CardFooter>
-              </form>
+                    
+                    <div className="grid grid-cols-1 gap-4 pt-4">
+                      <h3 className="text-lg font-medium">Contact Information</h3>
+                      
+                      <FormField
+                        control={form.control}
+                        name="address"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Street Address</FormLabel>
+                            <FormControl>
+                              <div className="flex items-center">
+                                <MapPin className="mr-2 h-4 w-4 text-muted-foreground" />
+                                <Input placeholder="123 Main St" {...field} />
+                              </div>
+                            </FormControl>
+                          </FormItem>
+                        )}
+                      />
+                      
+                      <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+                        <FormField
+                          control={form.control}
+                          name="city"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>City</FormLabel>
+                              <FormControl>
+                                <Input placeholder="City" {...field} />
+                              </FormControl>
+                            </FormItem>
+                          )}
+                        />
+                        
+                        <FormField
+                          control={form.control}
+                          name="state"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>State</FormLabel>
+                              <FormControl>
+                                <Input placeholder="State" {...field} />
+                              </FormControl>
+                            </FormItem>
+                          )}
+                        />
+                        
+                        <FormField
+                          control={form.control}
+                          name="zip_code"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>ZIP Code</FormLabel>
+                              <FormControl>
+                                <Input placeholder="ZIP Code" {...field} />
+                              </FormControl>
+                            </FormItem>
+                          )}
+                        />
+                      </div>
+                      
+                      <FormField
+                        control={form.control}
+                        name="phone"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Phone Number</FormLabel>
+                            <FormControl>
+                              <div className="flex items-center">
+                                <Phone className="mr-2 h-4 w-4 text-muted-foreground" />
+                                <Input placeholder="(555) 123-4567" {...field} />
+                              </div>
+                            </FormControl>
+                          </FormItem>
+                        )}
+                      />
+                      
+                      <FormField
+                        control={form.control}
+                        name="website"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Website</FormLabel>
+                            <FormControl>
+                              <Input placeholder="https://www.example.com" {...field} />
+                            </FormControl>
+                          </FormItem>
+                        )}
+                      />
+                    </div>
+                  </CardContent>
+                  
+                  <CardFooter>
+                    <Button 
+                      type="submit" 
+                      disabled={isUpdating || isUploadingLogo}
+                      className="ml-auto"
+                    >
+                      {isUpdating || isUploadingLogo ? 'Saving...' : 'Save Changes'}
+                    </Button>
+                  </CardFooter>
+                </form>
+              </Form>
             </Card>
           </TabsContent>
         )}
