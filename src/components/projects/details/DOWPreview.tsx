@@ -1,5 +1,5 @@
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import { Card, CardContent } from "@/components/ui/card";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Textarea } from "@/components/ui/textarea";
@@ -114,78 +114,111 @@ const DOWPreview: React.FC<DOWPreviewProps> = ({ variables, templateContent, onV
     URL.revokeObjectURL(url);
   };
 
-  // For the interactive preview with highlighted variables
-  const renderDocumentWithInteractiveVariables = () => {
+  // Enhanced version of the interactive preview renderer
+  const renderDocumentWithInteractiveVariables = useCallback(() => {
     if (!templateContent) return <p>No template content available.</p>;
     
     // Get all variables that appear in the template
     const allPlaceholders = templateContent.match(/{{([A-Z0-9_]+)}}/g) || [];
     const uniqueVarNames = [...new Set(allPlaceholders.map(p => p.replace(/{{|}}/g, '')))];
     
-    // Create a map of variable names to values
-    const varMap = new Map(variables.map(v => [v.name, v.value || `[${v.name}]`]));
+    // Create a map of variable names to values and tracking info
+    const varMap = new Map(variables.map(v => [
+      v.name, 
+      { 
+        value: v.value || `[${v.name}]`, 
+        isHighlighted: highlightedVariables[v.name] || false,
+        isMissing: !v.value
+      }
+    ]));
     
     // Split the document by lines to maintain formatting
     const lines = generatedDocument.split('\n');
     
-    return lines.map((line, lineIdx) => {
-      // For each unique variable, check if it appears in the line
-      const lineElements: React.ReactNode[] = [line];
-      
-      uniqueVarNames.forEach(varName => {
-        // Check if this variable's value appears in the line
-        const value = varMap.get(varName);
-        if (!value || value === `[${varName}]`) return;
-        
-        // If the value is in this line, create interactive elements
-        if (line.includes(value)) {
-          // Split the line by this value to maintain surrounding text
-          const parts = line.split(value);
+    return (
+      <div className="space-y-1">
+        {lines.map((line, lineIdx) => {
+          if (!line.trim()) return <br key={`line-${lineIdx}`} />;
           
-          // Rebuild the line with interactive spans
-          const newLineElements: React.ReactNode[] = [];
+          let renderedLine = <span>{line}</span>;
+          let hasHighlightedVariables = false;
           
-          parts.forEach((part, partIdx) => {
-            // Add the text part
-            if (part) newLineElements.push(part);
+          // Process each variable to find in this line
+          uniqueVarNames.forEach(varName => {
+            const varInfo = varMap.get(varName);
+            if (!varInfo) return;
             
-            // Add the interactive variable (except after the last part)
-            if (partIdx < parts.length - 1) {
-              newLineElements.push(
-                <span 
-                  key={`${lineIdx}-${varName}-${partIdx}`}
-                  className={`cursor-pointer px-1 rounded-md ${highlightedVariables[varName] ? 'bg-yellow-200 dark:bg-yellow-800 ring-2 ring-yellow-400 dark:ring-yellow-600' : 'hover:bg-yellow-100 dark:hover:bg-yellow-900'}`}
-                  onClick={() => {
-                    // Toggle highlight
-                    setHighlightedVariables(prev => ({
-                      ...prev,
-                      [varName]: !prev[varName]
-                    }));
-                    // Notify parent component
-                    if (onVariableClick) {
-                      onVariableClick(varName);
-                    }
-                  }}
-                  title={`Click to edit ${varName}`}
-                >
-                  {value}
-                </span>
-              );
+            // Check if this variable's value appears in the line
+            const { value, isHighlighted, isMissing } = varInfo;
+            
+            // Skip placeholder values
+            if (isMissing || value === `[${varName}]`) return;
+            
+            // If the value is in this line, create interactive spans
+            if (line.includes(value)) {
+              hasHighlightedVariables = true;
+              
+              // Split the line by this value to maintain surrounding text
+              const segments = line.split(value);
+              
+              // Create array of alternating text and interactive spans
+              const lineElements: React.ReactNode[] = [];
+              
+              segments.forEach((segment, segmentIdx) => {
+                // Add the text segment
+                if (segment) lineElements.push(<span key={`seg-${segmentIdx}`}>{segment}</span>);
+                
+                // Add the clickable variable span (except after the last segment)
+                if (segmentIdx < segments.length - 1) {
+                  lineElements.push(
+                    <span 
+                      key={`var-${varName}-${segmentIdx}`}
+                      className={`
+                        cursor-pointer px-1 rounded-md border 
+                        ${isHighlighted ? 
+                          'bg-yellow-100 dark:bg-yellow-900 ring-2 ring-yellow-400 dark:ring-yellow-600' : 
+                          'hover:bg-yellow-50 dark:hover:bg-yellow-950 hover:border-yellow-200'
+                        }
+                        transition-all duration-150
+                      `}
+                      onClick={() => {
+                        // Toggle highlight
+                        setHighlightedVariables(prev => {
+                          const newState = {...prev};
+                          // Clear other highlights
+                          Object.keys(newState).forEach(key => newState[key] = false);
+                          // Set this one
+                          newState[varName] = true;
+                          return newState;
+                        });
+                        
+                        // Notify parent component
+                        if (onVariableClick) {
+                          onVariableClick(varName);
+                        }
+                      }}
+                      title={`Click to edit ${varName}`}
+                    >
+                      {value}
+                    </span>
+                  );
+                }
+              });
+              
+              // Replace the line with our interactive elements
+              renderedLine = <>{lineElements}</>;
             }
           });
           
-          lineElements.splice(0, 1, ...newLineElements);
-        }
-      });
-      
-      return (
-        <React.Fragment key={lineIdx}>
-          {lineElements}
-          <br />
-        </React.Fragment>
-      );
-    });
-  };
+          return (
+            <div key={`line-${lineIdx}`} className={`py-1 ${hasHighlightedVariables ? 'pl-2 border-l-2 border-yellow-300' : ''}`}>
+              {renderedLine}
+            </div>
+          );
+        })}
+      </div>
+    );
+  }, [generatedDocument, templateContent, variables, highlightedVariables, onVariableClick]);
 
   return (
     <div className="space-y-4">
