@@ -135,84 +135,175 @@ const DOWPreview: React.FC<DOWPreviewProps> = ({ variables, templateContent, onV
     // Split the document by lines to maintain formatting
     const lines = generatedDocument.split('\n');
     
+    // Find all variables with their positions in the generated document
+    // This is critical for making variables clickable in the preview
+    const variablePositions: Array<{
+      varName: string,
+      value: string,
+      starts: number[],
+      isMissing: boolean
+    }> = [];
+    
+    // For each variable, find all occurrences in the document
+    variables.forEach(variable => {
+      const value = variable.value || `[${variable.name}]`;
+      const isMissing = !variable.value;
+      
+      // Skip empty values or placeholder values
+      if (value === `[${variable.name}]`) return;
+      
+      // Find all occurrences of this value in the document
+      let index = generatedDocument.indexOf(value);
+      const starts: number[] = [];
+      
+      while (index !== -1) {
+        starts.push(index);
+        index = generatedDocument.indexOf(value, index + 1);
+      }
+      
+      if (starts.length > 0) {
+        variablePositions.push({
+          varName: variable.name,
+          value,
+          starts,
+          isMissing
+        });
+      }
+    });
+    
     return (
       <div className="space-y-1">
         {lines.map((line, lineIdx) => {
           if (!line.trim()) return <br key={`line-${lineIdx}`} />;
           
-          let renderedLine = <span>{line}</span>;
-          let hasHighlightedVariables = false;
+          // Calculate the start and end positions of this line in the document
+          const prevLinesLength = lines.slice(0, lineIdx).join('\n').length + (lineIdx > 0 ? 1 : 0); // +1 for each newline
+          const lineStartPos = prevLinesLength;
+          const lineEndPos = lineStartPos + line.length;
           
-          // Process each variable to find in this line
-          uniqueVarNames.forEach(varName => {
-            const varInfo = varMap.get(varName);
-            if (!varInfo) return;
-            
-            // Check if this variable's value appears in the line
-            const { value, isHighlighted, isMissing } = varInfo;
-            
-            // Skip placeholder values
-            if (isMissing || value === `[${varName}]`) return;
-            
-            // If the value is in this line, create interactive spans
-            if (line.includes(value)) {
-              hasHighlightedVariables = true;
+          // Find variables that appear in this line
+          const varsInLine = variablePositions.filter(vp => 
+            vp.starts.some(start => 
+              start >= lineStartPos && start < lineEndPos
+            )
+          );
+          
+          // If no variables in this line, just render the line as is
+          if (varsInLine.length === 0) {
+            return <div key={`line-${lineIdx}`} className="py-1">{line}</div>;
+          }
+          
+          // Create segments of text and interactive spans
+          const segments: React.ReactNode[] = [];
+          let currentPos = 0; // Position within the line
+          
+          // Sort all variable occurrences in this line by their start position
+          const allOccurrences: Array<{
+            varName: string,
+            value: string,
+            startInLine: number,
+            endInLine: number,
+            isMissing: boolean,
+            isHighlighted: boolean
+          }> = [];
+          
+          varsInLine.forEach(vp => {
+            vp.starts.forEach(start => {
+              const startInLine = start - lineStartPos;
               
-              // Split the line by this value to maintain surrounding text
-              const segments = line.split(value);
-              
-              // Create array of alternating text and interactive spans
-              const lineElements: React.ReactNode[] = [];
-              
-              segments.forEach((segment, segmentIdx) => {
-                // Add the text segment
-                if (segment) lineElements.push(<span key={`seg-${segmentIdx}`}>{segment}</span>);
-                
-                // Add the clickable variable span (except after the last segment)
-                if (segmentIdx < segments.length - 1) {
-                  lineElements.push(
-                    <span 
-                      key={`var-${varName}-${segmentIdx}`}
-                      className={`
-                        cursor-pointer px-1 rounded-md border 
-                        ${isHighlighted ? 
-                          'bg-yellow-100 dark:bg-yellow-900 ring-2 ring-yellow-400 dark:ring-yellow-600' : 
-                          'hover:bg-yellow-50 dark:hover:bg-yellow-950 hover:border-yellow-200'
-                        }
-                        transition-all duration-150
-                      `}
-                      onClick={() => {
-                        // Toggle highlight
-                        setHighlightedVariables(prev => {
-                          const newState = {...prev};
-                          // Clear other highlights
-                          Object.keys(newState).forEach(key => newState[key] = false);
-                          // Set this one
-                          newState[varName] = true;
-                          return newState;
-                        });
-                        
-                        // Notify parent component
-                        if (onVariableClick) {
-                          onVariableClick(varName);
-                        }
-                      }}
-                      title={`Click to edit ${varName}`}
-                    >
-                      {value}
-                    </span>
-                  );
-                }
-              });
-              
-              // Replace the line with our interactive elements
-              renderedLine = <>{lineElements}</>;
-            }
+              // Only include if it starts within this line
+              if (startInLine >= 0 && startInLine < line.length) {
+                allOccurrences.push({
+                  varName: vp.varName,
+                  value: vp.value,
+                  startInLine,
+                  endInLine: startInLine + vp.value.length,
+                  isMissing: vp.isMissing,
+                  isHighlighted: highlightedVariables[vp.varName] || false
+                });
+              }
+            });
           });
           
+          // Sort by start position
+          allOccurrences.sort((a, b) => a.startInLine - b.startInLine);
+          
+          // Handle overlapping occurrences (should be rare, but possible)
+          const filteredOccurrences = allOccurrences.filter((occ, idx, arr) => {
+            if (idx === 0) return true;
+            
+            // Skip if this occurrence overlaps with the previous one
+            const prevOcc = arr[idx - 1];
+            return occ.startInLine >= prevOcc.endInLine;
+          });
+          
+          // Create segments
+          let lastEnd = 0;
+          filteredOccurrences.forEach((occ, idx) => {
+            // Add text before this variable
+            if (occ.startInLine > lastEnd) {
+              segments.push(
+                <span key={`text-${lineIdx}-${idx}`}>
+                  {line.substring(lastEnd, occ.startInLine)}
+                </span>
+              );
+            }
+            
+            // Add the clickable variable span
+            segments.push(
+              <span 
+                key={`var-${occ.varName}-${idx}`}
+                className={`
+                  cursor-pointer px-1 rounded-md border 
+                  ${occ.isHighlighted ? 
+                    'bg-yellow-100 dark:bg-yellow-900 ring-2 ring-yellow-400 dark:ring-yellow-600' : 
+                    'hover:bg-yellow-50 dark:hover:bg-yellow-950 hover:border-yellow-200'
+                  }
+                  transition-all duration-150
+                `}
+                onClick={() => {
+                  // Toggle highlight
+                  setHighlightedVariables(prev => {
+                    const newState = {...prev};
+                    // Clear other highlights
+                    Object.keys(newState).forEach(key => newState[key] = false);
+                    // Set this one
+                    newState[occ.varName] = true;
+                    return newState;
+                  });
+                  
+                  // Notify parent component
+                  if (onVariableClick) {
+                    onVariableClick(occ.varName);
+                  }
+                }}
+                title={`Click to edit ${occ.varName}`}
+              >
+                {occ.value}
+              </span>
+            );
+            
+            lastEnd = occ.endInLine;
+          });
+          
+          // Add any remaining text after the last variable
+          if (lastEnd < line.length) {
+            segments.push(
+              <span key={`text-${lineIdx}-end`}>
+                {line.substring(lastEnd)}
+              </span>
+            );
+          }
+          
+          // Show a highlight for lines with active variables
+          const hasHighlightedVars = filteredOccurrences.some(occ => occ.isHighlighted);
+          
           return (
-            <div key={`line-${lineIdx}`} className={`py-1 ${hasHighlightedVariables ? 'pl-2 border-l-2 border-yellow-300' : ''}`}>
-              {renderedLine}
+            <div 
+              key={`line-${lineIdx}`} 
+              className={`py-1 ${hasHighlightedVars ? 'pl-2 border-l-2 border-yellow-300' : ''}`}
+            >
+              {segments}
             </div>
           );
         })}
