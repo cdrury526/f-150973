@@ -3,6 +3,7 @@ import React from 'react';
 import { Form } from '@/components/ui/form';
 import { Button } from '@/components/ui/button';
 import { DialogFooter } from '@/components/ui/dialog';
+import { Loader } from 'lucide-react';
 import {
   ProjectNameField,
   ClientField,
@@ -39,7 +40,14 @@ const ProjectEditForm: React.FC<ProjectEditDialogProps> = ({
         
         <DialogFooter>
           <Button type="submit" disabled={isSubmitting}>
-            {isSubmitting ? 'Saving...' : 'Save changes'}
+            {isSubmitting ? (
+              <>
+                <Loader className="mr-2 h-4 w-4 animate-spin" />
+                Saving...
+              </>
+            ) : (
+              'Save changes'
+            )}
           </Button>
         </DialogFooter>
       </form>
