@@ -23,6 +23,28 @@ interface DOWContentProps {
   projectId: string;
 }
 
+// Add the CSS for variable highlighting as a separate style element
+const pulseAnimationStyle = `
+  .variable-highlight-pulse {
+    animation: pulse-highlight 1.5s ease-in-out;
+  }
+
+  @keyframes pulse-highlight {
+    0%, 100% { 
+      box-shadow: 0 0 0 0 rgba(59, 130, 246, 0); 
+      border-color: var(--border);
+    }
+    25% { 
+      box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.5); 
+      border-color: rgb(59, 130, 246);
+    }
+    75% { 
+      box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.3); 
+      border-color: rgb(59, 130, 246);
+    }
+  }
+`;
+
 const DOWContent: React.FC<DOWContentProps> = ({ projectId }) => {
   const [uploadError, setUploadError] = useState<string | null>(null);
   const [isUploading, setIsUploading] = useState(false);
@@ -141,6 +163,9 @@ const DOWContent: React.FC<DOWContentProps> = ({ projectId }) => {
 
   return (
     <div className="space-y-8">
+      {/* Add the style element with our CSS animation */}
+      <style dangerouslySetInnerHTML={{ __html: pulseAnimationStyle }} />
+      
       <AuthWarning authError={authError} />
       
       <div className="flex justify-between items-center">
@@ -178,27 +203,6 @@ const DOWContent: React.FC<DOWContentProps> = ({ projectId }) => {
           disabled={isUploading || !!authError}
         />
       </div>
-      
-      <style jsx global>{`
-        .variable-highlight-pulse {
-          animation: pulse-highlight 1.5s ease-in-out;
-        }
-
-        @keyframes pulse-highlight {
-          0%, 100% { 
-            box-shadow: 0 0 0 0 rgba(59, 130, 246, 0); 
-            border-color: var(--border);
-          }
-          25% { 
-            box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.5); 
-            border-color: rgb(59, 130, 246);
-          }
-          75% { 
-            box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.3); 
-            border-color: rgb(59, 130, 246);
-          }
-        }
-      `}</style>
       
       <ResizablePanelGroup 
         direction="horizontal" 
