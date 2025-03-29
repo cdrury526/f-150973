@@ -3,13 +3,6 @@ import React, { useState } from 'react';
 import { Button } from "@/components/ui/button";
 import { ChevronDown } from "lucide-react";
 import {
-  Command,
-  CommandEmpty,
-  CommandGroup,
-  CommandInput,
-  CommandItem,
-} from "@/components/ui/command";
-import {
   Popover,
   PopoverContent,
   PopoverTrigger,
@@ -49,12 +42,18 @@ export const SearchableSelect: React.FC<SearchableSelectProps> = ({
   showSelectedLabel = true,
 }) => {
   const [open, setOpen] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
   
   // Always ensure options is an array and never undefined
   const safeOptions = Array.isArray(options) ? options : [];
   
   // Find the selected option
   const selectedOption = safeOptions.find(option => option.value === value);
+
+  // Filter options based on search query
+  const filteredOptions = safeOptions.filter(option => 
+    option.label.toLowerCase().includes(searchQuery.toLowerCase())
+  );
 
   return (
     <Popover open={open} onOpenChange={setOpen}>
@@ -83,22 +82,23 @@ export const SearchableSelect: React.FC<SearchableSelectProps> = ({
             <input 
               className="flex h-11 w-full rounded-md bg-transparent py-3 text-sm outline-none placeholder:text-muted-foreground disabled:cursor-not-allowed disabled:opacity-50"
               placeholder={searchPlaceholder}
-              onChange={(e) => {
-                // Only filtering happens here, no command functionality used
-              }}
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              autoComplete="off"
             />
           </div>
           <div className="overflow-y-auto" style={{ maxHeight: `${maxHeight}px` }}>
-            {safeOptions.length === 0 ? (
+            {filteredOptions.length === 0 ? (
               <div className="py-6 text-center text-sm">{emptyMessage}</div>
             ) : (
               <div className="p-1">
-                {safeOptions.map((option) => (
+                {filteredOptions.map((option) => (
                   <div
                     key={`option-${option.value}`}
                     className={`relative flex cursor-default select-none items-center rounded-sm px-2 py-1.5 text-sm outline-none hover:bg-accent hover:text-accent-foreground ${value === option.value ? 'bg-accent text-accent-foreground' : ''}`}
                     onClick={() => {
                       onChange(option.value);
+                      setSearchQuery('');
                       setOpen(false);
                     }}
                   >
