@@ -1,4 +1,3 @@
-
 import React, { useEffect } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
@@ -20,7 +19,6 @@ const statusIcons = {
   'Not Started': <Clock className="h-4 w-4 mr-1" />
 };
 
-// Fetch a single project from Supabase
 const fetchProject = async (id: string) => {
   const { data, error } = await supabase
     .from('projects')
@@ -32,7 +30,6 @@ const fetchProject = async (id: string) => {
     throw new Error(error.message);
   }
   
-  // Transform the data to match the Project interface
   return {
     id: data.id,
     title: data.project_name,
@@ -55,7 +52,6 @@ const ProjectDetails = () => {
   const { toast } = useToast();
   const navigate = useNavigate();
 
-  // Query for fetching the project
   const { 
     data: project, 
     isLoading, 
@@ -180,36 +176,12 @@ const ProjectDetails = () => {
           </Card>
           
           <div className="md:col-span-2 space-y-6">
-            <Tabs defaultValue="overview">
-              <TabsList className="grid w-full grid-cols-4">
-                <TabsTrigger value="overview">Overview</TabsTrigger>
+            <Tabs defaultValue="tasks">
+              <TabsList className="grid w-full grid-cols-3">
                 <TabsTrigger value="tasks">Tasks</TabsTrigger>
                 <TabsTrigger value="timeline">Timeline</TabsTrigger>
                 <TabsTrigger value="documents">Documents</TabsTrigger>
               </TabsList>
-              <TabsContent value="overview" className="space-y-4 pt-4">
-                <div className="prose max-w-none">
-                  <h3>Project Description</h3>
-                  <p>
-                    This project involves the construction of a {project.title.toLowerCase()} located at {project.location}. 
-                    The build includes modern amenities and sustainable features to meet the client's specifications.
-                  </p>
-                  
-                  <h3>Key Features</h3>
-                  <ul>
-                    <li>Energy-efficient design</li>
-                    <li>Smart home integration</li>
-                    <li>Custom interior finishes</li>
-                    <li>Landscaping and outdoor living space</li>
-                  </ul>
-                  
-                  <h3>Project Team</h3>
-                  <p>
-                    The project is being managed by our senior construction team with specialized contractors 
-                    for electrical, plumbing, and finishing work.
-                  </p>
-                </div>
-              </TabsContent>
               <TabsContent value="tasks">
                 <p className="text-muted-foreground py-4">Task management will be implemented in the next iteration.</p>
               </TabsContent>
