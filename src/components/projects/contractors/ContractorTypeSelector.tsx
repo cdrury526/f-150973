@@ -31,7 +31,8 @@ export const ContractorTypeSelector: React.FC<ContractorTypeSelectorProps> = ({
     );
   }, [contractorTypes, searchQuery]);
   
-  const handleOptionClick = (type: ContractorType) => {
+  // Simple function to handle option selection
+  const selectOption = (type: ContractorType) => {
     onChange(type);
     setOpen(false);
     setSearchQuery("");
@@ -65,7 +66,6 @@ export const ContractorTypeSelector: React.FC<ContractorTypeSelectorProps> = ({
               placeholder="Search contractor type..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              onClick={(e) => e.stopPropagation()}
             />
           </div>
           <div className="max-h-[300px] overflow-y-auto">
@@ -74,31 +74,29 @@ export const ContractorTypeSelector: React.FC<ContractorTypeSelectorProps> = ({
             ) : (
               <div className="p-1">
                 {filteredTypes.map((type) => (
-                  <div
+                  <button
                     key={type}
-                    onClick={(e) => {
-                      e.preventDefault();
-                      e.stopPropagation();
-                      handleOptionClick(type);
-                    }}
+                    type="button"
                     className={cn(
-                      "relative flex cursor-pointer select-none items-center rounded-sm px-2 py-1.5 text-sm outline-none hover:bg-accent hover:text-accent-foreground",
+                      "w-full text-left px-2 py-1.5 text-sm rounded-sm hover:bg-accent hover:text-accent-foreground",
                       type === value ? "bg-accent text-accent-foreground" : ""
                     )}
+                    onClick={() => selectOption(type)}
                   >
-                    <Check
-                      className={cn(
-                        "mr-2 h-4 w-4",
-                        type === value ? "opacity-100" : "opacity-0"
-                      )}
-                    />
-                    <div className="flex flex-col">
+                    <div className="flex items-center">
+                      <Check
+                        className={cn(
+                          "mr-2 h-4 w-4",
+                          type === value ? "opacity-100" : "opacity-0"
+                        )}
+                      />
                       <span>{type}</span>
-                      <span className="text-xs text-muted-foreground">
-                        {contractorTypeDescriptions[type]}
-                      </span>
                     </div>
-                  </div>
+                    {/* Show description as a separate element that doesn't interfere with clicking */}
+                    <div className="pl-6 text-xs text-muted-foreground mt-0.5">
+                      {contractorTypeDescriptions[type]}
+                    </div>
+                  </button>
                 ))}
               </div>
             )}
@@ -146,12 +144,6 @@ export const ContractorTypeCell: React.FC<ContractorTypeSelectorProps> = ({
     );
   }, [contractorTypes, searchQuery]);
   
-  const handleSelect = (type: ContractorType) => {
-    onChange(type);
-    setOpen(false);
-    setSearchQuery("");
-  };
-
   return (
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild>
@@ -179,7 +171,6 @@ export const ContractorTypeCell: React.FC<ContractorTypeSelectorProps> = ({
             placeholder="Search type..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            onClick={(e) => e.stopPropagation()}
           />
         </div>
         <div className="max-h-[300px] overflow-y-auto">
@@ -188,17 +179,18 @@ export const ContractorTypeCell: React.FC<ContractorTypeSelectorProps> = ({
           ) : (
             <div className="p-1">
               {filteredTypes.map((type) => (
-                <div
+                <button
                   key={type}
-                  onClick={(e) => {
-                    e.preventDefault();
-                    e.stopPropagation();
-                    handleSelect(type);
-                  }}
+                  type="button"
                   className={cn(
-                    "relative flex cursor-pointer select-none items-center rounded-sm px-2 py-1.5 text-sm outline-none hover:bg-accent hover:text-accent-foreground",
+                    "w-full text-left flex items-center px-2 py-1.5 text-sm rounded-sm hover:bg-accent hover:text-accent-foreground",
                     type === value ? "bg-accent text-accent-foreground" : ""
                   )}
+                  onClick={() => {
+                    onChange(type);
+                    setOpen(false);
+                    setSearchQuery("");
+                  }}
                 >
                   <Check
                     className={cn(
@@ -207,7 +199,7 @@ export const ContractorTypeCell: React.FC<ContractorTypeSelectorProps> = ({
                     )}
                   />
                   {type}
-                </div>
+                </button>
               ))}
             </div>
           )}
