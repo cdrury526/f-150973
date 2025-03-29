@@ -29,10 +29,9 @@ const ProjectTabs: React.FC<ProjectTabsProps> = ({ projectId }) => {
   return (
     <div className="space-y-6">
       <Tabs defaultValue="build" onValueChange={handleTabChange}>
-        <TabsList className="grid w-full grid-cols-4">
+        <TabsList className="grid w-full grid-cols-3">
           <TabsTrigger value="build">Build</TabsTrigger>
           <TabsTrigger value="tasks">Tasks</TabsTrigger>
-          <TabsTrigger value="timeline">Timeline</TabsTrigger>
           <TabsTrigger value="documents">Documents</TabsTrigger>
         </TabsList>
         <TabsContent value="build">
@@ -40,9 +39,6 @@ const ProjectTabs: React.FC<ProjectTabsProps> = ({ projectId }) => {
         </TabsContent>
         <TabsContent value="tasks">
           <p className="text-muted-foreground py-4">Task management will be implemented in the next iteration.</p>
-        </TabsContent>
-        <TabsContent value="timeline">
-          <p className="text-muted-foreground py-4">Project timeline will be implemented in the next iteration.</p>
         </TabsContent>
         <TabsContent value="documents">
           <p className="text-muted-foreground py-4">Document management will be implemented in the next iteration.</p>
