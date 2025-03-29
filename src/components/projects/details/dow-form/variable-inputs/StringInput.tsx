@@ -21,8 +21,9 @@ const StringInput: React.FC<StringInputProps> = ({
       value={value}
       onChange={(e) => onChange(e.target.value)}
       onKeyDown={onKeyDown}
-      className="min-h-20 resize-y"
+      className="min-h-[32px] h-auto resize-y"
       placeholder="Enter a text value"
+      rows={1}
     />
   );
 };

@@ -2,10 +2,10 @@
 import React, { useState } from 'react';
 import { Card, CardContent } from "@/components/ui/card";
 import { DOWVariable } from '../types';
-import { validateValue, formatValueForType } from './utils/validationUtils';
 import VariableNameInput from './variable-inputs/VariableNameInput';
 import VariableInputControl from './variable-inputs/VariableInputControl';
 import RemoveButton from './variable-inputs/RemoveButton';
+import VariableLabel from './variable-inputs/VariableLabel';
 
 interface VariableItemProps {
   variable: DOWVariable;
@@ -24,6 +24,7 @@ const VariableItem: React.FC<VariableItemProps> = ({
 }) => {
   const [validationError, setValidationError] = useState<string | null>(null);
   const isActive = activeVariableName === variable.name;
+  const [isEditing, setIsEditing] = useState(false);
 
   const handleValueChange = (newValue: string) => {
     onUpdate(variable.id, 'value', newValue);
@@ -49,17 +50,26 @@ const VariableItem: React.FC<VariableItemProps> = ({
 
   const handleBlur = () => {
     validateAndSave();
+    setIsEditing(false);
+  };
+
+  const handleFocus = () => {
+    setIsEditing(true);
   };
 
   return (
     <Card className={`overflow-hidden ${isActive ? 'ring-2 ring-primary' : ''}`}>
-      <CardContent className="p-4">
-        <div className="flex flex-col space-y-2">
+      <CardContent className="p-3">
+        <div className="flex flex-col space-y-1">
           <div className="flex justify-between items-center">
-            <VariableNameInput
-              value={variable.name}
-              onChange={(newValue) => onUpdate(variable.id, 'name', newValue)}
-            />
+            {isEditing ? (
+              <VariableNameInput
+                value={variable.name}
+                onChange={(newValue) => onUpdate(variable.id, 'name', newValue)}
+              />
+            ) : (
+              <VariableLabel name={variable.name} />
+            )}
             <RemoveButton onClick={() => onRemove(variable.id)} />
           </div>
           
@@ -68,6 +78,7 @@ const VariableItem: React.FC<VariableItemProps> = ({
             validationError={validationError}
             onValueChange={handleValueChange}
             onBlur={handleBlur}
+            onFocus={handleFocus}
             onKeyDown={handleKeyDown}
             validateAndSave={validateAndSave}
           />

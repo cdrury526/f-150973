@@ -9,6 +9,7 @@ interface VariableInputControlProps {
   validationError: string | null;
   onValueChange: (newValue: string) => void;
   onBlur: () => void;
+  onFocus: () => void;
   onKeyDown: (e: React.KeyboardEvent) => void;
   validateAndSave: () => boolean;
 }
@@ -18,6 +19,7 @@ const VariableInputControl: React.FC<VariableInputControlProps> = ({
   validationError,
   onValueChange,
   onBlur,
+  onFocus,
   onKeyDown,
   validateAndSave
 }) => {
