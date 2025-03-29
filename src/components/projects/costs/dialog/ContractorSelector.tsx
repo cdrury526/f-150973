@@ -38,30 +38,38 @@ const ContractorSelector: React.FC<ContractorSelectorProps> = ({
     return options;
   }, [contractors]);
 
+  console.log("Contractor options:", contractorOptions);
+
   return (
     <FormField
       control={control}
       name="contractor_id"
-      render={({ field }) => (
-        <FormItem>
-          <FormLabel>Contractor</FormLabel>
-          <FormControl>
-            <SearchableSelect
-              options={contractorOptions}
-              value={field.value || ''}
-              onChange={field.onChange}
-              placeholder="Select a contractor"
-              searchPlaceholder="Search contractors..."
-              emptyMessage="No contractors found."
-              disabled={isLoading}
-              width="100%"
-            />
-          </FormControl>
-          <FormDescription>
-            The contractor assigned to this work
-          </FormDescription>
-        </FormItem>
-      )}
+      render={({ field }) => {
+        console.log("Field value:", field.value);
+        return (
+          <FormItem>
+            <FormLabel>Contractor</FormLabel>
+            <FormControl>
+              <SearchableSelect
+                options={contractorOptions}
+                value={field.value || ''}
+                onChange={(value) => {
+                  console.log("Selected contractor:", value);
+                  field.onChange(value);
+                }}
+                placeholder="Select a contractor"
+                searchPlaceholder="Search contractors..."
+                emptyMessage="No contractors found."
+                disabled={isLoading}
+                width="100%"
+              />
+            </FormControl>
+            <FormDescription>
+              The contractor assigned to this work
+            </FormDescription>
+          </FormItem>
+        );
+      }}
     />
   );
 };

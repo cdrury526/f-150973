@@ -56,6 +56,7 @@ export const SearchableSelect: React.FC<SearchableSelectProps> = ({
   );
 
   const handleSelect = (optionValue: string) => {
+    console.log("Selection made:", optionValue);
     onChange(optionValue);
     setSearchQuery('');
     setOpen(false);
@@ -101,8 +102,10 @@ export const SearchableSelect: React.FC<SearchableSelectProps> = ({
                 {filteredOptions.map((option) => (
                   <div
                     key={`option-${option.value}`}
-                    className={`relative flex cursor-default select-none items-center rounded-sm px-2 py-1.5 text-sm outline-none hover:bg-accent hover:text-accent-foreground ${value === option.value ? 'bg-accent text-accent-foreground' : ''}`}
+                    className={`relative flex cursor-pointer select-none items-center rounded-sm px-2 py-1.5 text-sm outline-none hover:bg-accent hover:text-accent-foreground ${value === option.value ? 'bg-accent text-accent-foreground' : ''}`}
                     onClick={() => handleSelect(option.value)}
+                    role="option"
+                    aria-selected={value === option.value}
                   >
                     <div className={option.description ? 'flex flex-col items-start' : ''}>
                       <span className={option.description ? 'font-medium' : ''}>{option.label}</span>
