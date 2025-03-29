@@ -1,4 +1,3 @@
-
 /**
  * DOW (Description of Work) Content component
  */
@@ -158,8 +157,8 @@ const DOWContent: React.FC<DOWContentProps> = ({ projectId }) => {
         className="min-h-[600px] rounded-lg border"
       >
         {/* Left panel for the variables form */}
-        <ResizablePanel defaultSize={40} minSize={30}>
-          <div className="p-6 h-full overflow-auto">
+        <ResizablePanel defaultSize={45} minSize={35}>
+          <div className="p-4 h-full overflow-auto">
             <h3 className="text-base font-medium mb-3">Document Variables</h3>
             <DOWForm 
               projectId={projectId} 
@@ -173,8 +172,8 @@ const DOWContent: React.FC<DOWContentProps> = ({ projectId }) => {
         <ResizableHandle withHandle />
         
         {/* Right panel for the document preview */}
-        <ResizablePanel defaultSize={60} minSize={30}>
-          <div className="p-6 h-full overflow-auto">
+        <ResizablePanel defaultSize={55} minSize={30}>
+          <div className="p-4 h-full overflow-auto">
             <h3 className="text-base font-medium mb-3">Document Preview</h3>
             <DOWPreview 
               variables={getSortedVariables()}

@@ -151,13 +151,13 @@ const DOWForm: React.FC<DOWFormProps> = ({
           ) : (
             <div className="space-y-0 divide-y">
               {displayVariables.map((variable) => (
-                <div key={variable.id} className="flex items-center gap-4 p-2 hover:bg-muted/50">
-                  <div className="w-1/3">
+                <div key={variable.id} className="flex items-center gap-3 p-2 hover:bg-muted/50">
+                  <div className="w-2/5">
                     <Input
                       placeholder="VARIABLE_NAME"
                       value={variable.name}
                       onChange={(e) => updateVariable(variable.id, 'name', e.target.value.toUpperCase())}
-                      className="text-xs h-8"
+                      className="text-xs h-8 font-mono"
                     />
                   </div>
                   <div className="flex-1">
@@ -172,7 +172,7 @@ const DOWForm: React.FC<DOWFormProps> = ({
                     variant="ghost"
                     size="icon"
                     onClick={() => removeVariable(variable.id)}
-                    className="text-destructive hover:text-destructive/90 h-8 w-8"
+                    className="text-destructive hover:text-destructive/90 h-8 w-8 flex-shrink-0"
                   >
                     <Trash2 className="h-4 w-4" />
                   </Button>
