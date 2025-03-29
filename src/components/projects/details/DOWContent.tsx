@@ -3,47 +3,25 @@
  * DOW (Description of Work) Content component
  */
 
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useRef } from 'react';
 import { supabase } from '@/integrations/supabase/client';
-import { Separator } from '@/components/ui/separator';
-import { Skeleton } from '@/components/ui/skeleton';
 import { ResizablePanelGroup, ResizablePanel, ResizableHandle } from "@/components/ui/resizable";
-
-// Components
-import DOWForm from './DOWForm';
-import DOWPreview from './DOWPreview';
-import AuthWarning from './components/AuthWarning';
-import TemplateUpload from './components/TemplateUpload';
-import { TemplateNotFound, AuthError, GeneralError } from './components/ErrorStates';
 
 // Custom hooks
 import { useTemplateVariables } from './hooks/useTemplateVariables';
 
+// Components
+import AuthWarning from './components/AuthWarning';
+import TemplateUpload from './components/TemplateUpload';
+import { TemplateNotFound, AuthError, GeneralError } from './components/ErrorStates';
+import DOWLoadingState from './components/DOWLoadingState';
+import DOWEditPanel from './components/DOWEditPanel';
+import DOWPreviewPanel from './components/DOWPreviewPanel';
+import VariableHighlightStyles from './components/VariableHighlightStyles';
+
 interface DOWContentProps {
   projectId: string;
 }
-
-// Add the CSS for variable highlighting as a separate style element
-const pulseAnimationStyle = `
-  .variable-highlight-pulse {
-    animation: pulse-highlight 1.5s ease-in-out;
-  }
-
-  @keyframes pulse-highlight {
-    0%, 100% { 
-      box-shadow: 0 0 0 0 rgba(59, 130, 246, 0); 
-      border-color: var(--border);
-    }
-    25% { 
-      box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.5); 
-      border-color: rgb(59, 130, 246);
-    }
-    75% { 
-      box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.3); 
-      border-color: rgb(59, 130, 246);
-    }
-  }
-`;
 
 const DOWContent: React.FC<DOWContentProps> = ({ projectId }) => {
   const [uploadError, setUploadError] = useState<string | null>(null);
@@ -62,7 +40,7 @@ const DOWContent: React.FC<DOWContentProps> = ({ projectId }) => {
   } = useTemplateVariables(projectId);
 
   // Check authentication status
-  useEffect(() => {
+  React.useEffect(() => {
     const checkAuth = async () => {
       const { data } = await supabase.auth.getSession();
       if (!data.session) {
@@ -117,12 +95,7 @@ const DOWContent: React.FC<DOWContentProps> = ({ projectId }) => {
 
   // Loading state
   if (templateQuery.isLoading || variablesQuery.isLoading) {
-    return (
-      <div className="space-y-6">
-        <Skeleton className="h-8 w-64" />
-        <Skeleton className="h-64 w-full" />
-      </div>
-    );
+    return <DOWLoadingState />;
   }
 
   // Template not found error state (specific case for first-time setup)
@@ -164,7 +137,7 @@ const DOWContent: React.FC<DOWContentProps> = ({ projectId }) => {
   return (
     <div className="space-y-8">
       {/* Add the style element with our CSS animation */}
-      <style dangerouslySetInnerHTML={{ __html: pulseAnimationStyle }} />
+      <VariableHighlightStyles />
       
       <AuthWarning authError={authError} />
       
@@ -210,30 +183,25 @@ const DOWContent: React.FC<DOWContentProps> = ({ projectId }) => {
       >
         {/* Left panel for the variables form */}
         <ResizablePanel defaultSize={50} minSize={40}>
-          <div className="p-4 h-full overflow-auto" ref={formRef}>
-            <h3 className="text-base font-medium mb-3">Document Variables</h3>
-            <DOWForm 
-              projectId={projectId} 
-              variables={variablesQuery.data || []}
-              onSave={handleSave}
-              getSortedVariables={getSortedVariables}
-              activeVariableName={activeVariableName}
-            />
-          </div>
+          <DOWEditPanel 
+            projectId={projectId}
+            variables={variablesQuery.data || []}
+            onSave={handleSave}
+            getSortedVariables={getSortedVariables}
+            activeVariableName={activeVariableName}
+            formRef={formRef}
+          />
         </ResizablePanel>
         
         <ResizableHandle withHandle />
         
         {/* Right panel for the document preview */}
         <ResizablePanel defaultSize={50} minSize={30}>
-          <div className="p-4 h-full overflow-auto">
-            <h3 className="text-base font-medium mb-3">Document Preview</h3>
-            <DOWPreview 
-              variables={getSortedVariables()}
-              templateContent={templateQuery.data || ''}
-              onVariableClick={handleVariableClick}
-            />
-          </div>
+          <DOWPreviewPanel
+            variables={getSortedVariables()}
+            templateContent={templateQuery.data || ''}
+            onVariableClick={handleVariableClick}
+          />
         </ResizablePanel>
       </ResizablePanelGroup>
     </div>
