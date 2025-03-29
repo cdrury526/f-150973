@@ -1,9 +1,8 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect, useRef } from 'react';
 import { Check, ChevronsUpDown, Search } from 'lucide-react';
 import { Button } from "@/components/ui/button";
 import { ContractorType, contractorTypeDescriptions } from './types';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { cn } from "@/lib/utils";
 
 interface ContractorTypeSelectorProps {
@@ -17,8 +16,9 @@ export const ContractorTypeSelector: React.FC<ContractorTypeSelectorProps> = ({
   onChange, 
   disabled = false 
 }) => {
-  const [open, setOpen] = useState(false);
+  const [isOpen, setIsOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
+  const dropdownRef = useRef<HTMLDivElement>(null);
   const contractorTypes = Object.keys(contractorTypeDescriptions) as ContractorType[];
   
   // Filter types based on search
@@ -30,79 +30,98 @@ export const ContractorTypeSelector: React.FC<ContractorTypeSelectorProps> = ({
       contractorTypeDescriptions[type].toLowerCase().includes(searchQuery.toLowerCase())
     );
   }, [contractorTypes, searchQuery]);
-  
-  // Simple function to handle option selection
-  const selectOption = (type: ContractorType) => {
+
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+        setIsOpen(false);
+      }
+    };
+    
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, []);
+
+  // Focus search input when dropdown opens
+  useEffect(() => {
+    if (isOpen) {
+      const searchInput = document.getElementById('contractor-search-input');
+      if (searchInput) {
+        setTimeout(() => searchInput.focus(), 10);
+      }
+    }
+  }, [isOpen]);
+
+  const handleSelect = (type: ContractorType) => {
     onChange(type);
-    setOpen(false);
+    setIsOpen(false);
     setSearchQuery("");
   };
 
   return (
     <div className="flex items-center gap-2">
-      <Popover open={open} onOpenChange={setOpen}>
-        <PopoverTrigger asChild>
-          <Button
-            variant="outline"
-            role="combobox"
-            aria-expanded={open}
-            className="w-[300px] justify-between"
-            disabled={disabled}
-            type="button"
-          >
-            {value || "Select contractor type"}
-            <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
-          </Button>
-        </PopoverTrigger>
-        <PopoverContent 
-          className="w-[300px] p-0" 
-          align="start" 
-          sideOffset={4}
+      <div className="relative w-[300px]" ref={dropdownRef}>
+        <Button
+          variant="outline"
+          role="combobox"
+          className="w-full justify-between"
+          disabled={disabled}
+          type="button"
+          onClick={() => setIsOpen(!isOpen)}
         >
-          <div className="flex items-center border-b px-3">
-            <Search className="mr-2 h-4 w-4 shrink-0 opacity-50" />
-            <input 
-              className="flex h-10 w-full bg-transparent py-3 text-sm outline-none placeholder:text-muted-foreground"
-              placeholder="Search contractor type..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-            />
-          </div>
-          <div className="max-h-[300px] overflow-y-auto">
-            {filteredTypes.length === 0 ? (
-              <div className="py-6 text-center text-sm">No contractor type found.</div>
-            ) : (
-              <div className="p-1">
-                {filteredTypes.map((type) => (
-                  <button
-                    key={type}
-                    type="button"
-                    className={cn(
-                      "w-full text-left px-2 py-1.5 text-sm rounded-sm hover:bg-accent hover:text-accent-foreground",
-                      type === value ? "bg-accent text-accent-foreground" : ""
-                    )}
-                    onClick={() => selectOption(type)}
-                  >
-                    <div className="flex items-center">
-                      <Check
-                        className={cn(
-                          "mr-2 h-4 w-4",
-                          type === value ? "opacity-100" : "opacity-0"
-                        )}
-                      />
-                      <span>{type}</span>
+          {value || "Select contractor type"}
+          <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+        </Button>
+        
+        {isOpen && (
+          <div className="absolute mt-1 w-full rounded-md border border-gray-200 bg-white shadow-lg z-50">
+            <div className="flex items-center border-b px-3">
+              <Search className="mr-2 h-4 w-4 shrink-0 opacity-50" />
+              <input 
+                id="contractor-search-input"
+                className="flex h-10 w-full bg-transparent py-3 text-sm outline-none"
+                placeholder="Search contractor type..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+              />
+            </div>
+            <div className="max-h-[300px] overflow-y-auto">
+              {filteredTypes.length === 0 ? (
+                <div className="py-6 text-center text-sm">No contractor type found.</div>
+              ) : (
+                <div className="p-1">
+                  {filteredTypes.map((type) => (
+                    <div
+                      key={type}
+                      className={cn(
+                        "cursor-pointer px-3 py-2 text-sm hover:bg-gray-100 rounded-sm",
+                        type === value ? "bg-gray-100" : ""
+                      )}
+                      onClick={() => handleSelect(type)}
+                    >
+                      <div className="flex items-center">
+                        <Check
+                          className={cn(
+                            "mr-2 h-4 w-4",
+                            type === value ? "opacity-100" : "opacity-0"
+                          )}
+                        />
+                        <span>{type}</span>
+                      </div>
+                      <div className="ml-6 text-xs text-gray-500 mt-1">
+                        {contractorTypeDescriptions[type]}
+                      </div>
                     </div>
-                    {/* Show description as a separate element that doesn't interfere with clicking */}
-                    <div className="pl-6 text-xs text-muted-foreground mt-0.5">
-                      {contractorTypeDescriptions[type]}
-                    </div>
-                  </button>
-                ))}
-              </div>
-            )}
+                  ))}
+                </div>
+              )}
+            </div>
           </div>
-        </PopoverContent>
-      </Popover>
+        )}
+      </div>
 
       <TooltipProvider>
         <Tooltip>
@@ -133,8 +152,9 @@ export const ContractorTypeCell: React.FC<ContractorTypeSelectorProps> = ({
   onChange, 
   disabled = false 
 }) => {
-  const [open, setOpen] = useState(false);
+  const [isOpen, setIsOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
+  const dropdownRef = useRef<HTMLDivElement>(null);
   const contractorTypes = Object.keys(contractorTypeDescriptions) as ContractorType[];
   
   const filteredTypes = useMemo(() => {
@@ -144,67 +164,88 @@ export const ContractorTypeCell: React.FC<ContractorTypeSelectorProps> = ({
     );
   }, [contractorTypes, searchQuery]);
   
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+        setIsOpen(false);
+      }
+    };
+    
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, []);
+
+  // Focus search input when dropdown opens
+  useEffect(() => {
+    if (isOpen) {
+      const searchInput = document.getElementById('contractor-cell-search-input');
+      if (searchInput) {
+        setTimeout(() => searchInput.focus(), 10);
+      }
+    }
+  }, [isOpen]);
+
   return (
-    <Popover open={open} onOpenChange={setOpen}>
-      <PopoverTrigger asChild>
-        <Button
-          variant="outline"
-          role="combobox"
-          aria-expanded={open}
-          className="w-[250px] h-8 px-3 py-1 justify-between"
-          disabled={disabled}
-          type="button"
-        >
-          {value || "Select type"}
-          <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
-        </Button>
-      </PopoverTrigger>
-      <PopoverContent 
-        className="w-[250px] p-0" 
-        align="start" 
-        sideOffset={4}
+    <div className="relative w-[250px]" ref={dropdownRef}>
+      <Button
+        variant="outline"
+        role="combobox"
+        className="w-full justify-between h-8 px-3 py-1"
+        disabled={disabled}
+        type="button"
+        onClick={() => setIsOpen(!isOpen)}
       >
-        <div className="flex items-center border-b px-3">
-          <Search className="mr-2 h-4 w-4 shrink-0 opacity-50" />
-          <input 
-            className="flex h-8 w-full bg-transparent py-2 text-sm outline-none placeholder:text-muted-foreground"
-            placeholder="Search type..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-          />
-        </div>
-        <div className="max-h-[300px] overflow-y-auto">
-          {filteredTypes.length === 0 ? (
-            <div className="py-6 text-center text-sm">No type found.</div>
-          ) : (
-            <div className="p-1">
-              {filteredTypes.map((type) => (
-                <button
-                  key={type}
-                  type="button"
-                  className={cn(
-                    "w-full text-left flex items-center px-2 py-1.5 text-sm rounded-sm hover:bg-accent hover:text-accent-foreground",
-                    type === value ? "bg-accent text-accent-foreground" : ""
-                  )}
-                  onClick={() => {
-                    onChange(type);
-                    setOpen(false);
-                    setSearchQuery("");
-                  }}
-                >
-                  <Check
+        {value || "Select type"}
+        <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+      </Button>
+      
+      {isOpen && (
+        <div className="absolute mt-1 w-full rounded-md border border-gray-200 bg-white shadow-lg z-50">
+          <div className="flex items-center border-b px-3">
+            <Search className="mr-2 h-4 w-4 shrink-0 opacity-50" />
+            <input 
+              id="contractor-cell-search-input"
+              className="flex h-8 w-full bg-transparent py-2 text-sm outline-none"
+              placeholder="Search type..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+            />
+          </div>
+          <div className="max-h-[300px] overflow-y-auto">
+            {filteredTypes.length === 0 ? (
+              <div className="py-6 text-center text-sm">No type found.</div>
+            ) : (
+              <div className="p-1">
+                {filteredTypes.map((type) => (
+                  <div
+                    key={type}
                     className={cn(
-                      "mr-2 h-4 w-4",
-                      type === value ? "opacity-100" : "opacity-0"
+                      "flex items-center cursor-pointer px-3 py-2 text-sm hover:bg-gray-100 rounded-sm",
+                      type === value ? "bg-gray-100" : ""
                     )}
-                  />
-                  {type}
-                </button>
-              ))}
-            </div>
-          )}
+                    onClick={() => {
+                      onChange(type);
+                      setIsOpen(false);
+                      setSearchQuery("");
+                    }}
+                  >
+                    <Check
+                      className={cn(
+                        "mr-2 h-4 w-4",
+                        type === value ? "opacity-100" : "opacity-0"
+                      )}
+                    />
+                    {type}
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
         </div>
-      </PopoverContent>
-    </Popover>
+      )}
+    </div>
   );
 };
