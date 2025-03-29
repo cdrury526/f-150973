@@ -1,25 +1,79 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { useQuery } from '@tanstack/react-query';
 import { Plus } from 'lucide-react';
 import DashboardLayout from '@/components/layout/DashboardLayout';
 import ProjectList from '@/components/projects/ProjectList';
 import { Button } from '@/components/ui/button';
 import EmptyState from '@/components/ui/EmptyState';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
-import { sampleProjects } from '@/components/projects/ProjectList';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { useAuth } from '@/context/AuthContext';
+import { supabase } from '@/integrations/supabase/client';
+import { Project } from '@/components/projects/ProjectCard';
+import CreateProjectForm from '@/components/projects/CreateProjectForm';
+import { useToast } from '@/hooks/use-toast';
+
+// Fetch projects function
+const fetchProjects = async () => {
+  const { data, error } = await supabase
+    .from('projects')
+    .select('*')
+    .order('created_at', { ascending: false });
+    
+  if (error) {
+    throw new Error(error.message);
+  }
+  
+  // Transform the data to match the Project interface
+  return data.map((project) => ({
+    id: project.id,
+    title: project.project_name,
+    client: project.client || 'Not specified',
+    location: project.location || 'Not specified',
+    status: project.status || 'Not started',
+    progress: project.progress || 0,
+    dueDate: project.due_date ? new Date(project.due_date).toLocaleDateString('en-US', { 
+      month: 'short', 
+      day: 'numeric', 
+      year: 'numeric'
+    }) : 'No due date',
+    thumbnail: project.thumbnail
+  })) as Project[];
+};
 
 const Projects = () => {
-  const { userRole } = useAuth();
+  const { userRole, user } = useAuth();
+  const { toast } = useToast();
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
-  const [projects, setProjects] = useState(sampleProjects);
   
   const canCreateProject = userRole === 'builder' || userRole === 'admin';
 
-  const handleCreateProject = () => {
+  // Query for fetching projects
+  const { 
+    data: projects = [], 
+    isLoading, 
+    error, 
+    refetch 
+  } = useQuery({
+    queryKey: ['projects', user?.id],
+    queryFn: fetchProjects,
+    enabled: !!user, // Only run query if user is logged in
+  });
+
+  useEffect(() => {
+    if (error) {
+      console.error('Error fetching projects:', error);
+      toast({
+        title: 'Error loading projects',
+        description: 'There was a problem loading your projects.',
+        variant: 'destructive',
+      });
+    }
+  }, [error, toast]);
+
+  const handleCreateSuccess = () => {
     setIsCreateDialogOpen(false);
-    // In a real application, we would save the project to the database
-    // For now, we'll just close the dialog
+    refetch(); // Refresh the project list
   };
 
   return (
@@ -42,7 +96,11 @@ const Projects = () => {
           )}
         </div>
 
-        {projects.length === 0 ? (
+        {isLoading ? (
+          <div className="flex items-center justify-center h-64">
+            <p className="text-muted-foreground">Loading projects...</p>
+          </div>
+        ) : projects.length === 0 ? (
           <EmptyState
             title="No projects yet"
             description={canCreateProject 
@@ -62,19 +120,10 @@ const Projects = () => {
           <DialogHeader>
             <DialogTitle>Create New Project</DialogTitle>
           </DialogHeader>
-          <div className="py-4">
-            <p className="text-muted-foreground">
-              Project creation form would go here. For now, this is just a placeholder.
-            </p>
-          </div>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setIsCreateDialogOpen(false)}>
-              Cancel
-            </Button>
-            <Button onClick={handleCreateProject}>
-              Create Project
-            </Button>
-          </DialogFooter>
+          <CreateProjectForm 
+            onSuccess={handleCreateSuccess} 
+            onCancel={() => setIsCreateDialogOpen(false)}
+          />
         </DialogContent>
       </Dialog>
     </DashboardLayout>

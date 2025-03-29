@@ -36,6 +36,51 @@ export type Database = {
         }
         Relationships: []
       }
+      projects: {
+        Row: {
+          client: string | null
+          created_at: string
+          due_date: string | null
+          id: string
+          location: string | null
+          progress: number | null
+          project_name: string
+          project_type: Database["public"]["Enums"]["project_type"]
+          status: string | null
+          thumbnail: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          client?: string | null
+          created_at?: string
+          due_date?: string | null
+          id?: string
+          location?: string | null
+          progress?: number | null
+          project_name: string
+          project_type: Database["public"]["Enums"]["project_type"]
+          status?: string | null
+          thumbnail?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          client?: string | null
+          created_at?: string
+          due_date?: string | null
+          id?: string
+          location?: string | null
+          progress?: number | null
+          project_name?: string
+          project_type?: Database["public"]["Enums"]["project_type"]
+          status?: string | null
+          thumbnail?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
@@ -44,6 +89,7 @@ export type Database = {
       [_ in never]: never
     }
     Enums: {
+      project_type: "New Build" | "Remodel" | "Other"
       user_role: "customer" | "builder" | "admin"
     }
     CompositeTypes: {

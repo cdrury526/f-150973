@@ -23,6 +23,10 @@ const statusColors = {
   'On Hold': {
     color: 'bg-gray-100 text-gray-800',
     icon: <AlertTriangle className="h-3 w-3 mr-1" />
+  },
+  'Not Started': {
+    color: 'bg-gray-100 text-gray-800',
+    icon: <Clock className="h-3 w-3 mr-1" />
   }
 };
 
@@ -31,7 +35,7 @@ export interface Project {
   title: string;
   client: string;
   location: string;
-  status: 'In Progress' | 'Completed' | 'Delayed' | 'On Hold';
+  status: string;
   progress: number;
   dueDate: string;
   thumbnail?: string;
@@ -43,7 +47,7 @@ interface ProjectCardProps {
 
 const ProjectCard: React.FC<ProjectCardProps> = ({ project }) => {
   const { id, title, client, location, status, progress, dueDate, thumbnail } = project;
-  const statusStyle = statusColors[status] || { color: 'bg-gray-100 text-gray-800', icon: null };
+  const statusStyle = statusColors[status as keyof typeof statusColors] || { color: 'bg-gray-100 text-gray-800', icon: null };
 
   return (
     <Card className="overflow-hidden">
