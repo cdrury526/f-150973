@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { useForm } from "react-hook-form";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
@@ -34,6 +33,14 @@ const ProjectCostEditDialog: React.FC<ProjectCostEditDialogProps> = ({
     }
   });
 
+  const formatNumberWithCommas = (value: number): string => {
+    return value.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+  };
+
+  const parseFormattedNumber = (value: string): number => {
+    return parseFloat(value.replace(/,/g, '')) || 0;
+  };
+
   React.useEffect(() => {
     if (editingCost) {
       costForm.reset({
@@ -64,14 +71,15 @@ const ProjectCostEditDialog: React.FC<ProjectCostEditDialogProps> = ({
                         <DollarSign className="h-4 w-4" />
                       </div>
                       <Input 
-                        type="number" 
-                        step="0.01" 
-                        min="0" 
-                        {...field} 
-                        onChange={e => field.onChange(parseFloat(e.target.value) || 0)}
+                        type="text"
+                        value={formatNumberWithCommas(field.value)}
+                        onChange={(e) => {
+                          const rawValue = parseFormattedNumber(e.target.value);
+                          field.onChange(rawValue);
+                        }}
                         className="pl-8 text-right font-medium"
                         placeholder="0.00"
-                        inputMode="decimal"
+                        inputMode="numeric"
                       />
                     </div>
                   </FormControl>
@@ -93,14 +101,15 @@ const ProjectCostEditDialog: React.FC<ProjectCostEditDialogProps> = ({
                         <DollarSign className="h-4 w-4" />
                       </div>
                       <Input 
-                        type="number" 
-                        step="0.01" 
-                        min="0" 
-                        {...field} 
-                        onChange={e => field.onChange(parseFloat(e.target.value) || 0)}
+                        type="text"
+                        value={formatNumberWithCommas(field.value)}
+                        onChange={(e) => {
+                          const rawValue = parseFormattedNumber(e.target.value);
+                          field.onChange(rawValue);
+                        }}
                         className="pl-8 text-right font-medium"
                         placeholder="0.00"
-                        inputMode="decimal"
+                        inputMode="numeric"
                       />
                     </div>
                   </FormControl>
