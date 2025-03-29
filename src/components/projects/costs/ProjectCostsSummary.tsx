@@ -2,8 +2,10 @@
 import React, { useMemo, useState } from 'react';
 import { Card, CardContent } from "@/components/ui/card";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
+import { Button } from "@/components/ui/button";
 import { ProjectCost } from './types';
-import { CircleDollarSign, TrendingDown, TrendingUp, Calculator, ChevronDown, ChevronUp } from 'lucide-react';
+import { CircleDollarSign, TrendingDown, TrendingUp, Calculator, ChevronDown, ChevronUp, FileSpreadsheet } from 'lucide-react';
+import { useToast } from "@/hooks/use-toast";
 
 interface ProjectCostsSummaryProps {
   costs: ProjectCost[];
@@ -11,6 +13,7 @@ interface ProjectCostsSummaryProps {
 
 const ProjectCostsSummary: React.FC<ProjectCostsSummaryProps> = ({ costs }) => {
   const [isOpen, setIsOpen] = useState(true);
+  const { toast } = useToast();
   
   const summary = useMemo(() => {
     // Calculate totals
@@ -29,6 +32,63 @@ const ProjectCostsSummary: React.FC<ProjectCostsSummaryProps> = ({ costs }) => {
     };
   }, [costs]);
 
+  const exportToExcel = () => {
+    // Create CSV content
+    const headers = ['Category', 'Quote Price ($)', 'Actual Price ($)', 'Difference ($)', 'Contractor'];
+    
+    const rows = costs.map(cost => {
+      const difference = (cost.actual_price ?? 0) - cost.quote_price;
+      return [
+        cost.category_name,
+        cost.quote_price.toFixed(2),
+        cost.actual_price !== null ? cost.actual_price.toFixed(2) : '-',
+        cost.actual_price !== null ? difference.toFixed(2) : '-',
+        cost.contractor_id ? 'Assigned' : 'Not assigned'
+      ];
+    });
+    
+    // Add totals row
+    rows.push([
+      'Total',
+      summary.quoteTotal.toFixed(2),
+      summary.actualTotal.toFixed(2),
+      summary.differenceTotal.toFixed(2),
+      ''
+    ]);
+    
+    // Convert to CSV format
+    const csvContent = [
+      headers.join(','),
+      ...rows.map(row => row.join(','))
+    ].join('\n');
+    
+    // Create a Blob containing the CSV data
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    
+    // Create a URL for the Blob
+    const url = URL.createObjectURL(blob);
+    
+    // Create a link element
+    const link = document.createElement('a');
+    link.href = url;
+    link.setAttribute('download', 'project_costs.csv');
+    
+    // Append the link to the document
+    document.body.appendChild(link);
+    
+    // Trigger the download
+    link.click();
+    
+    // Clean up
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+    
+    toast({
+      title: "Export successful",
+      description: "Project costs have been exported to CSV",
+    });
+  };
+
   return (
     <Collapsible open={isOpen} onOpenChange={setIsOpen} className="mb-4">
       <CollapsibleTrigger className="flex items-center justify-between w-full p-3 rounded-md hover:bg-accent hover:text-accent-foreground transition-colors bg-muted/50 border border-border shadow-sm">
@@ -46,7 +106,7 @@ const ProjectCostsSummary: React.FC<ProjectCostsSummaryProps> = ({ costs }) => {
       </CollapsibleTrigger>
       
       <CollapsibleContent className="mt-2">
-        <div className="flex flex-wrap gap-3">
+        <div className="flex flex-wrap gap-3 mb-3">
           <Card className="flex-1 min-w-[180px]">
             <CardContent className="p-3 flex items-center">
               <CircleDollarSign className="h-8 w-8 mr-3 text-primary opacity-70" />
@@ -88,6 +148,18 @@ const ProjectCostsSummary: React.FC<ProjectCostsSummaryProps> = ({ costs }) => {
               </div>
             </CardContent>
           </Card>
+        </div>
+
+        <div className="flex justify-end mb-2">
+          <Button 
+            variant="outline" 
+            size="sm" 
+            className="text-xs"
+            onClick={exportToExcel}
+          >
+            <FileSpreadsheet className="h-4 w-4 mr-1" />
+            Export to CSV
+          </Button>
         </div>
       </CollapsibleContent>
     </Collapsible>
