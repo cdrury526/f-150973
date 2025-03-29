@@ -115,8 +115,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const signUp = async (email: string, password: string, firstName: string, lastName: string) => {
     setLoading(true);
     try {
-      // Simplify the signup data to avoid type casting issues
-      const { error } = await supabase.auth.signUp({
+      console.log('Attempting to sign up user:', { email, firstName, lastName });
+      
+      const { data, error } = await supabase.auth.signUp({
         email,
         password,
         options: {
@@ -126,6 +127,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           }
         }
       });
+
+      console.log('Sign up response:', { data, error });
 
       if (error) {
         toast({
@@ -143,6 +146,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       
       navigate('/auth/login');
     } catch (error: any) {
+      console.error('Sign up error:', error);
       toast({
         title: "Sign up failed",
         description: error.message,
