@@ -1,19 +1,24 @@
 
 import React from 'react';
+import { useLocation, Link } from 'react-router-dom';
 import { Home, Building, Calendar, List, Settings, ChevronLeft } from "lucide-react";
 import {
   Sidebar,
   SidebarContent,
   SidebarGroup,
   SidebarGroupContent,
+  SidebarGroupLabel,
   SidebarHeader,
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
+  SidebarSeparator,
   useSidebar,
 } from "@/components/ui/sidebar";
-import { Link } from 'react-router-dom';
 import { Button } from "@/components/ui/button";
+import { useQuery } from '@tanstack/react-query';
+import { supabase } from '@/integrations/supabase/client';
+import ProjectDetailsSidebar from './sidebar/ProjectDetailsSidebar';
 
 // Menu items for the sidebar
 const menuItems = [
@@ -46,6 +51,12 @@ const menuItems = [
 
 const AppSidebar = () => {
   const { open, setOpen } = useSidebar();
+  const location = useLocation();
+  const projectPath = "/project/";
+  
+  // Check if we're on a project details page
+  const isProjectPage = location.pathname.includes(projectPath);
+  const projectId = isProjectPage ? location.pathname.split(projectPath)[1] : null;
   
   return (
     <Sidebar>
@@ -85,6 +96,13 @@ const AppSidebar = () => {
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>
+        
+        {isProjectPage && projectId && (
+          <>
+            <SidebarSeparator />
+            <ProjectDetailsSidebar projectId={projectId} />
+          </>
+        )}
       </SidebarContent>
     </Sidebar>
   );

@@ -9,7 +9,6 @@ import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { Project } from '@/components/projects/ProjectCard';
 import ProjectHeader from '@/components/projects/details/ProjectHeader';
-import ProjectDetailsCard from '@/components/projects/details/ProjectDetailsCard';
 import ProjectTabs from '@/components/projects/details/ProjectTabs';
 
 const fetchProject = async (id: string) => {
@@ -97,12 +96,8 @@ const ProjectDetails = () => {
       <div className="py-6 space-y-6">
         <ProjectHeader project={project} />
 
-        <div className="grid gap-6 md:grid-cols-3">
-          <ProjectDetailsCard project={project} />
-          
-          <div className="md:col-span-2">
-            <ProjectTabs projectId={project.id} />
-          </div>
+        <div className="md:col-span-3">
+          <ProjectTabs projectId={project.id} />
         </div>
       </div>
     </DashboardLayout>
