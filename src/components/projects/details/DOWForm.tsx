@@ -2,6 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea"; // Added textarea import
 import { Card, CardContent } from "@/components/ui/card";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Switch } from "@/components/ui/switch";
@@ -169,13 +170,23 @@ const DOWForm: React.FC<DOWFormProps> = ({
                   </div>
                   <div className="mb-1">
                     <label className="text-xs text-muted-foreground mb-1 block">Value:</label>
-                    <Input
-                      placeholder="Variable value"
-                      value={variable.value}
-                      onChange={(e) => updateVariable(variable.id, 'value', e.target.value)}
-                      className={`text-sm h-8 w-full ${activeVariableName === variable.name ? 'ring-2 ring-primary' : ''}`}
-                      data-variable-name={variable.name}
-                    />
+                    {variable.value.length > 50 ? (
+                      <Textarea
+                        placeholder="Variable value"
+                        value={variable.value}
+                        onChange={(e) => updateVariable(variable.id, 'value', e.target.value)}
+                        className={`text-sm min-h-[60px] w-full ${activeVariableName === variable.name ? 'ring-2 ring-primary' : ''}`}
+                        data-variable-name={variable.name}
+                      />
+                    ) : (
+                      <Input
+                        placeholder="Variable value"
+                        value={variable.value}
+                        onChange={(e) => updateVariable(variable.id, 'value', e.target.value)}
+                        className={`text-sm h-8 w-full ${activeVariableName === variable.name ? 'ring-2 ring-primary' : ''}`}
+                        data-variable-name={variable.name}
+                      />
+                    )}
                   </div>
                   <Button
                     variant="ghost"
