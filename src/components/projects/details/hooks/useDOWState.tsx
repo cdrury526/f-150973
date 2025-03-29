@@ -10,6 +10,7 @@ export function useDOWState(projectId: string) {
   const [authError, setAuthError] = useState<string | null>(null);
   const [activeVariableName, setActiveVariableName] = useState<string | null>(null);
   const formRef = useRef<HTMLDivElement>(null);
+  const previewPosition = useRef<number>(0);
 
   // Use our custom hook for template variables management
   const {
@@ -49,6 +50,11 @@ export function useDOWState(projectId: string) {
   const handleVariableClick = (variableName: string) => {
     console.log(`Variable clicked: ${variableName}`);
     
+    // Save the current scroll position of the preview before we focus on the input
+    if (document.querySelector('.preview-container')) {
+      previewPosition.current = window.scrollY;
+    }
+    
     // Set the active variable name for highlighting
     setActiveVariableName(variableName);
     
@@ -82,6 +88,12 @@ export function useDOWState(projectId: string) {
             // Delay focus slightly to ensure scroll completes first
             setTimeout(() => {
               input.focus();
+              
+              // Restore the preview's scroll position
+              window.scrollTo({
+                top: previewPosition.current,
+                behavior: 'auto'
+              });
             }, 200);
           } else {
             console.log("Could not find textarea to focus");
