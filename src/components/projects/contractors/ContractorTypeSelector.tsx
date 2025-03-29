@@ -1,20 +1,7 @@
 
 import React, { useState } from 'react';
-import { 
-  Select, 
-  SelectContent, 
-  SelectItem, 
-  SelectTrigger, 
-  SelectValue 
-} from "@/components/ui/select";
-import { 
-  DropdownMenu, 
-  DropdownMenuContent, 
-  DropdownMenuItem, 
-  DropdownMenuTrigger 
-} from "@/components/ui/dropdown-menu";
+import { ChevronDown, Info } from 'lucide-react';
 import { Button } from "@/components/ui/button";
-import { ChevronDown, Info, Search } from "lucide-react";
 import { ContractorType, contractorTypeDescriptions } from './types';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import {
@@ -53,6 +40,7 @@ export const ContractorTypeSelector: React.FC<ContractorTypeSelectorProps> = ({
             aria-expanded={open}
             className="w-full justify-between"
             disabled={disabled}
+            type="button" // Add type="button" to prevent form submission
           >
             {value || "Select contractor type"}
             <ChevronDown className="ml-2 h-4 w-4 shrink-0 opacity-70" />
@@ -60,15 +48,18 @@ export const ContractorTypeSelector: React.FC<ContractorTypeSelectorProps> = ({
         </PopoverTrigger>
         <PopoverContent className="w-[300px] p-0" align="start">
           <Command>
-            <CommandInput placeholder="Search contractor type..." className="h-9" />
+            <CommandInput 
+              placeholder="Search contractor type..." 
+              className="h-9"
+            />
             <CommandEmpty>No contractor type found.</CommandEmpty>
             <CommandGroup className="max-h-[300px] overflow-y-auto">
               {Object.entries(contractorTypeDescriptions).map(([type, description]) => (
                 <CommandItem
                   key={type}
                   value={type}
-                  onSelect={() => {
-                    onChange(type as ContractorType);
+                  onSelect={(currentValue) => {
+                    onChange(currentValue as ContractorType);
                     setOpen(false);
                   }}
                   className="flex flex-col items-start py-2"
@@ -85,7 +76,13 @@ export const ContractorTypeSelector: React.FC<ContractorTypeSelectorProps> = ({
       <TooltipProvider>
         <Tooltip>
           <TooltipTrigger asChild>
-            <Button variant="ghost" size="icon" className="h-8 w-8" disabled={disabled}>
+            <Button 
+              variant="ghost" 
+              size="icon" 
+              className="h-8 w-8" 
+              disabled={disabled}
+              type="button" // Add type="button" to prevent form submission
+            >
               <Info size={16} />
             </Button>
           </TooltipTrigger>
@@ -109,7 +106,11 @@ export const ContractorTypeCell: React.FC<ContractorTypeSelectorProps> = ({
   return (
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild disabled={disabled}>
-        <Button variant="ghost" className="h-8 justify-start p-2 w-full">
+        <Button 
+          variant="ghost" 
+          className="h-8 justify-start p-2 w-full"
+          type="button" // Add type="button" to prevent form submission
+        >
           <span className="truncate flex-1 text-left">{value}</span>
           <ChevronDown className="h-4 w-4 opacity-50" />
         </Button>
@@ -123,8 +124,8 @@ export const ContractorTypeCell: React.FC<ContractorTypeSelectorProps> = ({
               <CommandItem
                 key={type}
                 value={type}
-                onSelect={() => {
-                  onChange(type as ContractorType);
+                onSelect={(currentValue) => {
+                  onChange(currentValue as ContractorType);
                   setOpen(false);
                 }}
                 className="flex flex-col items-start py-2"
