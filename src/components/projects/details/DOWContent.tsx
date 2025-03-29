@@ -15,10 +15,19 @@ interface DOWContentProps {
 // Function to fetch the template content
 const fetchTemplateContent = async (): Promise<string> => {
   try {
-    const response = await fetch('/REFERENCE DOCS/construction-scope-of-work.md');
+    // Try with the absolute path first
+    let response = await fetch('/REFERENCE DOCS/construction-scope-of-work.md');
+    
+    // If that fails, try with a relative path
+    if (!response.ok) {
+      console.log('Trying fallback path for template document');
+      response = await fetch('./REFERENCE DOCS/construction-scope-of-work.md');
+    }
+    
     if (!response.ok) {
       throw new Error(`Failed to load template document: ${response.status} ${response.statusText}`);
     }
+    
     return response.text();
   } catch (error) {
     console.error('Template fetch error:', error);
