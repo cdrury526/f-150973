@@ -4,7 +4,7 @@ import { DOWVariable } from '../../types';
 /**
  * Interface for variable position tracking in document
  */
-interface VariablePosition {
+export interface VariablePosition {
   varName: string;
   value: string;
   starts: number[];
