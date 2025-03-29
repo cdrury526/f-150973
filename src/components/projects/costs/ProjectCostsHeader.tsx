@@ -2,7 +2,7 @@
 import React from 'react';
 import { CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Plus, FileSpreadsheet, FilePdf } from 'lucide-react';
+import { Plus, FileSpreadsheet, FileText } from 'lucide-react';
 import { ProjectCost } from './types';
 import { useToast } from "@/hooks/use-toast";
 import { fetchContractors } from '../contractors/api/contractorsApi';
@@ -113,7 +113,7 @@ const ProjectCostsHeader: React.FC<ProjectCostsHeaderProps> = ({ onAddCategoryCl
           size="sm"
           onClick={handleExportToPDF}
         >
-          <FilePdf className="h-4 w-4 mr-2" /> Export to PDF
+          <FileText className="h-4 w-4 mr-2" /> Export to PDF
         </Button>
         <Button 
           variant="outline" 
