@@ -254,7 +254,7 @@ const DOWContent: React.FC<DOWContentProps> = ({ projectId }) => {
 
   // Authentication warning banner
   const AuthWarning = () => authError ? (
-    <Alert variant="warning" className="mb-4">
+    <Alert variant="default" className="mb-4 border-amber-200 bg-amber-50 text-amber-800">
       <User className="h-4 w-4" />
       <AlertTitle>Authentication Notice</AlertTitle>
       <AlertDescription>{authError}</AlertDescription>
