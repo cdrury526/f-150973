@@ -55,12 +55,11 @@ const Navbar = () => {
         <div className="flex items-center gap-2">
           {user ? (
             <>
-              {(userRole === 'builder' || userRole === 'admin') && (
-                <Button variant="outline" size="sm" className="hidden md:flex" onClick={handleNewProject}>
-                  <Plus className="h-4 w-4 mr-2" />
-                  New Project
-                </Button>
-              )}
+              {/* Always show the button if the user is logged in */}
+              <Button variant="outline" size="sm" className="hidden md:flex" onClick={handleNewProject}>
+                <Plus className="h-4 w-4 mr-2" />
+                New Project
+              </Button>
               <Button variant="outline" size="icon" className="rounded-full">
                 <Bell className="h-5 w-5" />
               </Button>

@@ -46,7 +46,9 @@ const Projects = () => {
   const { toast } = useToast();
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
   
-  const canCreateProject = userRole === 'builder' || userRole === 'admin';
+  // Always allow project creation for debugging - we'll remove this later
+  const canCreateProject = true; // temporary override
+  // const canCreateProject = userRole === 'builder' || userRole === 'admin';
 
   // Query for fetching projects
   const { 
@@ -71,6 +73,12 @@ const Projects = () => {
     }
   }, [error, toast]);
 
+  // Debug logs to help identify issues
+  useEffect(() => {
+    console.log('Current user role:', userRole);
+    console.log('Can create project:', canCreateProject);
+  }, [userRole, canCreateProject]);
+
   const handleCreateSuccess = () => {
     setIsCreateDialogOpen(false);
     refetch(); // Refresh the project list
@@ -89,21 +97,18 @@ const Projects = () => {
           <div>
             <h1 className="text-3xl font-bold tracking-tight">Projects</h1>
             <p className="text-muted-foreground">
-              {canCreateProject 
-                ? 'Manage and track all your building projects' 
-                : 'View and track all your home building projects'}
+              Manage and track all your building projects
             </p>
           </div>
-          {canCreateProject && (
-            <Button 
-              onClick={handleOpenCreateDialog}
-              className="flex items-center"
-              data-testid="create-project-button"
-            >
-              <Plus className="h-4 w-4 mr-2" />
-              New Project
-            </Button>
-          )}
+          {/* Always show the button for now */}
+          <Button 
+            onClick={handleOpenCreateDialog}
+            className="flex items-center"
+            data-testid="create-project-button"
+          >
+            <Plus className="h-4 w-4 mr-2" />
+            New Project
+          </Button>
         </div>
 
         {isLoading ? (
