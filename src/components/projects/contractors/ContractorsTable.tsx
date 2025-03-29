@@ -1,8 +1,9 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 import { Table, TableHeader, TableBody, TableHead, TableRow, TableCell } from "@/components/ui/table";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
-import { Contractor } from './types';
+import { Contractor, ContractorType } from './types';
+import { ContractorTypeCell } from './ContractorTypeSelector';
 
 // Mock data for demonstration
 const mockContractors: Contractor[] = [
@@ -22,7 +23,7 @@ const mockContractors: Contractor[] = [
     companyEmail: 'contact@xyzbuilders.com',
     contactName: 'Jane Doe',
     status: 'Active',
-    contractorType: 'Electrical'
+    contractorType: 'Electrical Contractor'
   },
   { 
     id: '3', 
@@ -31,7 +32,7 @@ const mockContractors: Contractor[] = [
     companyEmail: 'info@smithandsons.com',
     contactName: 'Robert Smith',
     status: 'On Hold',
-    contractorType: 'Plumbing'
+    contractorType: 'Plumbing Contractor'
   },
 ];
 
@@ -41,7 +42,17 @@ interface ContractorsTableProps {
 
 const ContractorsTable: React.FC<ContractorsTableProps> = ({ projectId }) => {
   // In a real implementation, we would fetch contractors for the given project ID
-  const contractors = mockContractors;
+  const [contractors, setContractors] = useState<Contractor[]>(mockContractors);
+  
+  const handleContractorTypeChange = (contractorId: string, newType: ContractorType) => {
+    setContractors(prevContractors => 
+      prevContractors.map(contractor => 
+        contractor.id === contractorId 
+          ? { ...contractor, contractorType: newType } 
+          : contractor
+      )
+    );
+  };
 
   const renderStatusBadge = (status: Contractor['status']) => {
     const baseClasses = "px-2 py-1 text-xs font-medium rounded-full";
@@ -73,7 +84,7 @@ const ContractorsTable: React.FC<ContractorsTableProps> = ({ projectId }) => {
                 <TableHead>Company Phone</TableHead>
                 <TableHead>Company Email</TableHead>
                 <TableHead>Status</TableHead>
-                <TableHead>Contractor Type</TableHead>
+                <TableHead className="w-[220px]">Contractor Type</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -85,7 +96,12 @@ const ContractorsTable: React.FC<ContractorsTableProps> = ({ projectId }) => {
                     <TableCell>{contractor.companyPhone}</TableCell>
                     <TableCell>{contractor.companyEmail}</TableCell>
                     <TableCell>{renderStatusBadge(contractor.status)}</TableCell>
-                    <TableCell>{contractor.contractorType}</TableCell>
+                    <TableCell>
+                      <ContractorTypeCell 
+                        value={contractor.contractorType as ContractorType}
+                        onChange={(value) => handleContractorTypeChange(contractor.id, value)}
+                      />
+                    </TableCell>
                   </TableRow>
                 ))
               ) : (
