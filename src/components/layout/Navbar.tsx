@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Menu, Bell, Plus, LogOut } from "lucide-react";
 import { SidebarTrigger } from "@/components/ui/sidebar";
 import { useAuth } from '@/context/AuthContext';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -17,6 +17,7 @@ import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 
 const Navbar = () => {
   const { user, profile, signOut, userRole } = useAuth();
+  const navigate = useNavigate();
   
   // Generate initials from user's name if available
   const getInitials = () => {
@@ -27,6 +28,17 @@ const Navbar = () => {
     }
     // Fallback to email initial if no name is available
     return user?.email?.charAt(0).toUpperCase() || '?';
+  };
+
+  const handleNewProject = () => {
+    navigate('/projects');
+    // We'll rely on the Projects page to open the dialog
+    // Using setTimeout to ensure navigation completes first
+    setTimeout(() => {
+      document.querySelector('[data-testid="create-project-button"]')?.dispatchEvent(
+        new MouseEvent('click', { bubbles: true })
+      );
+    }, 100);
   };
   
   return (
@@ -44,7 +56,7 @@ const Navbar = () => {
           {user ? (
             <>
               {(userRole === 'builder' || userRole === 'admin') && (
-                <Button variant="outline" size="sm" className="hidden md:flex">
+                <Button variant="outline" size="sm" className="hidden md:flex" onClick={handleNewProject}>
                   <Plus className="h-4 w-4 mr-2" />
                   New Project
                 </Button>

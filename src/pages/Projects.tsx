@@ -76,6 +76,12 @@ const Projects = () => {
     refetch(); // Refresh the project list
   };
 
+  // Ensure the dialog opens when clicking the button
+  const handleOpenCreateDialog = () => {
+    console.log("Opening create project dialog");
+    setIsCreateDialogOpen(true);
+  };
+
   return (
     <DashboardLayout>
       <div className="container mx-auto">
@@ -89,7 +95,11 @@ const Projects = () => {
             </p>
           </div>
           {canCreateProject && (
-            <Button onClick={() => setIsCreateDialogOpen(true)}>
+            <Button 
+              onClick={handleOpenCreateDialog}
+              className="flex items-center"
+              data-testid="create-project-button"
+            >
               <Plus className="h-4 w-4 mr-2" />
               New Project
             </Button>
@@ -108,14 +118,17 @@ const Projects = () => {
               : "You don't have any home building projects yet"}
             icon={<Plus className="h-10 w-10" />}
             actionText={canCreateProject ? "Create Project" : undefined}
-            onAction={canCreateProject ? () => setIsCreateDialogOpen(true) : undefined}
+            onAction={canCreateProject ? handleOpenCreateDialog : undefined}
           />
         ) : (
           <ProjectList projects={projects} columns={3} />
         )}
       </div>
 
-      <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
+      <Dialog 
+        open={isCreateDialogOpen} 
+        onOpenChange={setIsCreateDialogOpen}
+      >
         <DialogContent>
           <DialogHeader>
             <DialogTitle>Create New Project</DialogTitle>
