@@ -32,7 +32,8 @@ const DOWContent: React.FC<DOWContentProps> = ({ projectId }) => {
     templateQuery,
     variablesQuery,
     handleSave,
-    setAutoPopulated
+    setAutoPopulated,
+    getSortedVariables
   } = useTemplateVariables(projectId);
 
   // Check authentication status
@@ -155,12 +156,13 @@ const DOWContent: React.FC<DOWContentProps> = ({ projectId }) => {
         projectId={projectId} 
         variables={variablesQuery.data || []}
         onSave={handleSave}
+        getSortedVariables={getSortedVariables}
       />
       
       <Separator />
       
       <DOWPreview 
-        variables={variablesQuery.data || []}
+        variables={getSortedVariables()}
         templateContent={templateQuery.data || ''}
       />
     </div>

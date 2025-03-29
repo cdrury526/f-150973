@@ -65,3 +65,38 @@ export const mergeVariables = (
   
   return result;
 };
+
+/**
+ * Gets variables in the order they first appear in the template
+ */
+export const getVariablesInTemplateOrder = (
+  variables: DOWVariable[],
+  originalOrder: string[]
+): DOWVariable[] => {
+  if (!variables?.length || !originalOrder?.length) {
+    return variables || [];
+  }
+
+  // Create a map for quick lookup
+  const variableMap = new Map(variables.map(v => [v.name, v]));
+  
+  // First add variables in the order they appear in the template
+  const result: DOWVariable[] = [];
+  
+  // Add variables in the order they appear in the template, without duplicates
+  const processed = new Set<string>();
+  originalOrder.forEach(name => {
+    if (variableMap.has(name) && !processed.has(name)) {
+      result.push(variableMap.get(name)!);
+      processed.add(name);
+      variableMap.delete(name);
+    }
+  });
+  
+  // Add any remaining variables that might not be in the template
+  const remainingVars = Array.from(variableMap.values()).sort((a, b) => a.name.localeCompare(b.name));
+  result.push(...remainingVars);
+  
+  return result;
+};
+

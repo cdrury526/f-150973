@@ -18,7 +18,7 @@ interface DOWFormProps {
   projectId: string;
   variables: DOWVariable[];
   onSave: (variables: DOWVariable[]) => void;
-  getSortedVariables?: () => DOWVariable[]; // New prop for getting variables in order
+  getSortedVariables?: () => DOWVariable[]; // Prop for getting variables in order
 }
 
 const DOWForm: React.FC<DOWFormProps> = ({ 
@@ -105,8 +105,7 @@ const DOWForm: React.FC<DOWFormProps> = ({
   };
 
   // Get variables in the proper order for display
-  const displayVariables = getSortedVariables ? getSortedVariables() : 
-    [...variables].sort((a, b) => a.name.localeCompare(b.name));
+  const displayVariables = getSortedVariables ? getSortedVariables() : variables;
 
   return (
     <div className="space-y-6">

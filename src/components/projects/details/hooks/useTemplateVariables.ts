@@ -8,7 +8,11 @@ import {
   fetchProjectVariables, 
   saveProjectVariables 
 } from '../api/dowApi';
-import { extractVariablesFromTemplate, mergeVariables } from '../utils/dowTemplateUtils';
+import { 
+  extractVariablesFromTemplate, 
+  mergeVariables,
+  getVariablesInTemplateOrder
+} from '../utils/dowTemplateUtils';
 
 /**
  * Custom hook to manage template variables extraction and handling
@@ -37,7 +41,8 @@ export function useTemplateVariables(projectId: string) {
   // Save the original order of variables from the template when it loads
   useEffect(() => {
     if (templateQuery.data && !templateQuery.isLoading) {
-      const extractedVarOrder = extractVariablesFromTemplate(templateQuery.data, true);
+      // Extract variables preserving order but removing duplicates
+      const extractedVarOrder = extractVariablesFromTemplate(templateQuery.data);
       setOriginalOrder(extractedVarOrder);
     }
   }, [templateQuery.data, templateQuery.isLoading]);
@@ -110,31 +115,11 @@ export function useTemplateVariables(projectId: string) {
 
   // Sort variables according to their appearance in the template
   const getSortedVariables = (): DOWVariable[] => {
-    if (!variablesQuery.data || originalOrder.length === 0) {
-      return variablesQuery.data || [];
-    }
-
-    // Create a map for quick lookup
-    const variableMap = new Map(variablesQuery.data.map(v => [v.name, v]));
-    
-    // First add variables in the order they appear in the template
-    const result: DOWVariable[] = [];
-    
-    // Add variables in the order they appear in the template
-    originalOrder.forEach(name => {
-      if (variableMap.has(name)) {
-        result.push(variableMap.get(name)!);
-        variableMap.delete(name);
-      }
-    });
-    
-    // Add any remaining variables that might not be in the template
-    if (variableMap.size > 0) {
-      const remainingVars = Array.from(variableMap.values()).sort((a, b) => a.name.localeCompare(b.name));
-      result.push(...remainingVars);
+    if (!variablesQuery.data) {
+      return [];
     }
     
-    return result;
+    return getVariablesInTemplateOrder(variablesQuery.data, originalOrder);
   };
 
   return {
