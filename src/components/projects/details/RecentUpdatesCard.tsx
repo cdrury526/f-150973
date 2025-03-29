@@ -3,7 +3,8 @@ import React from 'react';
 import { Card, CardHeader, CardContent, CardTitle } from "@/components/ui/card";
 import { useProjectUpdates, ProjectUpdate } from '@/hooks/useProjectUpdates';
 import { formatDistanceToNow } from 'date-fns';
-import { Loader2 } from 'lucide-react';
+import { Loader2, RefreshCw } from 'lucide-react';
+import { Button } from '@/components/ui/button';
 
 interface RecentUpdatesCardProps {
   projectId: string;
@@ -23,7 +24,7 @@ const getUpdateIcon = (updateType: string) => {
 };
 
 const RecentUpdatesCard: React.FC<RecentUpdatesCardProps> = ({ projectId }) => {
-  const { data: updates, isLoading, error } = useProjectUpdates(projectId);
+  const { data: updates, isLoading, error, refetch } = useProjectUpdates(projectId);
 
   const formatUpdateTime = (dateString: string) => {
     try {
@@ -35,8 +36,16 @@ const RecentUpdatesCard: React.FC<RecentUpdatesCardProps> = ({ projectId }) => {
 
   return (
     <Card>
-      <CardHeader>
+      <CardHeader className="flex flex-row items-center justify-between">
         <CardTitle className="text-lg">Recent Updates</CardTitle>
+        <Button 
+          variant="ghost" 
+          size="icon" 
+          onClick={() => refetch()}
+          title="Refresh updates"
+        >
+          <RefreshCw className="h-4 w-4" />
+        </Button>
       </CardHeader>
       <CardContent>
         {isLoading ? (

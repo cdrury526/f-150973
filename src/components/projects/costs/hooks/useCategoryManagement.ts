@@ -3,10 +3,11 @@ import { useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { CostCategory } from '@/components/projects/costs/types';
-import { logProjectUpdate } from '@/hooks/useProjectUpdates';
+import { useProjectUpdates } from '@/hooks/useProjectUpdates';
 
 export const useCategoryManagement = (projectId: string, refetchData: () => void) => {
   const { toast } = useToast();
+  const { addUpdate } = useProjectUpdates(projectId);
   const [addCategoryDialogOpen, setAddCategoryDialogOpen] = useState(false);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [categoryToDelete, setCategoryToDelete] = useState<CostCategory | null>(null);
@@ -26,8 +27,7 @@ export const useCategoryManagement = (projectId: string, refetchData: () => void
       if (categoryError) throw categoryError;
 
       // Log the category addition
-      await logProjectUpdate(
-        projectId,
+      await addUpdate(
         `Added new category: ${values.category_name}`,
         "category_add"
       );
@@ -75,8 +75,7 @@ export const useCategoryManagement = (projectId: string, refetchData: () => void
       }
 
       // Log the category deletion
-      await logProjectUpdate(
-        projectId,
+      await addUpdate(
         `Removed category: ${categoryToDelete.name}`,
         "category_delete"
       );

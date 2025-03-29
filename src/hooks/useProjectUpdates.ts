@@ -1,5 +1,5 @@
 
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 
 export interface ProjectUpdate {
@@ -29,7 +29,8 @@ export const fetchProjectUpdates = async (projectId: string): Promise<ProjectUpd
 // Helper function to log project updates - exported so it can be used by other hooks
 export const logProjectUpdate = async (projectId: string, updateText: string, updateType: string) => {
   try {
-    const { error } = await supabase
+    console.log("Logging project update:", { projectId, updateText, updateType });
+    const { data, error } = await supabase
       .from('project_updates')
       .insert({
         project_id: projectId,
@@ -41,15 +42,32 @@ export const logProjectUpdate = async (projectId: string, updateText: string, up
       console.error("Error logging project update:", error);
       throw new Error(error.message);
     }
+    
+    console.log("Project update logged successfully:", data);
+    return data;
   } catch (error) {
     console.error("Error logging project update:", error);
+    throw error;
   }
 };
 
 export const useProjectUpdates = (projectId: string) => {
-  return useQuery({
+  const queryClient = useQueryClient();
+  
+  const result = useQuery({
     queryKey: ['projectUpdates', projectId],
     queryFn: () => fetchProjectUpdates(projectId),
     enabled: !!projectId,
   });
+  
+  const addUpdate = async (updateText: string, updateType: string) => {
+    await logProjectUpdate(projectId, updateText, updateType);
+    // Invalidate the query to refresh the data
+    queryClient.invalidateQueries({ queryKey: ['projectUpdates', projectId] });
+  };
+  
+  return {
+    ...result,
+    addUpdate
+  };
 };

@@ -1,4 +1,3 @@
-
 import React, { useEffect } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
@@ -55,13 +54,13 @@ const ProjectDetails = () => {
     enabled: !!id,
   });
   
-  // Listen for updates to the project details in the sidebar
   useEffect(() => {
     const refreshData = () => {
       queryClient.invalidateQueries({ queryKey: ['project', id] });
+      queryClient.invalidateQueries({ queryKey: ['projectUpdates', id] });
+      queryClient.invalidateQueries({ queryKey: ['projectCosts', id] });
     };
 
-    // Set up an interval to check for updates (a more elegant solution would be using Supabase realtime)
     const intervalId = setInterval(refreshData, 5000);
     
     return () => clearInterval(intervalId);

@@ -3,10 +3,11 @@ import { useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { ProjectCost } from '@/components/projects/costs/types';
-import { logProjectUpdate } from '@/hooks/useProjectUpdates';
+import { useProjectUpdates } from '@/hooks/useProjectUpdates';
 
 export const useCostEditing = (projectId: string, refetchData: () => void) => {
   const { toast } = useToast();
+  const { addUpdate } = useProjectUpdates(projectId);
   const [editingCost, setEditingCost] = useState<ProjectCost | null>(null);
   const [dialogOpen, setDialogOpen] = useState(false);
 
@@ -40,8 +41,7 @@ export const useCostEditing = (projectId: string, refetchData: () => void) => {
         if (error) throw error;
 
         // Log the update
-        await logProjectUpdate(
-          projectId,
+        await addUpdate(
           `Updated ${editingCost.category_name} costs`, 
           "cost_update"
         );
@@ -61,8 +61,7 @@ export const useCostEditing = (projectId: string, refetchData: () => void) => {
         if (error) throw error;
 
         // Log the addition
-        await logProjectUpdate(
-          projectId,
+        await addUpdate(
           `Added costs for ${editingCost.category_name}`,
           "cost_update"
         );
