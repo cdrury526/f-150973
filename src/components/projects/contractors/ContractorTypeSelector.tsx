@@ -1,6 +1,6 @@
 
 import React, { useState, useMemo } from 'react';
-import { Info, Check, ChevronsUpDown, Search } from 'lucide-react';
+import { Check, ChevronsUpDown, Search } from 'lucide-react';
 import { Button } from "@/components/ui/button";
 import { ContractorType, contractorTypeDescriptions } from './types';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
@@ -32,6 +32,12 @@ export const ContractorTypeSelector: React.FC<ContractorTypeSelectorProps> = ({
     );
   }, [contractorTypes, searchQuery]);
   
+  const handleOptionClick = (type: ContractorType) => {
+    onChange(type);
+    setOpen(false);
+    setSearchQuery("");
+  };
+
   return (
     <div className="flex items-center gap-2">
       <Popover open={open} onOpenChange={setOpen}>
@@ -53,36 +59,28 @@ export const ContractorTypeSelector: React.FC<ContractorTypeSelectorProps> = ({
           align="start" 
           sideOffset={4} 
           style={{ zIndex: 9999 }}
-          onOpenAutoFocus={(e) => e.preventDefault()}
         >
-          <div className="overflow-hidden rounded-md border border-input bg-popover text-popover-foreground">
-            <div className="flex items-center border-b px-3">
-              <Search className="mr-2 h-4 w-4 shrink-0 opacity-50" />
-              <input 
-                className="flex h-10 w-full rounded-md bg-transparent py-3 text-sm outline-none placeholder:text-muted-foreground disabled:cursor-not-allowed disabled:opacity-50"
-                placeholder="Search contractor type..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                onClick={(e) => e.stopPropagation()}
-              />
-            </div>
-            <div 
-              className="max-h-[300px] overflow-y-auto p-1"
+          <div className="flex items-center border-b px-3">
+            <Search className="mr-2 h-4 w-4 shrink-0 opacity-50" />
+            <input 
+              className="flex h-10 w-full bg-transparent py-3 text-sm outline-none placeholder:text-muted-foreground"
+              placeholder="Search contractor type..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
               onClick={(e) => e.stopPropagation()}
-            >
-              {filteredTypes.length === 0 ? (
-                <div className="py-6 text-center text-sm">No contractor type found.</div>
-              ) : (
-                filteredTypes.map((type) => (
+            />
+          </div>
+          <div className="max-h-[300px] overflow-y-auto">
+            {filteredTypes.length === 0 ? (
+              <div className="py-6 text-center text-sm">No contractor type found.</div>
+            ) : (
+              <div className="p-1">
+                {filteredTypes.map((type) => (
                   <div
                     key={type}
-                    onClick={() => {
-                      onChange(type);
-                      setOpen(false);
-                      setSearchQuery("");
-                    }}
+                    onClick={() => handleOptionClick(type)}
                     className={cn(
-                      "relative flex cursor-pointer select-none items-center rounded-sm px-2 py-1.5 text-sm outline-none hover:bg-accent hover:text-accent-foreground data-[disabled]:pointer-events-none data-[disabled]:opacity-50",
+                      "relative flex cursor-pointer select-none items-center rounded-sm px-2 py-1.5 text-sm outline-none hover:bg-accent hover:text-accent-foreground",
                       type === value ? "bg-accent text-accent-foreground" : ""
                     )}
                   >
@@ -99,9 +97,9 @@ export const ContractorTypeSelector: React.FC<ContractorTypeSelectorProps> = ({
                       </span>
                     </div>
                   </div>
-                ))
-              )}
-            </div>
+                ))}
+              </div>
+            )}
           </div>
         </PopoverContent>
       </Popover>
@@ -116,7 +114,7 @@ export const ContractorTypeSelector: React.FC<ContractorTypeSelectorProps> = ({
               disabled={disabled}
               type="button"
             >
-              <Info size={16} />
+              <Search size={16} />
             </Button>
           </TooltipTrigger>
           <TooltipContent>
@@ -130,21 +128,14 @@ export const ContractorTypeSelector: React.FC<ContractorTypeSelectorProps> = ({
   );
 };
 
-// For table cell use where space might be limited
-export const ContractorTypeCell: React.FC<ContractorTypeSelectorProps> = ({
-  value,
-  onChange,
-  disabled = false
-}) => {
+export const ContractorTypeCell = ({ value, onChange, disabled = false }: ContractorTypeSelectorProps) => {
   const [open, setOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const contractorTypes = Object.keys(contractorTypeDescriptions) as ContractorType[];
   
-  // Filter types based on search
   const filteredTypes = useMemo(() => {
     if (!searchQuery) return contractorTypes;
-    
-    return contractorTypes.filter((type) => 
+    return contractorTypes.filter(type => 
       type.toLowerCase().includes(searchQuery.toLowerCase())
     );
   }, [contractorTypes, searchQuery]);
@@ -169,27 +160,23 @@ export const ContractorTypeCell: React.FC<ContractorTypeSelectorProps> = ({
         align="start" 
         sideOffset={4} 
         style={{ zIndex: 9999 }}
-        onOpenAutoFocus={(e) => e.preventDefault()}
       >
-        <div className="overflow-hidden rounded-md border border-input bg-popover text-popover-foreground">
-          <div className="flex items-center border-b px-3">
-            <Search className="mr-2 h-4 w-4 shrink-0 opacity-50" />
-            <input 
-              className="flex h-8 w-full rounded-md bg-transparent py-2 text-sm outline-none placeholder:text-muted-foreground disabled:cursor-not-allowed disabled:opacity-50"
-              placeholder="Search type..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              onClick={(e) => e.stopPropagation()}
-            />
-          </div>
-          <div 
-            className="max-h-[300px] overflow-y-auto p-1"
+        <div className="flex items-center border-b px-3">
+          <Search className="mr-2 h-4 w-4 shrink-0 opacity-50" />
+          <input 
+            className="flex h-8 w-full bg-transparent py-2 text-sm outline-none placeholder:text-muted-foreground"
+            placeholder="Search type..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
             onClick={(e) => e.stopPropagation()}
-          >
-            {filteredTypes.length === 0 ? (
-              <div className="py-6 text-center text-sm">No type found.</div>
-            ) : (
-              filteredTypes.map((type) => (
+          />
+        </div>
+        <div className="max-h-[300px] overflow-y-auto">
+          {filteredTypes.length === 0 ? (
+            <div className="py-6 text-center text-sm">No type found.</div>
+          ) : (
+            <div className="p-1">
+              {filteredTypes.map((type) => (
                 <div
                   key={type}
                   onClick={() => {
@@ -198,7 +185,7 @@ export const ContractorTypeCell: React.FC<ContractorTypeSelectorProps> = ({
                     setSearchQuery("");
                   }}
                   className={cn(
-                    "relative flex cursor-pointer select-none items-center rounded-sm px-2 py-1.5 text-sm outline-none hover:bg-accent hover:text-accent-foreground data-[disabled]:pointer-events-none data-[disabled]:opacity-50",
+                    "relative flex cursor-pointer select-none items-center rounded-sm px-2 py-1.5 text-sm outline-none hover:bg-accent hover:text-accent-foreground",
                     type === value ? "bg-accent text-accent-foreground" : ""
                   )}
                 >
@@ -210,9 +197,9 @@ export const ContractorTypeCell: React.FC<ContractorTypeSelectorProps> = ({
                   />
                   {type}
                 </div>
-              ))
-            )}
-          </div>
+              ))}
+            </div>
+          )}
         </div>
       </PopoverContent>
     </Popover>
